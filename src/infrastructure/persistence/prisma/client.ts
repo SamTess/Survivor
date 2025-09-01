@@ -2,7 +2,12 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient({
 	datasources: {
 		db: {
-			url: process.env.DATABASE_URL || 'postgresql://default_user:default_password@localhost:5432/default_db',
+			url: (() => {
+				if (!process.env.DATABASE_URL) {
+					throw new Error("DATABASE_URL environment variable is not set. Please configure your database connection.");
+				}
+				return process.env.DATABASE_URL;
+			})(),
 		},
 	},
 });
