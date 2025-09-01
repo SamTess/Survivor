@@ -216,14 +216,16 @@ jobs:
           cd Docker
           export $(cat .env | xargs)
           set -e
-          # Tente d'abord les migrations versionnées
-          if docker-compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy; then
-            echo "Migrations déployées via migrate deploy"
+          # Vérifie si des migrations existent dans le repo (répertoire monté dans le conteneur web)
+          HAS_MIGRATIONS=$(docker-compose -f docker-compose.prod.yml exec -T web sh -c 'ls -1 prisma/migrations 2>/dev/null | grep -v "^$" || true' | wc -l | tr -d '[:space:]')
+          if [ "$HAS_MIGRATIONS" -gt 0 ]; then
+            echo "Migrations détectées ($HAS_MIGRATIONS dossiers) -> prisma migrate deploy"
+            docker-compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy
           else
-            echo "Aucune migration versionnée ou échec migrate deploy, tentative avec db push..."
+            echo "Aucune migration versionnée détectée -> prisma db push"
             docker-compose -f docker-compose.prod.yml exec -T web npx prisma db push
           fi
-          echo "Etat des tables après migration/push:" \
+          echo "Etat des tables après synchronisation:" \
             && docker-compose -f docker-compose.prod.yml exec -T db psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"
 
       - name: Test database connection and schema
@@ -231,11 +233,17 @@ jobs:
           echo "Testing database connection and checking tables..."
           cd Docker
           export $(cat .env | xargs)
-          docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
-            SELECT COUNT(*) as table_count
-            FROM information_schema.tables
-            WHERE table_schema = 'public';
-          " | tee /dev/stderr | grep -q "13"
+          # Nombre attendu de modèles Prisma (extrait du schema) pour comparer
+          EXPECTED=$(docker-compose -f docker-compose.prod.yml exec -T web sh -c "grep -E '^model ' prisma/schema.prisma | wc -l" | tr -d '[:space:]')
+          echo "Expected Prisma models: $EXPECTED"
+          COUNT=$(docker-compose -f docker-compose.prod.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" | tr -d '[:space:]')
+          echo "Actual table count: $COUNT"
+          if [ "$COUNT" -lt "$EXPECTED" ]; then
+            echo "Table count ($COUNT) < expected models ($EXPECTED) => échec" >&2
+            echo "Listing current tables:" >&2
+            docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;" >&2 || true
+            exit 1
+          fi
 
           echo "Testing specific table exists..."
           docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
