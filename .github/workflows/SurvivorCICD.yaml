@@ -90,12 +90,21 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
-          DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
         run: |
           cd Docker/
+          # Valeurs par défaut si certains secrets manquent (ex: DB_USER)
+          : "${DB_USER:=postgres}"
+          : "${DB_PORT:=5432}"
+          : "${DB_NAME:=app}"
+          if [ -z "${DB_PASSWORD}" ]; then
+            echo "DB_PASSWORD manquant (secret)." >&2
+            exit 1
+          fi
+          # Reconstruit DATABASE_URL de manière fiable (évite ordre env)
+          DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-localhost}:${DB_PORT}/${DB_NAME}"
           cat > .env << EOF
           DB_HOST=${DB_HOST}
           DB_PORT=${DB_PORT}
@@ -108,6 +117,25 @@ jobs:
           EOF
 
           echo ".env file created successfully"
+          echo "Sanity check (password masqué):"
+          grep -E '^(DB_HOST|DB_PORT|DB_NAME|DB_USER|NODE_ENV|NEXT_PUBLIC_APP_URL)=' .env || true
+          echo "DATABASE_URL user=$(echo "$DATABASE_URL" | sed -E 's#postgresql://([^:]+):.*@.*#\1#') host=$(echo "$DATABASE_URL" | sed -E 's#.*@([^:/]+).*#\1#')"
+
+      - name: Validate environment variables
+        run: |
+          cd Docker
+          if ! grep -q '^DB_USER=postgres' .env; then
+            echo "Avertissement: DB_USER n'est pas 'postgres'. Vérifiez que l'utilisateur existe dans l'image Postgres de test."
+          fi
+          if grep -q '^DB_USER=root' .env; then
+            echo "Erreur: DB_USER=root provoquera l'échec (role root inexistant)." >&2
+            exit 1
+          fi
+          if ! grep -q '^DATABASE_URL=postgresql://' .env; then
+            echo "DATABASE_URL incorrect ou manquant" >&2
+            exit 1
+          fi
+          echo "Validation variables: OK"
 
       - name: Build and start production containers
         run: |
@@ -182,6 +210,22 @@ jobs:
           timeout 30 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do echo "Web app not ready, waiting..."; sleep 2; done'
           echo "Web application is ready!"
 
+      - name: Run Prisma migrations (or push schema)
+        run: |
+          echo "Applying Prisma migrations..."
+          cd Docker
+          export $(cat .env | xargs)
+          set -e
+          # Tente d'abord les migrations versionnées
+          if docker-compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy; then
+            echo "Migrations déployées via migrate deploy"
+          else
+            echo "Aucune migration versionnée ou échec migrate deploy, tentative avec db push..."
+            docker-compose -f docker-compose.prod.yml exec -T web npx prisma db push
+          fi
+          echo "Etat des tables après migration/push:" \
+            && docker-compose -f docker-compose.prod.yml exec -T db psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"
+
       - name: Test database connection and schema
         run: |
           echo "Testing database connection and checking tables..."
@@ -191,7 +235,7 @@ jobs:
             SELECT COUNT(*) as table_count
             FROM information_schema.tables
             WHERE table_schema = 'public';
-          " | grep -q "13"
+          " | tee /dev/stderr | grep -q "13"
 
           echo "Testing specific table exists..."
           docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
