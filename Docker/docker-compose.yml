@@ -1,0 +1,51 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../src:/app/src
+      - ../public:/app/public
+      - ../package.json:/app/package.json
+      - ../next.config.ts:/app/next.config.ts
+      - ../tsconfig.json:/app/tsconfig.json
+      - ../tailwind.config.ts:/app/tailwind.config.ts
+      - ../postcss.config.mjs:/app/postcss.config.mjs
+      - ../eslint.config.mjs:/app/eslint.config.mjs
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+    env_file:
+      - ../.env
+    depends_on:
+      - db
+    networks:
+      - survivor-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../Database:/docker-entrypoint-initdb.d
+    networks:
+      - survivor-network
+
+volumes:
+  postgres_data:
+
+networks:
+  survivor-network:
+    driver: bridge
