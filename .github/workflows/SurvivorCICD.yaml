@@ -112,30 +112,30 @@ jobs:
           docker-compose -f docker-compose.prod.yml up --build -d
 
       - name: Wait for services to be ready
-        env:
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           echo "Waiting for database to be ready..."
-          timeout 60 bash -c 'until docker-compose -f Docker/docker-compose.prod.yml exec -T db pg_isready -U ${DB_USER} -d ${DB_NAME}; do sleep 2; done'
+          # Load environment variables from .env file
+          export $(cat .env | xargs)
+          cd Docker
+          timeout 60 bash -c 'until docker-compose -f docker-compose.prod.yml exec -T db pg_isready -U ${DB_USER} -d ${DB_NAME}; do sleep 2; done'
 
           echo "Waiting for web application to be ready..."
           timeout 60 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 2; done'
 
       - name: Test database connection and schema
-        env:
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           echo "Testing database connection and checking tables..."
-          docker-compose -f Docker/docker-compose.prod.yml exec -T db psql -U ${DB_USER} -d ${DB_NAME} -c "
+          # Load environment variables from .env file
+          export $(cat .env | xargs)
+          cd Docker
+          docker-compose -f docker-compose.prod.yml exec -T db psql -U ${DB_USER} -d ${DB_NAME} -c "
             SELECT COUNT(*) as table_count
             FROM information_schema.tables
             WHERE table_schema = 'public';
           " | grep -q "13"
 
           echo "Testing specific table exists..."
-          docker-compose -f Docker/docker-compose.prod.yml exec -T db psql -U ${DB_USER} -d ${DB_NAME} -c "
+          docker-compose -f docker-compose.prod.yml exec -T db psql -U ${DB_USER} -d ${DB_NAME} -c "
             SELECT table_name
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 's_user';
@@ -154,8 +154,11 @@ jobs:
       - name: Test database connection from web app
         run: |
           echo "Testing if web app can connect to database..."
+          # Load environment variables from .env file
+          export $(cat .env | xargs)
+          cd Docker
           # Check web app logs for any database connection errors
-          logs=$(docker-compose -f Docker/docker-compose.prod.yml logs web 2>&1)
+          logs=$(docker-compose -f docker-compose.prod.yml logs web 2>&1)
           if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
             echo "Database connection errors found in web app logs:"
             echo "$logs"
@@ -167,17 +170,20 @@ jobs:
         if: always()
         run: |
           echo "=== Container Status ==="
-          docker-compose -f Docker/docker-compose.prod.yml ps
+          export $(cat .env | xargs)
+          cd Docker
+          docker-compose -f docker-compose.prod.yml ps
           echo ""
           echo "=== Web App Logs ==="
-          docker-compose -f Docker/docker-compose.prod.yml logs web
+          docker-compose -f docker-compose.prod.yml logs web
           echo ""
           echo "=== Database Logs ==="
-          docker-compose -f Docker/docker-compose.prod.yml logs db
+          docker-compose -f docker-compose.prod.yml logs db
 
       - name: Cleanup
         if: always()
         run: |
+          export $(cat .env | xargs)
           cd Docker
           docker-compose -f docker-compose.prod.yml down -v
 
