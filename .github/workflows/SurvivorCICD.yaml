@@ -122,14 +122,52 @@ jobs:
           cd Docker
 
           timeout 120 bash -c '
+            # Wait for the db container to be created
             until [ "$(docker-compose --env-file ../.env -f docker-compose.prod.yml ps -q db)" ]; do
               echo "db container not created yet, waiting..."
               sleep 2
             done
             CID=$(docker-compose --env-file ../.env -f docker-compose.prod.yml ps -q db)
-            until [ "$(docker inspect -f \"{{.State.Running}}\" $CID)" = "true" ]; do
-              echo "db container present but not running yet..."
+
+            # Check container status immediately; if it exited/failed, print debug info and exit
+            STATE=$(docker inspect -f "{{.State.Status}}" $CID 2>/dev/null || echo "unknown")
+            if [ "$STATE" = "exited" ] || [ "$STATE" = "dead" ] || [ "$STATE" = "created" ]; then
+              echo "db container created but in terminal state: $STATE"
+              echo "==== Container inspect ===="
+              docker inspect $CID || true
+              echo "==== Container logs ===="
+              docker logs $CID || true
+              exit 1
+            fi
+
+            # Wait until container reports it is running; bail with logs if it exits or restarts too often
+            restart_count=0
+            until [ "$(docker inspect -f "{{.State.Running}}" $CID)" = "true" ]; do
+              CUR=$(docker inspect -f "{{.State.Status}}" $CID 2>/dev/null || echo "unknown")
+              echo "db container present but not running yet (state: $CUR)..."
+              # show compose-level status for additional context
+              docker-compose --env-file ../.env -f docker-compose.prod.yml ps -a || true
               sleep 2
+              if [ "$CUR" = "exited" ] || [ "$CUR" = "dead" ]; then
+                echo "db container entered terminal state: $CUR"
+                echo "==== Container inspect ===="
+                docker inspect $CID || true
+                echo "==== Container logs ===="
+                docker logs $CID || true
+                exit 1
+              fi
+              if [ "$CUR" = "restarting" ]; then
+                restart_count=$((restart_count+1))
+                echo "db container is restarting (count: $restart_count)."
+                if [ $restart_count -ge 4 ]; then
+                  echo "db container restarted too many times, dumping logs and failing"
+                  echo "==== Container inspect ===="
+                  docker inspect $CID || true
+                  echo "==== Container logs ===="
+                  docker logs $CID || true
+                  exit 1
+                fi
+              fi
             done
           '
           echo "db container is running; checking PostgreSQL readiness inside container..."
