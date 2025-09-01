@@ -6,7 +6,11 @@ COPY package*.json ./
 
 RUN npm install
 
+COPY Docker/.env .env
+
 COPY . .
+
+RUN npx prisma generate
 
 EXPOSE 3000
 
