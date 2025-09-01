@@ -120,8 +120,8 @@ jobs:
       - name: Wait for services to be ready
         run: |
           echo "Waiting for database container to be running..."
-          export $(cat .env | xargs)
           cd Docker
+          export $(cat .env | xargs)
 
           timeout 30 bash -c '
             until [ "$(docker-compose -f docker-compose.prod.yml ps -q db)" ]; do
@@ -185,8 +185,8 @@ jobs:
       - name: Test database connection and schema
         run: |
           echo "Testing database connection and checking tables..."
-          export $(cat .env | xargs)
           cd Docker
+          export $(cat .env | xargs)
           docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT COUNT(*) as table_count
             FROM information_schema.tables
@@ -214,8 +214,8 @@ jobs:
         run: |
           echo "Testing if web app can connect to database..."
           # Load environment variables from .env file
-          export $(cat .env | xargs)
           cd Docker
+          export $(cat .env | xargs)
           # Check web app logs for any database connection errors
           logs=$(docker-compose -f docker-compose.prod.yml logs web 2>&1)
           if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
@@ -229,8 +229,8 @@ jobs:
         if: always()
         run: |
           echo "=== Container Status ==="
-          export $(cat .env | xargs)
           cd Docker
+          export $(cat .env | xargs)
           docker-compose -f docker-compose.prod.yml ps
           echo ""
           echo "=== Web App Logs ==="
@@ -242,8 +242,8 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          export $(cat .env | xargs)
           cd Docker
+          export $(cat .env | xargs)
           docker-compose -f docker-compose.prod.yml down -v
 
   push_to_mirror:
