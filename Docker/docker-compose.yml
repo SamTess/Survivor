@@ -5,6 +5,8 @@ services:
       dockerfile: Docker/Dockerfile.dev
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     volumes:
       - ../src:/app/src
       - ../public:/app/public
@@ -22,8 +24,6 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-    env_file:
-      - ../.env
     depends_on:
       - db
     networks:

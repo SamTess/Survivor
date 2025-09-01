@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# README
 
-## Getting Started
+Ce projet utilise Next.js pour le routage et l'affichage côté client, ainsi qu'une architecture en oignon (onion architecture) pour organiser la logique métier et les services.
 
-First, run the development server:
+## Structure des dossiers
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **public/** : Contient les fichiers statiques accessibles publiquement (images, icônes, etc.).
+- **src/app/** : Dossier principal pour le routage Next.js côté front. Chaque sous-dossier représente une route ou une page (ex : `/about`, `/admin`, `/profile/[id]`, etc.).
+	- **api/** : Contient les routes API Next.js (backend léger, ex : `info.ts`).
+- **src/application/services/** : Contient la logique métier et les services (ex : gestion des utilisateurs).
+- **src/domain/** : Définit les entités et interfaces du domaine (ex : `User.ts`, `IUserRepository.ts`).
+- **src/infrastructure/** : Implémente les repositories et l'accès aux données (ex : `UserRepository.ts`).
+- **src/persistence/** : Gère la persistance et les contextes de base de données (ex : `dbContext.ts`).
+- **src/ui/** : Contient tous les composants d'interface utilisateur, la mise en page et les éléments partagés.
+	- **components/** : Composants réutilisables.
+	- **layout/** : Composants de layout.
+	- **shared/** : Composants ou utilitaires partagés.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Principes d'architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Routing Next.js** : Les pages et API sont organisées selon la convention Next.js pour un routage automatique.
+- **Architecture oignon** : Séparation claire entre le domaine, l'application, l'infrastructure et la présentation pour une meilleure maintenabilité et évolutivité.
+- **UI centralisée** : Tous les composants visuels sont regroupés dans `src/ui/` pour faciliter la réutilisation et la cohérence de l'interface.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Démarrage
 
-## Learn More
+1. Installer les dépendances : `npm install`
+2. Lancer le serveur de développement : `npm run dev`
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Pour toute question sur la structure ou l'architecture, consultez ce README ou la documentation Next.js.
