@@ -94,6 +94,7 @@ jobs:
           NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
           NODE_ENV: ${{ secrets.NODE_ENV }}
         run: |
+          cd Docker/
           cat > .env << EOF
           DB_HOST=${DB_HOST}
           DB_PORT=${DB_PORT}
@@ -110,9 +111,9 @@ jobs:
         run: |
           cd Docker
           echo "Starting production containers..."
-          docker-compose --env-file ../.env -f docker-compose.prod.yml up --build -d
+          docker-compose -f docker-compose.prod.yml up --build -d
           echo "Containers started, checking status..."
-          docker-compose --env-file ../.env -f docker-compose.prod.yml ps
+          docker-compose -f docker-compose.prod.yml ps
 
       - name: Wait for services to be ready
         run: |
@@ -121,11 +122,11 @@ jobs:
           cd Docker
 
           timeout 30 bash -c '
-            until [ "$(docker-compose --env-file ../.env -f docker-compose.prod.yml ps -q db)" ]; do
+            until [ "$(docker-compose -f docker-compose.prod.yml ps -q db)" ]; do
               echo "db container not created yet, waiting..."
               sleep 2
             done
-            CID=$(docker-compose --env-file ../.env -f docker-compose.prod.yml ps -q db)
+            CID=$(docker-compose -f docker-compose.prod.yml ps -q db)
 
             STATE=$(docker inspect -f "{{.State.Status}}" $CID 2>/dev/null || echo "unknown")
             if [ "$STATE" = "exited" ] || [ "$STATE" = "dead" ] || [ "$STATE" = "created" ]; then
@@ -141,7 +142,7 @@ jobs:
             until [ "$(docker inspect -f "{{.State.Running}}" $CID)" = "true" ]; do
               CUR=$(docker inspect -f "{{.State.Status}}" $CID 2>/dev/null || echo "unknown")
               echo "db container present but not running yet (state: $CUR)..."
-              docker-compose --env-file ../.env -f docker-compose.prod.yml ps -a || true
+              docker-compose -f docker-compose.prod.yml ps -a || true
               sleep 2
               if [ "$CUR" = "exited" ] || [ "$CUR" = "dead" ]; then
                 echo "db container entered terminal state: $CUR"
@@ -168,7 +169,7 @@ jobs:
           echo "db container is running; checking PostgreSQL readiness inside container..."
 
           timeout 30 bash -c '
-            until docker-compose --env-file ../.env -f docker-compose.prod.yml exec -T db sh -c "pg_isready -q"; do
+            until docker-compose -f docker-compose.prod.yml exec -T db sh -c "pg_isready -q"; do
               echo "Postgres not ready yet, waiting..."
               sleep 2
             done
@@ -184,14 +185,14 @@ jobs:
           echo "Testing database connection and checking tables..."
           export $(cat .env | xargs)
           cd Docker
-          docker-compose --env-file ../.env -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
+          docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT COUNT(*) as table_count
             FROM information_schema.tables
             WHERE table_schema = 'public';
           " | grep -q "13"
 
           echo "Testing specific table exists..."
-          docker-compose --env-file ../.env -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
+          docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT table_name
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 's_user';
@@ -214,7 +215,7 @@ jobs:
           export $(cat .env | xargs)
           cd Docker
           # Check web app logs for any database connection errors
-          logs=$(docker-compose --env-file ../.env -f docker-compose.prod.yml logs web 2>&1)
+          logs=$(docker-compose -f docker-compose.prod.yml logs web 2>&1)
           if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
             echo "Database connection errors found in web app logs:"
             echo "$logs"
@@ -228,20 +229,20 @@ jobs:
           echo "=== Container Status ==="
           export $(cat .env | xargs)
           cd Docker
-          docker-compose --env-file ../.env -f docker-compose.prod.yml ps
+          docker-compose -f docker-compose.prod.yml ps
           echo ""
           echo "=== Web App Logs ==="
-          docker-compose --env-file ../.env -f docker-compose.prod.yml logs web
+          docker-compose -f docker-compose.prod.yml logs web
           echo ""
           echo "=== Database Logs ==="
-          docker-compose --env-file ../.env -f docker-compose.prod.yml logs db
+          docker-compose -f docker-compose.prod.yml logs db
 
       - name: Cleanup
         if: always()
         run: |
           export $(cat .env | xargs)
           cd Docker
-          docker-compose --env-file ../.env -f docker-compose.prod.yml down -v
+          docker-compose -f docker-compose.prod.yml down -v
 
   push_to_mirror:
     name: Pushing to good repository
