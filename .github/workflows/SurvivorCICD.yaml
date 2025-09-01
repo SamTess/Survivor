@@ -42,6 +42,118 @@ jobs:
             echo "should_cancel=false" >> "$GITHUB_OUTPUT"
           fi
 
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: [cancel-if-mirror]
+    if: needs.cancel-if-mirror.outputs.should_cancel == 'false'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check TypeScript types
+        run: npx tsc --noEmit
+
+  docker-integration-test:
+    name: Docker Integration Test
+    runs-on: ubuntu-latest
+    needs: [cancel-if-mirror, lint]
+    if: needs.cancel-if-mirror.outputs.should_cancel == 'false'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create .env file for testing
+        run: |
+          cat > .env << EOF
+          DB_HOST=${{ secrets.DB_HOST }}
+          DB_PORT=${{ secrets.DB_PORT }}
+          DB_NAME=${{ secrets.DB_NAME }}
+          DB_USER=${{ secrets.DB_USER }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV=${{ secrets.NODE_ENV }}
+          EOF
+
+      - name: Build and start production containers
+        run: |
+          cd Docker
+          docker-compose -f docker-compose.prod.yml up --build -d
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for database to be ready..."
+          timeout 60 bash -c 'until docker-compose -f Docker/docker-compose.prod.yml exec -T db pg_isready -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }}; do sleep 2; done'
+
+          echo "Waiting for web application to be ready..."
+          timeout 60 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 2; done'      - name: Test database connection and schema
+
+          echo "Testing database connection and checking tables..."
+          docker-compose -f Docker/docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c "
+            SELECT COUNT(*) as table_count
+            FROM information_schema.tables
+            WHERE table_schema = 'public';
+          " | grep -q "13"
+
+          echo "Testing specific table exists..."
+          docker-compose -f Docker/docker-compose.prod.yml exec -T db psql -U ${{ secrets.DB_USER }} -d ${{ secrets.DB_NAME }} -c "
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND table_name = 's_user';
+          " | grep -q "s_user"
+
+      - name: Test web application health
+        run: |
+          echo "Testing web application response..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)
+          if [ "$response" != "200" ]; then
+            echo "Web application health check failed. HTTP status: $response"
+            exit 1
+          fi
+          echo "Web application is responding correctly (HTTP 200)"
+
+      - name: Test database connection from web app
+        run: |
+          echo "Testing if web app can connect to database..."
+          # Check web app logs for any database connection errors
+          logs=$(docker-compose -f Docker/docker-compose.prod.yml logs web 2>&1)
+          if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
+            echo "Database connection errors found in web app logs:"
+            echo "$logs"
+            exit 1
+          fi
+          echo "No database connection errors found in web app logs"
+
+      - name: Show service status
+        if: always()
+        run: |
+          echo "=== Container Status ==="
+          docker-compose -f Docker/docker-compose.prod.yml ps
+          echo ""
+          echo "=== Web App Logs ==="
+          docker-compose -f Docker/docker-compose.prod.yml logs web
+          echo ""
+          echo "=== Database Logs ==="
+          docker-compose -f Docker/docker-compose.prod.yml logs db
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd Docker
+          docker-compose -f docker-compose.prod.yml down -v
+
   push_to_mirror:
     name: Pushing to good repository
     runs-on: ubuntu-latest
