@@ -1,0 +1,150 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model S_STARTUP {
+  id           Int      @id @default(autoincrement())
+  name         String
+  legal_status String
+  address      String
+  phone        String
+  sector       String
+  maturity     String
+  email        String
+  description  String
+  image_data   Bytes?
+  created_at   DateTime @default(now())
+  details      S_STARTUP_DETAIL[]
+  founders     S_FOUNDER[]
+  news         S_NEWS[]
+}
+
+model S_STARTUP_DETAIL {
+  id              Int      @id @default(autoincrement())
+  startup_id      Int
+  description     String?
+  website_url     String?
+  social_media_url String?
+  project_status  String?
+  needs           String?
+  startup         S_STARTUP @relation(fields: [startup_id], references: [id], onDelete: Cascade)
+}
+
+model S_USER {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String
+  password_hash String
+  address       String
+  phone         String?
+  legal_status  String?
+  description   String?
+  image_data    Bytes?
+  created_at    DateTime @default(now())
+  role          String
+  founders      S_FOUNDER[]
+  investors     S_INVESTOR[]
+  partners      S_PARTNER[]
+  permissions   S_PERMISSION[]
+  messages      S_MESSAGE[] @relation("SenderMessages")
+  conversation_users S_CONVERSATION_USER[]
+}
+
+model S_FOUNDER {
+  id         Int      @id @default(autoincrement())
+  startup_id Int
+  user_id    Int
+  startup    S_STARTUP @relation(fields: [startup_id], references: [id], onDelete: Cascade)
+  user       S_USER    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model S_INVESTOR {
+  id               Int      @id @default(autoincrement())
+  investor_type    String?
+  investment_focus String?
+  user_id          Int
+  user             S_USER @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model S_PARTNER {
+  id               Int      @id @default(autoincrement())
+  partnership_type String?
+  user_id          Int
+  user             S_USER @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model S_NEWS {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  image_data  Bytes?
+  startup_id  Int
+  news_date   DateTime?
+  location    String?
+  category    String?
+  created_at  DateTime @default(now())
+  startup     S_STARTUP @relation(fields: [startup_id], references: [id], onDelete: Cascade)
+}
+
+model S_EVENT {
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?
+  image_data     Bytes?
+  dates          DateTime?
+  location       String?
+  event_type     String?
+  target_audience String?
+  created_at     DateTime @default(now())
+}
+
+model S_ROLES_REF {
+  id        Int      @id @default(autoincrement())
+  role_name String   @unique
+  description String?
+}
+
+model S_PERMISSION {
+  id         Int      @id @default(autoincrement())
+  name       String
+  description String?
+  can_create Boolean  @default(false)
+  can_read   Boolean  @default(false)
+  can_update Boolean  @default(false)
+  can_delete Boolean  @default(false)
+  created_at DateTime @default(now())
+  user_id    Int
+  user       S_USER @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model S_CONVERSATION {
+  id         Int      @id @default(autoincrement())
+  name       String?
+  created_at DateTime @default(now())
+  users      S_CONVERSATION_USER[]
+  messages   S_MESSAGE[]
+}
+
+model S_CONVERSATION_USER {
+  conversation_id Int
+  user_id        Int
+  conversation   S_CONVERSATION @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  user           S_USER         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([conversation_id, user_id])
+}
+
+model S_MESSAGE {
+  id              Int      @id @default(autoincrement())
+  conversation_id Int
+  sender_id       Int
+  content         String
+  sent_at         DateTime @default(now())
+  conversation    S_CONVERSATION @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  sender          S_USER         @relation("SenderMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+}
