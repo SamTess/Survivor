@@ -10,7 +10,8 @@ export async function GET(
     const user = await userService.getUserById(id);
     if (!user) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return NextResponse.json(user);
-  } catch (e: any) {
-    return NextResponse.json({ error: e.message ?? "Error" }, { status: 400 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Error";
+    return NextResponse.json({ error: message }, { status: 400 });
   }
 }
