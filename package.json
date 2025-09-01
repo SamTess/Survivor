@@ -7,9 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "migrate:dev": "cp .env.development .env && npx prisma migrate dev",
-    "migrate:stage": "cp .env.staging .env && npx prisma migrate dev",
-    "migrate:prod": "cp .env.production .env && npx prisma migrate dev"
+    "migrate:prod": "cp .env.production .env && npx prisma migrate deploy"
  },
   "dependencies": {
     "@prisma/client": "^6.15.0",
