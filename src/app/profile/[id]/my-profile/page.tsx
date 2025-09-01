@@ -2,7 +2,7 @@
 type Props = { params: { id: string } };
 
 export default async function UserPage({ params }: Props) {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${params.id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/client/${params.id}`, {
     cache: "no-store"
   });
 
