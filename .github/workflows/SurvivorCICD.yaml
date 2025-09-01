@@ -109,7 +109,10 @@ jobs:
       - name: Build and start production containers
         run: |
           cd Docker
+          echo "Starting production containers..."
           docker-compose -f docker-compose.prod.yml up --build -d
+          echo "Containers started, checking status..."
+          docker-compose -f docker-compose.prod.yml ps
 
       - name: Wait for services to be ready
         run: |
@@ -117,10 +120,16 @@ jobs:
           # Load environment variables from .env file
           export $(cat .env | xargs)
           cd Docker
-          timeout 60 bash -c 'until docker-compose -f docker-compose.prod.yml exec -T db pg_isready -U ${DB_USER} -d ${DB_NAME}; do sleep 2; done'
 
-          echo "Waiting for web application to be ready..."
-          timeout 60 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 2; done'
+          # Wait for database to be ready (timeout after 2 minutes)
+          echo "Checking database connectivity..."
+          timeout 30 bash -c 'until docker-compose -f docker-compose.prod.yml exec -T db pg_isready -h $DB_HOST -p $DB_PORT; do echo "Database not ready, waiting..."; sleep 3; done'
+          echo "Database is ready!"
+
+          # Wait for web application to be ready (timeout after 2 minutes)
+          echo "Checking web application..."
+          timeout 30 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do echo "Web app not ready, waiting..."; sleep 3; done'
+          echo "Web application is ready!"
 
       - name: Test database connection and schema
         run: |
@@ -128,14 +137,14 @@ jobs:
           # Load environment variables from .env file
           export $(cat .env | xargs)
           cd Docker
-          docker-compose -f docker-compose.prod.yml exec -T db psql -U ${DB_USER} -d ${DB_NAME} -c "
+          docker-compose -f docker-compose.prod.yml exec -T db psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "
             SELECT COUNT(*) as table_count
             FROM information_schema.tables
             WHERE table_schema = 'public';
           " | grep -q "13"
 
           echo "Testing specific table exists..."
-          docker-compose -f docker-compose.prod.yml exec -T db psql -U ${DB_USER} -d ${DB_NAME} -c "
+          docker-compose -f docker-compose.prod.yml exec -T db psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "
             SELECT table_name
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 's_user';
