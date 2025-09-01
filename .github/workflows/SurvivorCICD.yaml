@@ -246,11 +246,14 @@ jobs:
           fi
 
           echo "Testing specific table exists..."
-          docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
-            SELECT table_name
+          # Vérification insensible à la casse (Prisma crée la table "S_USER")
+          docker-compose -f docker-compose.prod.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 1
             FROM information_schema.tables
-            WHERE table_schema = 'public' AND table_name = 's_user';
-          " | grep -q "s_user"
+            WHERE table_schema = 'public' AND lower(table_name) = 's_user'
+            LIMIT 1;
+          " | grep -q "1"
+          echo "Table s_user trouvée"
 
       - name: Test web application health
         run: |
