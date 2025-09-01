@@ -110,25 +110,40 @@ jobs:
         run: |
           cd Docker
           echo "Starting production containers..."
-          docker-compose -f docker-compose.prod.yml up --build -d
+          docker-compose --env-file ../.env -f docker-compose.prod.yml up --build -d
           echo "Containers started, checking status..."
-          docker-compose -f docker-compose.prod.yml ps
+          docker-compose --env-file ../.env -f docker-compose.prod.yml ps
 
       - name: Wait for services to be ready
         run: |
-          echo "Waiting for database to be ready..."
-          # Load environment variables from .env file
+          echo "Waiting for database container to be running..."
+          # Load environment variables from .env file (created at repo root)
           export $(cat .env | xargs)
           cd Docker
 
-          # Wait for database to be ready (timeout after 2 minutes)
-          echo "Checking database connectivity..."
-          timeout 30 bash -c 'until docker-compose -f docker-compose.prod.yml exec -T db pg_isready -h $DB_HOST -p $DB_PORT; do echo "Database not ready, waiting..."; sleep 3; done'
-          echo "Database is ready!"
+          timeout 120 bash -c '
+            until [ "$(docker-compose --env-file ../.env -f docker-compose.prod.yml ps -q db)" ]; do
+              echo "db container not created yet, waiting..."
+              sleep 2
+            done
+            CID=$(docker-compose --env-file ../.env -f docker-compose.prod.yml ps -q db)
+            until [ "$(docker inspect -f \"{{.State.Running}}\" $CID)" = "true" ]; do
+              echo "db container present but not running yet..."
+              sleep 2
+            done
+          '
+          echo "db container is running; checking PostgreSQL readiness inside container..."
 
-          # Wait for web application to be ready (timeout after 2 minutes)
-          echo "Checking web application..."
-          timeout 30 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do echo "Web app not ready, waiting..."; sleep 3; done'
+          timeout 120 bash -c '
+            until docker-compose --env-file ../.env -f docker-compose.prod.yml exec -T db sh -c "pg_isready -q"; do
+              echo "Postgres not ready yet, waiting..."
+              sleep 2
+            done
+          '
+          echo "Postgres reports it is ready"
+
+          echo "Waiting for web application to respond on http://localhost:3000 ..."
+          timeout 120 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do echo "Web app not ready, waiting..."; sleep 2; done'
           echo "Web application is ready!"
 
       - name: Test database connection and schema
@@ -137,14 +152,14 @@ jobs:
           # Load environment variables from .env file
           export $(cat .env | xargs)
           cd Docker
-          docker-compose -f docker-compose.prod.yml exec -T db psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "
+          docker-compose --env-file ../.env -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT COUNT(*) as table_count
             FROM information_schema.tables
             WHERE table_schema = 'public';
           " | grep -q "13"
 
           echo "Testing specific table exists..."
-          docker-compose -f docker-compose.prod.yml exec -T db psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "
+          docker-compose --env-file ../.env -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT table_name
             FROM information_schema.tables
             WHERE table_schema = 'public' AND table_name = 's_user';
@@ -167,7 +182,7 @@ jobs:
           export $(cat .env | xargs)
           cd Docker
           # Check web app logs for any database connection errors
-          logs=$(docker-compose -f docker-compose.prod.yml logs web 2>&1)
+          logs=$(docker-compose --env-file ../.env -f docker-compose.prod.yml logs web 2>&1)
           if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
             echo "Database connection errors found in web app logs:"
             echo "$logs"
@@ -181,20 +196,20 @@ jobs:
           echo "=== Container Status ==="
           export $(cat .env | xargs)
           cd Docker
-          docker-compose -f docker-compose.prod.yml ps
+          docker-compose --env-file ../.env -f docker-compose.prod.yml ps
           echo ""
           echo "=== Web App Logs ==="
-          docker-compose -f docker-compose.prod.yml logs web
+          docker-compose --env-file ../.env -f docker-compose.prod.yml logs web
           echo ""
           echo "=== Database Logs ==="
-          docker-compose -f docker-compose.prod.yml logs db
+          docker-compose --env-file ../.env -f docker-compose.prod.yml logs db
 
       - name: Cleanup
         if: always()
         run: |
           export $(cat .env | xargs)
           cd Docker
-          docker-compose -f docker-compose.prod.yml down -v
+          docker-compose --env-file ../.env -f docker-compose.prod.yml down -v
 
   push_to_mirror:
     name: Pushing to good repository
