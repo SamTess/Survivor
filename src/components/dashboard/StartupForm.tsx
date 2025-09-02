@@ -65,7 +65,6 @@ export default function StartupForm() {
     setTimeout(() => setSaved(false), 2000);
     // Later: call API to persist
     // await fetch('/api/startup', { method: 'PUT', body: JSON.stringify(form) })
-  // After a successful save, reset initial snapshot and dirty state
   initialFormRef.current = { ...form };
   setDirty(false);
   }

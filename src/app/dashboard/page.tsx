@@ -27,7 +27,6 @@ export default function Dashboard() {
       setActive(Math.max(0, Math.min(2, idx)));
     };
     el.addEventListener("scroll", onScroll, { passive: true });
-    // Update on resize so index aligns after container changes width
     const ro = new ResizeObserver(() => onScroll());
     ro.observe(el);
     return () => {
