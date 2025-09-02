@@ -1,40 +1,46 @@
-import React, {useState, useEffect} from 'react'
-import { FaSun, FaMoon } from 'react-icons/fa'
+"use client"
 
+import React, { useState, useEffect } from 'react';
+import { FaSun, FaMoon } from 'react-icons/fa';
+
+// Hydration-safe dark mode toggle: defer reading localStorage until after mount.
 const DarkModeToggle = () => {
+  const [darkMode, setDarkMode] = useState<boolean>(false);
+  const [mounted, setMounted] = useState(false);
 
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const localDarkMode = localStorage.getItem('darkMode')
-      return localDarkMode === 'true'
-    }
-    return false
-  })
-
-  const [isClient, setIsClient] = useState(false);
-
+  // On mount: read preference & apply class
   useEffect(() => {
-    setIsClient(true);
-    if (typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem('darkMode', darkMode.toString());
+    setMounted(true);
+    try {
+      const stored = window.localStorage.getItem('darkMode');
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initial = stored !== null ? stored === 'true' : prefersDark;
+      setDarkMode(initial);
+      document.documentElement.classList.toggle('dark', initial);
+    } catch (_) {
+      // ignore
     }
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [darkMode])
+  }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode)
-  }
+  // Persist & update class when changed (after mount only)
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      window.localStorage.setItem('darkMode', darkMode.toString());
+    } catch (_) {/* ignore */}
+    document.documentElement.classList.toggle('dark', darkMode);
+  }, [darkMode, mounted]);
+
+  const toggleDarkMode = () => setDarkMode(d => !d);
+
+  // Avoid SSR mismatch: render a placeholder icon until mounted
+  const icon = !mounted ? null : (darkMode ? <FaSun className="text-xl" /> : <FaMoon className="text-md" />);
 
   return (
-    <button onClick={toggleDarkMode} className="rounded-full smooth-hover">
-      {isClient && (darkMode ? <FaSun className="text-xl" />
-                : <FaMoon className="text-md" />)}
+    <button type="button" aria-label="Toggle dark mode" onClick={toggleDarkMode} className="rounded-full smooth-hover">
+      {icon}
     </button>
-  )
-}
+  );
+};
 
-export default DarkModeToggle
+export default DarkModeToggle;

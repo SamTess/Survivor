@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AdminSidebar from "@/components/navigation/AdminSidebar";
-import MainNavbar from "@/components/navigation/MainNavbar";
+import { Navigation } from "@/components/navigation";
+//import MainNavbar from "@/components/ui/navigation/MainNavbar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full overflow-hidden`}
       >
-        <MainNavbar />
+        <Navigation />
         <AdminSidebar />
         {children}
       </body>
