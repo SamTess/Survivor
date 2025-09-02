@@ -216,7 +216,6 @@ jobs:
           cd Docker
           export $(cat .env | xargs)
           set -e
-          # Vérifie si des migrations existent dans le repo (répertoire monté dans le conteneur web)
           HAS_MIGRATIONS=$(docker-compose -f docker-compose.prod.yml exec -T web sh -c 'ls -1 prisma/migrations 2>/dev/null | grep -v "^$" || true' | wc -l | tr -d '[:space:]')
           if [ "$HAS_MIGRATIONS" -gt 0 ]; then
             echo "Migrations détectées ($HAS_MIGRATIONS dossiers) -> prisma migrate deploy"
@@ -233,7 +232,6 @@ jobs:
           echo "Testing database connection and checking tables..."
           cd Docker
           export $(cat .env | xargs)
-          # Nombre attendu de modèles Prisma (extrait du schema) pour comparer
           EXPECTED=$(docker-compose -f docker-compose.prod.yml exec -T web sh -c "grep -E '^model ' prisma/schema.prisma | wc -l" | tr -d '[:space:]')
           echo "Expected Prisma models: $EXPECTED"
           COUNT=$(docker-compose -f docker-compose.prod.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" | tr -d '[:space:]')
@@ -246,7 +244,6 @@ jobs:
           fi
 
           echo "Testing specific table exists..."
-          # Vérification insensible à la casse (Prisma crée la table "S_USER")
           docker-compose -f docker-compose.prod.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT 1
             FROM information_schema.tables
@@ -268,10 +265,8 @@ jobs:
       - name: Test database connection from web app
         run: |
           echo "Testing if web app can connect to database..."
-          # Load environment variables from .env file
           cd Docker
           export $(cat .env | xargs)
-          # Check web app logs for any database connection errors
           logs=$(docker-compose -f docker-compose.prod.yml logs web 2>&1)
           if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
             echo "Database connection errors found in web app logs:"

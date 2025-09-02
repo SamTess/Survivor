@@ -8,7 +8,7 @@ This directory contains Docker configuration files for the Survivor Next.js appl
 - `Dockerfile.web` - Production Dockerfile for Next.js app
 - `docker-compose.yml` - Development environment with hot reloading
 - `docker-compose.prod.yml` - Production environment
-- `../Database/` - PostgreSQL initialization scripts (mounted from project root)
+- `../db/` - PostgreSQL initialization scripts (mounted from project root)
 
 ## Quick Start
 
