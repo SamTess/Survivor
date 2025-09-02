@@ -343,4 +343,5 @@ model S_DAILY_ACQUISITION_METRICS {
 
   @@index([day])
   @@index([utmSource, utmCampaign, day])
+  @@unique([day, utmSource, utmMedium, utmCampaign])
 }
