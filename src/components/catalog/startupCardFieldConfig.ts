@@ -1,13 +1,13 @@
-import type { StartupCard } from '@/mocks/getStartupCatalogData'
+import type { Startup } from '@/domain/entities/Startup'
 import { MapPin, Phone, Mail, Building2, Calendar } from 'lucide-react'
 
-export type StartupCardFieldKey = keyof StartupCard
+export type StartupCardFieldKey = keyof Startup
 
 export interface StartupCardFieldDescriptor<K extends StartupCardFieldKey = StartupCardFieldKey> {
   key: K
   label: string
   icon?: React.ComponentType<{ className?: string }>
-  format?: (value: StartupCard[K], full: StartupCard) => string
+  format?: (value: Startup[K], full: Startup) => string
 }
 
 // Order determines rendering order beneath description.

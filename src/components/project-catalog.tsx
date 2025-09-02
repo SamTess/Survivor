@@ -2,7 +2,7 @@
 
 // Project Catalog component now focused on composition only.
 import { useStartupCatalog } from "@/hooks/useStartupCatalog"
-import { getStartupCatalogData } from "@/mocks/getStartupCatalogData"
+import { startups } from "@/data/startups"
 import { StartupFilters } from "@/components/catalog/StartupFilters"
 import { StartupCardItem } from "@/components/catalog/StartupCardItem"
 import { Button } from "@/components/ui/button"
@@ -13,7 +13,7 @@ const sortOptions = [
   { value: "created-asc", label: "Oldest" },
 ]
 
-const initialData = getStartupCatalogData()
+const initialData = startups
 
 export function ProjectCatalog() {
   const catalog = useStartupCatalog(initialData)
@@ -34,7 +34,7 @@ export function ProjectCatalog() {
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.map((s, idx) => <StartupCardItem key={s.id} s={s} index={idx} />)}
+  {filtered.map(s => <StartupCardItem key={s.id} s={s} />)}
       </div>
 
       {filtered.length === 0 && (

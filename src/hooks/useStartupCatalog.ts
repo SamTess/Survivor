@@ -2,11 +2,11 @@
 
 // Hook encapsulating filtering, sorting & derived option lists for startup catalog
 import { useMemo, useState } from "react"
-import type { StartupCard } from "@/mocks/getStartupCatalogData"
+import type { Startup } from "@/domain/entities/Startup"
 
 export type SortOptionValue = "name" | "created-desc" | "created-asc"
 
-export function useStartupCatalog(initial: StartupCard[]) {
+export function useStartupCatalog(initial: Startup[]) {
   const [search, setSearch] = useState("")
   const [sector, setSector] = useState("All")
   const [maturity, setMaturity] = useState("All")
