@@ -127,7 +127,7 @@ export default function TiltedCard({
         />
 
         {displayOverlayContent && overlayContent && (
-          <motion.div 
+          <motion.div
             className="absolute inset-0 z-[2] will-change-transform [transform:translateZ(30px)] rounded-[15px] overflow-hidden"
             style={{
               width: imageWidth,

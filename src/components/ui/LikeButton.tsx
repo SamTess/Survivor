@@ -46,7 +46,7 @@ export default function LikeButton({
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click when clicking like button
+    e.stopPropagation();
     if (!userId) {
       // TODO: Show login modal or redirect to login
       console.log('User must be logged in to like');
@@ -93,8 +93,8 @@ export default function LikeButton({
       disabled={isLoading}
       className={`
         flex items-center gap-2 rounded-full border transition-all duration-200
-        ${isLiked 
-          ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100' 
+        ${isLiked
+          ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
           : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
         }
         ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}

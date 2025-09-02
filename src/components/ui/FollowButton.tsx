@@ -92,8 +92,8 @@ export default function FollowButton({
       disabled={isLoading}
       className={`
         flex items-center gap-2 rounded-full border transition-all duration-200
-        ${isFollowing 
-          ? 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100' 
+        ${isFollowing
+          ? 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100'
           : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
         }
         ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}

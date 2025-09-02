@@ -92,8 +92,8 @@ export default function BookmarkButton({
       disabled={isLoading}
       className={`
         flex items-center gap-2 rounded-full border transition-all duration-200
-        ${isBookmarked 
-          ? 'bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100' 
+        ${isBookmarked
+          ? 'bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100'
           : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
         }
         ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}

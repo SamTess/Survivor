@@ -23,7 +23,6 @@ interface Startup {
 }
 
 const generateProjectImage = (sector: string, id: number) => {
-  // Generate themed images based on sector
   const sectorImages: { [key: string]: string } = {
     'Software Technology': `https://picsum.photos/400/300?random=${id}&tech`,
     'Clean Energy': `https://picsum.photos/400/300?random=${id}&green`,
@@ -51,8 +50,7 @@ export default function ProjectsPage() {
       try {
         const response = await fetch('/api/startups');
         const data = await response.json();
-        
-        // Ensure data is an array
+
         if (Array.isArray(data)) {
           setStartups(data);
         } else {
