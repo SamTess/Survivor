@@ -4,13 +4,13 @@ import { User } from "../../../domain/entities/User";
 
 export class UserRepositoryPrisma implements UserRepository {
   async getById(id: number): Promise<User | null> {
-    const row = await prisma.user.findUnique({ where: { id } });
+    const row = await prisma.s_USER.findUnique({ where: { id } });
     if (!row) return null;
     return { id: row.id, name: row.name, email: row.email };
   }
 
   async save(user: User): Promise<void> {
-    await prisma.user.update({
+    await prisma.s_USER.update({
       where: { id: user.id },
       data: { name: user.name, email: user.email },
     });
