@@ -11,10 +11,10 @@ export class InteractionEventRepositoryPrisma implements InteractionEventReposit
       data: {
         userId: data.userId ?? null,
         sessionId: data.sessionId ?? null,
-  eventType: data.eventType as unknown as string,
-  contentType: data.contentType as unknown as string,
+        eventType: data.eventType as unknown as typeof data.eventType,
+        contentType: data.contentType as unknown as typeof data.contentType,
         contentId: data.contentId ?? null,
-        metadata: data.metadata ?? null,
+        metadata: data.metadata == null ? undefined : (data.metadata as unknown as object),
         ipHash: hashIp(data.ip) ?? null,
         userAgent: data.userAgent ?? null,
         referrerHost: data.referrerHost ?? null,
