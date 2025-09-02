@@ -123,6 +123,7 @@
   }
 }
 
+
 html {
   height: 100%;
   overflow-x: hidden;
@@ -138,6 +139,7 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Hide scrollbar cross-browser when using overflow utilities */
 .scrollbar-none {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
