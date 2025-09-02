@@ -205,6 +205,13 @@ export class ExternalSyncService {
   debugLog("eventImage", "Saved", { id, bytes: data.byteLength });
   }
 
+  async syncStartupImage(id: number): Promise<void> {
+  debugLog("startupImage", "Fetch", { id });
+  const data = await this.api.getBinary(`/startups/${id}/image`);
+    await this.startups.saveImage(id, data);
+  debugLog("startupImage", "Saved", { id, bytes: data.byteLength });
+  }
+
   async syncUsers(limit = 100): Promise<UserApiResponse[]> {
     const collected: UserApiResponse[] = [];
     debugLog("users", "Sync start", { limit });

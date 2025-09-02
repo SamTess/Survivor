@@ -54,7 +54,7 @@ if (process.env.SYNC_AUTO !== "0") {
 	const g = globalThis as unknown as { __syncSchedulerStarted?: boolean };
 	if (!g.__syncSchedulerStarted) {
 		const intervalMs = parseInt(process.env.SYNC_INTERVAL_MS || "3600000", 10);
-		const scheduler = ensureExternalSyncSchedulerInstance(externalSyncService, intervalMs);
+		const scheduler = ensureExternalSyncSchedulerInstance(externalSyncService, intervalMs, { details: true, images: true });
 		scheduler.start();
 		g.__syncSchedulerStarted = true;
 	}
