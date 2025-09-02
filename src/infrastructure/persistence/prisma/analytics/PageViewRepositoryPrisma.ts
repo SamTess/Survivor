@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { PageViewRepository } from "../../repositories/analytics/PageViewRepository";
-import { PageView, RecordPageViewInput } from "../../../domain/entities/analytics/PageView";
+import prisma from "./../client";
+import { PageViewRepository } from "../../../repositories/analytics/PageViewRepository";
+import { PageView, RecordPageViewInput } from "../../../../domain/entities/analytics/PageView";
 
 export class PageViewRepositoryPrisma implements PageViewRepository {
   async record(data: RecordPageViewInput): Promise<PageView> {

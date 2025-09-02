@@ -1,20 +1,18 @@
-import prisma from "./client";
-import { SessionRepository } from "../../repositories/analytics/SessionRepository";
-import { CreateSessionInput, Session } from "../../../domain/entities/analytics/Session";
-// Prisma types not required explicitly; domain enum values map to Prisma enums
-import crypto from "crypto";
-
-const hashIp = (ip?: string | null) => (ip ? crypto.createHash("sha256").update(ip).digest("hex") : undefined);
+import prisma from "../client";
+import { SessionRepository } from "../../../repositories/analytics/SessionRepository";
+import { CreateSessionInput, Session } from "../../../../domain/entities/analytics/Session";
+import { hashIp } from "../../../security/hashIp";
 
 export class SessionRepositoryPrisma implements SessionRepository {
   async create(data: CreateSessionInput): Promise<Session> {
-    const row = await prisma.s_SESSION.create({
+  const ipHash = await hashIp(data.ip);
+  const row = await prisma.s_SESSION.create({
       data: {
         userId: data.userId ?? null,
         contentType: data.contentType as unknown as typeof data.contentType,
         contentId: data.contentId ?? null,
         metadata: data.metadata == null ? undefined : (data.metadata as unknown as object),
-        ipHash: hashIp(data.ip) ?? null,
+        ipHash: ipHash ?? null,
         userAgent: data.userAgent ?? null,
         referrerHost: data.referrerHost ?? null,
         utmSource: data.utmSource ?? null,

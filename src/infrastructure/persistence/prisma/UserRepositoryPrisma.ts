@@ -1,5 +1,5 @@
 import prisma from "./client";
-import { UserRepository } from "../../repositories/UserRepository";
+import { UserRepository } from "../../repositories/sync/UserRepository";
 import { User } from "../../../domain/entities/User";
 
 export class UserRepositoryPrisma implements UserRepository {
