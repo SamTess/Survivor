@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:legacy": "next build",
     "start": "next start",
     "lint": "eslint",
     "migrate:dev": "npx prisma migrate dev",
