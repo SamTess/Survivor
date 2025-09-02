@@ -70,7 +70,7 @@ export function Navigation() {
               size="sm"
               className="group rounded-full w-10 h-10 p-0 border border-border hover:border-white hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
-              <Search className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              <Search className="h-4 w-4 text-white group-hover:text-primary transition-colors" />
             </Button>
             <Button
               asChild
