@@ -1,8 +1,9 @@
-export default function AdminNewsManagementPage() {
-	return (
-		<div>
-			<h1>Admin News Management</h1>
-			<p>Admin News Management page content goes here.</p>
-		</div>
-	);
+"use client"
+
+import React from 'react'
+
+export default function NewsManagementPage() {
+    return (
+        <div className='flex flex-1 justify-center items-center'>News Management</div>
+    )
 }
