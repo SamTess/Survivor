@@ -7,7 +7,7 @@ const zeroIfUndefined = (n?: number) => n ?? 0;
 
 export class DailyContentMetricsRepositoryPrisma implements DailyContentMetricsRepository {
   async increment(day: Date, contentType: DomainContentType, contentId: number, inc: IncrementContentMetrics): Promise<void> {
-  const prismaContentType = contentType as unknown as typeof contentType; // domain enum string value acceptable for Prisma
+  const prismaContentType = contentType as unknown as typeof contentType;
     await prisma.s_DAILY_CONTENT_METRICS.upsert({
       where: { day_contentType_contentId: { day, contentType: prismaContentType, contentId } },
       update: {
