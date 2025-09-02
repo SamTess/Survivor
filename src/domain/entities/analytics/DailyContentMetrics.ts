@@ -2,7 +2,7 @@ import { ContentType } from "../../enums/Analytics";
 
 export type DailyContentMetrics = {
   id: string;
-  day: Date; // truncated to UTC midnight
+  day: Date;
   contentType: ContentType;
   contentId: number;
   views: number;

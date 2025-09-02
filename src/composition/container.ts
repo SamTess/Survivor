@@ -9,8 +9,6 @@ import { AnalyticsService } from "../application/services/analytics/AnalyticsSer
 
 const userRepo = new UserRepositoryPrisma();
 export const userService = new UserService(userRepo);
-
-// Analytics wiring
 const sessionRepo = new SessionRepositoryPrisma();
 const interactionRepo = new InteractionEventRepositoryPrisma();
 const pageViewRepo = new PageViewRepositoryPrisma();

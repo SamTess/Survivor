@@ -1,6 +1,6 @@
 export type DailyAcquisitionMetrics = {
   id: string;
-  day: Date; // truncated to UTC midnight
+  day: Date;
   utmSource?: string | null;
   utmMedium?: string | null;
   utmCampaign?: string | null;
