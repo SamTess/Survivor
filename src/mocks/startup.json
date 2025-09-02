@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "name": "Acme Innovators",
+  "email": "contact@acme.io",
+  "legal_status": "SAS",
+  "address": "123 Rue Startup, Paris",
+  "phone": "+33 1 23 45 67 89",
+  "website_url": "https://acme.io",
+  "social_media_url": "https://twitter.com/acme",
+  "project_status": "Seed",
+  "needs": "Hiring, Marketing, Partnerships",
+  "sector": "AI / SaaS",
+  "maturity": "MVP",
+  "founders": ["Jane Doe", "John Smith"],
+  "created_at": "2024-01-10T09:00:00.000Z",
+  "updated_at": "2025-08-15T10:30:00.000Z"
+}
