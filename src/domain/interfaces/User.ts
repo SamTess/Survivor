@@ -9,3 +9,14 @@ export interface User {
     created_at: Date;
     updated_at: Date;
 }
+
+export interface UserApiResponse {
+    id: number;
+    email: string;
+    name: string;
+    role: string;
+    founder_id?: number;
+    investor_id?: number;
+    created_at: string;
+    updated_at: string;
+}
