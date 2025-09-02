@@ -173,3 +173,7 @@ body {
 .animate-card { animation: card-in .35s ease-out both; }
 .animate-draw { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw-line 1s ease-out forwards; }
 .animate-bar { transform-origin: bottom; animation: bar-raise 1s ease-out both; }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
