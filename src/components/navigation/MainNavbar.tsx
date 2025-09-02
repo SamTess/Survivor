@@ -5,6 +5,45 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { FaSearch, FaUser } from 'react-icons/fa';
 
+const NAV_LINKS = [
+  { href: '/home', label: 'Home' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/news', label: 'News' },
+  { href: '/events', label: 'Events' },
+  { href: '/dashboard', label: 'Dashboard' },
+];
+
+type NavLinksProps = {
+  variant: 'desktop' | 'mobile';
+  onItemClick?: () => void;
+};
+
+function NavLinks({ variant, onItemClick }: NavLinksProps) {
+  const pathname = usePathname();
+  const isMobile = variant === 'mobile';
+  const baseClasses =
+    'text-black hover:text-indigo-600 text-sm font-normal tracking-wide transition-colors duration-200';
+  const itemClasses = isMobile ? `${baseClasses} block` : baseClasses;
+
+  return (
+    <>
+      {NAV_LINKS.map(({ href, label }) => {
+        const isActive = pathname === href;
+        return (
+          <Link
+            key={href}
+            href={href}
+            onClick={onItemClick}
+            className={`${itemClasses} ${isActive ? 'text-indigo-600' : ''}`}
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
 export default function MainNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -20,8 +59,8 @@ export default function MainNavbar() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex justify-between items-center h-14">
           {/* Left side - Site name */}
-          <div className="flex-shrink-0">
-            <Link href="/" className="text-2xl font-light tracking-wide text-black hover:text-purple-600 transition-colors duration-200">
+          <div className="flex-shrink-0 select-none">
+            <Link href="/" className="text-2xl font-light tracking-wide text-black hover:text-indigo-600 transition-colors duration-200">
               JEB
             </Link>
           </div>
@@ -29,43 +68,20 @@ export default function MainNavbar() {
           {/* Middle - Navigation links */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-12">
-              <Link
-                href="/home"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                Home
-              </Link>
-              <Link
-                href="/projects"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                Projects
-              </Link>
-              <Link
-                href="/news"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                News
-              </Link>
-              <Link
-                href="/events"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                Events
-              </Link>
+              <NavLinks variant="desktop" />
             </div>
           </div>
 
           {/* Right side - Search and Login icons */}
           <div className="flex items-center space-x-2">
             <button
-              className="text-black hover:text-purple-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
+              className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
               aria-label="Search"
             >
               <FaSearch className="h-4 w-4" />
             </button>
             <button
-              className="text-black hover:text-purple-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
+              className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
               aria-label="Login"
             >
               <FaUser className="h-4 w-4" />
@@ -77,7 +93,7 @@ export default function MainNavbar() {
             <button
               type="button"
               onClick={toggleMobileMenu}
-              className="text-black hover:text-purple-600 inline-flex items-center justify-center p-1.5 hover:bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              className="text-black hover:text-indigo-600 inline-flex items-center justify-center p-1.5 hover:bg-gray-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               aria-controls="mobile-menu"
               aria-expanded={isMobileMenuOpen}
             >
@@ -114,34 +130,7 @@ export default function MainNavbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed top-14 left-0 right-0 z-40 bg-white border-b border-gray-100 shadow-lg" id="mobile-menu">
           <div className="px-6 pt-3 pb-4 space-y-2 bg-white">
-            <Link
-              href="/home"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              Home
-            </Link>
-            <Link
-              href="/projects"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              Projects
-            </Link>
-            <Link
-              href="/news"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              News
-            </Link>
-            <Link
-              href="/events"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              Events
-            </Link>
+            <NavLinks variant="mobile" onItemClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
       )}

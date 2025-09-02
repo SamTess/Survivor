@@ -22,7 +22,7 @@ const AdminSidebar = () => {
     return null;
   return (
     <div
-      className={`bg-purple-600 text-white transition-all duration-200 ease-in-out h-screen fixed z-50 select-none ${
+      className={`bg-indigo-600 text-white transition-all duration-200 ease-in-out h-screen fixed z-50 select-none ${
         isExpanded ? 'w-52' : 'w-14'
       }`}
       onMouseEnter={() => setIsExpanded(true)}
@@ -32,7 +32,7 @@ const AdminSidebar = () => {
         <ul>
 
           {adminSidebarItems.map((item, index) => (
-          <Link href={item.redirection} key={index} className={`m-1 px-3 py-5 flex flex-row items-center transition-all ease-in-out duration-50 rounded-md ${pathname === item.redirection ? 'bg-purple-500' : ' hover:bg-purple-400 active:bg-accent-color'}`}>
+          <Link href={item.redirection} key={index} className={`m-1 px-3 py-5 flex flex-row items-center transition-all ease-in-out duration-50 rounded-md ${pathname === item.redirection ? 'bg-indigo-500' : ' hover:bg-indigo-400 active:bg-accent-color'}`}>
                 <item.icon className="m-0.5 text-xl opacity-100 fixed"/>
                 <p className={`fixed font-bold transition-all ease-in-out duration-200 text-sm ${isExpanded ? 'ml-10' : 'ml-0 opacity-0'}`}>{item.text}</p>
           </Link>
