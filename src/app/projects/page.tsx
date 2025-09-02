@@ -10,6 +10,7 @@ interface Startup {
   maturity: string;
   description: string;
   address: string;
+  likesCount: number;
   details: Array<{
     website_url?: string;
     project_status?: string;
@@ -34,7 +35,7 @@ const generateProjectImage = (sector: string, id: number) => {
     'Mobility': `https://picsum.photos/400/300?random=${id}&transport`,
     'default': `https://picsum.photos/400/300?random=${id}`
   };
-  
+
   return sectorImages[sector] || sectorImages['default'];
 };
 
@@ -50,9 +51,17 @@ export default function ProjectsPage() {
       try {
         const response = await fetch('/api/startups');
         const data = await response.json();
-        setStartups(data);
+        
+        // Ensure data is an array
+        if (Array.isArray(data)) {
+          setStartups(data);
+        } else {
+          console.error('API returned non-array data:', data);
+          setStartups([]);
+        }
       } catch (error) {
         console.error('Error fetching startups:', error);
+        setStartups([]);
       } finally {
         setLoading(false);
       }
@@ -61,25 +70,24 @@ export default function ProjectsPage() {
     fetchStartups();
   }, []);
 
-  const filteredStartups = startups.filter(startup => {
+  const filteredStartups = Array.isArray(startups) ? startups.filter((startup: Startup) => {
     const matchesSearch = startup.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          startup.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSector = sectorFilter === 'All' || startup.sector === sectorFilter;
     const matchesStage = stageFilter === 'All' || startup.maturity === stageFilter;
-    
-    return matchesSearch && matchesSector && matchesStage;
-  });
 
-  // Generate project cards from filtered startups
-  const projectCards = filteredStartups.map((startup) => {
+    return matchesSearch && matchesSector && matchesStage;
+  }) : [];
+
+  const projectCards = filteredStartups.map((startup: Startup) => {
     return {
       ...startup,
       image: generateProjectImage(startup.sector, startup.id)
     };
   });
 
-  const uniqueSectors = Array.from(new Set(startups.map(s => s.sector)));
-  const uniqueStages = Array.from(new Set(startups.map(s => s.maturity)));
+  const uniqueSectors = Array.from(new Set(Array.isArray(startups) ? startups.map((s: Startup) => s.sector) : []));
+  const uniqueStages = Array.from(new Set(Array.isArray(startups) ? startups.map((s: Startup) => s.maturity) : []));
 
   if (loading) {
     return (
@@ -118,15 +126,15 @@ export default function ProjectsPage() {
                 <button className="text-sm text-blue-600 hover:text-blue-800">✕ Clear All</button>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Showing {filteredStartups.length} of {startups.length} projects</span>
+              <span className="text-sm text-gray-600">Showing {filteredStartups.length} of {Array.isArray(startups) ? startups.length : 0} projects</span>
               <div className="flex items-center gap-2 ml-4">
                 <span className="text-sm text-gray-500">📊 Name (A-Z)</span>
               </div>
             </div>
           </div>
-          
+
           <div className="mt-4 flex flex-col lg:flex-row gap-4">
             {/* Search */}
             <div className="flex-1">
@@ -138,7 +146,7 @@ export default function ProjectsPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-            
+
             {/* Sector Filter */}
             <div className="min-w-0 flex-shrink-0">
               <select
@@ -152,7 +160,7 @@ export default function ProjectsPage() {
                 ))}
               </select>
             </div>
-            
+
             {/* Stage Filter */}
             <div className="min-w-0 flex-shrink-0">
               <select
@@ -173,9 +181,9 @@ export default function ProjectsPage() {
       {/* Projects Grid */}
       <div className="py-12 px-4">
         {filteredStartups.length > 0 ? (
-          <div 
+          <div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center max-w-6xl mx-auto"
-            style={{ 
+            style={{
               gap: '10px',
               gridAutoRows: 'max-content'
             }}
@@ -194,7 +202,7 @@ export default function ProjectsPage() {
               {loading ? 'Loading...' : 'No projects found matching your filters.'}
             </div>
             {!loading && (
-              <button 
+              <button
                 onClick={() => {
                   setSearchTerm('');
                   setSectorFilter('All');

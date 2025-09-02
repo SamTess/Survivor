@@ -10,14 +10,7 @@ services:
     volumes:
       - ../src:/app/src
       - ../public:/app/public
-      - ../package.json:/app/package.json
-      - ../next.config.ts:/app/next.config.ts
-      - ../tsconfig.json:/app/tsconfig.json
-      - ../tailwind.config.ts:/app/tailwind.config.ts
-      - ../postcss.config.mjs:/app/postcss.config.mjs
-      - ../eslint.config.mjs:/app/eslint.config.mjs
       - ../prisma:/app/prisma
-      - ../scripts:/app/scripts
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}

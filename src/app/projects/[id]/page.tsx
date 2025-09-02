@@ -1,5 +1,10 @@
 import { notFound } from 'next/navigation';
 import prisma from '@/infrastructure/persistence/prisma/client';
+import LikeButton from '@/components/ui/LikeButton';
+import BookmarkButton from '@/components/ui/BookmarkButton';
+import FollowButton from '@/components/ui/FollowButton';
+import PitchDeckButton from '@/components/ui/PitchDeckButton';
+import { ContentType } from '@/domain/enums/Analytics';
 
 interface ProjectPageProps {
   params: {
@@ -8,7 +13,7 @@ interface ProjectPageProps {
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
-  const { id } = params;
+  const { id } = await params;
   const projectId = parseInt(id, 10);
 
   if (isNaN(projectId)) {
@@ -37,7 +42,62 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto pt-20 pb-6 px-4">
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">{project.name}</h1>
+          <div className="flex justify-between items-start mb-4">
+            <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+            <div className="flex gap-2">
+              <LikeButton
+                contentType={ContentType.STARTUP}
+                contentId={project.id}
+                initialLikeCount={project.likesCount || 0}
+                userId={null} // TODO: Get from auth context
+                sessionId={null} // TODO: Get from session context
+                size="large"
+                variant="default"
+              />
+              <BookmarkButton
+                contentType={ContentType.STARTUP}
+                contentId={project.id}
+                initialBookmarkCount={project.bookmarksCount || 0}
+                userId={null} // TODO: Get from auth context
+                sessionId={null} // TODO: Get from session context
+                size="large"
+                variant="default"
+              />
+              <FollowButton
+                contentType={ContentType.STARTUP}
+                contentId={project.id}
+                initialFollowerCount={project.followersCount || 0}
+                userId={null} // TODO: Get from auth context
+                sessionId={null} // TODO: Get from session context
+                size="large"
+                variant="default"
+              />
+            </div>
+          </div>
+
+          {/* Pitch Deck Button */}
+          <div className="mb-6 flex justify-center">
+            <PitchDeckButton
+              project={{
+                id: project.id,
+                name: project.name,
+                sector: project.sector,
+                maturity: project.maturity,
+                description: project.description,
+                address: project.address,
+                phone: project.phone,
+                email: project.email,
+                legal_status: project.legal_status,
+                created_at: project.created_at,
+                likesCount: project.likesCount || 0,
+                bookmarksCount: project.bookmarksCount || 0,
+                followersCount: project.followersCount || 0,
+                details: project.details,
+                founders: project.founders,
+              }}
+              className="text-lg px-6 py-3"
+            />
+          </div>
 
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Description</h2>

@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import TiltedCard from './TiltedCard';
+import LikeButton from './LikeButton';
+import { ContentType } from '@/domain/enums/Analytics';
 
 interface Startup {
   id: number;
@@ -10,6 +12,7 @@ interface Startup {
   maturity: string;
   description: string;
   address: string;
+  likesCount?: number;
   details: Array<{
     website_url?: string;
     project_status?: string;
@@ -36,7 +39,7 @@ const getSectorGradient = (sector: string, index: number) => {
     'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
     'linear-gradient(135deg, #ff8a80 0%, #ff80ab 100%)',
   ];
-  
+
   const gradientIndex = index % gradients.length;
   return gradients[gradientIndex];
 };
@@ -51,11 +54,11 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
   };
 
   const overlayContent = (
-    <div 
+    <div
       className="absolute bottom-0 left-0 w-full p-1.5 md:p-2 text-white rounded-[15px] overflow-hidden"
-      style={{ 
+      style={{
         background: gradient,
-        width: '328px', // Match the exact image width
+        width: '328px',
         maxWidth: '100%'
       }}
     >
@@ -69,12 +72,24 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
               <p className="text-xs opacity-75 line-clamp-1">{location}</p>
             )}
           </div>
-          
-          {/* Right side - Tags */}
+
+          {/* Right side - Tags and Like */}
           <div className="flex flex-col gap-0.5 flex-shrink-0">
-            <span className="px-1 py-0.5 bg-white/20 rounded-full text-xs whitespace-nowrap text-center">
-              {startup.founders.length} Founder{startup.founders.length !== 1 ? 's' : ''}
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="px-1 py-0.5 bg-white/20 rounded-full text-xs whitespace-nowrap text-center">
+                {startup.founders.length} Founder{startup.founders.length !== 1 ? 's' : ''}
+              </span>
+              <LikeButton
+                contentType={ContentType.STARTUP}
+                contentId={startup.id}
+                initialLikeCount={startup.likesCount || 0}
+                userId={null} // TODO: Get from auth context
+                sessionId={null} // TODO: Get from session context
+                size="small"
+                variant="minimal"
+                className="text-white"
+              />
+            </div>
             <span className="px-1 py-0.5 bg-white/20 rounded-full text-xs whitespace-nowrap text-center">
               {startup.maturity === 'Early-stage' ? 'Early' : startup.maturity === 'Seed-stage' ? 'Seed' : startup.maturity}
             </span>
@@ -85,8 +100,8 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
   );
 
   return (
-    <div 
-      className="group flex justify-center w-full cursor-pointer" 
+    <div
+      className="group flex justify-center w-full cursor-pointer"
       onClick={handleCardClick}
     >
       <TiltedCard
