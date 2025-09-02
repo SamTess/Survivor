@@ -5,7 +5,6 @@ import { NewsApiResponse, NewsDetailApiResponse } from "../../../../domain/inter
 export class NewsRepositoryPrisma implements NewsRepository {
   async upsert(item: NewsApiResponse | NewsDetailApiResponse): Promise<void> {
     if (item.startup_id == null) {
-      // Impossible d'insérer sans startup_id (contrainte NOT NULL). On ignore.
       return;
     }
     await prisma.s_NEWS.upsert({

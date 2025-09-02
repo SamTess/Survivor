@@ -8,9 +8,7 @@ export function debugLog(scope: string, message: string, extra?: Record<string, 
   if (!enabled) return;
   const ts = new Date().toISOString();
   if (extra) {
-    // Avoid circular JSON issues
     try {
-      // Shallow clone & stringify primitives only
       const safe: Record<string, unknown> = {};
       for (const [k, v] of Object.entries(extra)) {
         if (typeof v === "object" && v !== null) {

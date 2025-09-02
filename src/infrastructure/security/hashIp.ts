@@ -32,7 +32,6 @@ function sha256Sync(str: string): string {
   ]);
   let H0=0x6a09e667,H1=0xbb67ae85,H2=0x3c6ef372,H3=0xa54ff53a,H4=0x510e527f,H5=0x9b05688c,H6=0x1f83d9ab,H7=0x5be0cd19;
   const l = msg.length * 8;
-  // Padding
   const withOne = new Uint8Array(((msg.length + 9 + 63) & ~63));
   withOne.set(msg);
   withOne[msg.length] = 0x80;

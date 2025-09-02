@@ -5,7 +5,7 @@ export interface SyncItemError {
   id?: unknown;
   message: string;
   stack?: string;
-  at: string; // ISO date
+  at: string;
 }
 
 export interface SyncRunSummary {
