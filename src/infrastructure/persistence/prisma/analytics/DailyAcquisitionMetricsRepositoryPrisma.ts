@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { DailyAcquisitionMetricsRepository } from "../../repositories/analytics/DailyAcquisitionMetricsRepository";
-import { IncrementAcquisitionMetrics } from "../../../domain/entities/analytics/DailyAcquisitionMetrics";
+import prisma from "./../client";
+import { DailyAcquisitionMetricsRepository } from "../../../repositories/analytics/DailyAcquisitionMetricsRepository";
+import { IncrementAcquisitionMetrics } from "../../../../domain/entities/analytics/DailyAcquisitionMetrics";
 
 const zeroIfUndefined = (n?: number) => n ?? 0;
 

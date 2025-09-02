@@ -1,13 +1,12 @@
-import prisma from "./client";
-import { InteractionEventRepository } from "../../repositories/analytics/InteractionEventRepository";
-import { InteractionEvent, RecordInteractionInput } from "../../../domain/entities/analytics/InteractionEvent";
-import crypto from "crypto";
-
-const hashIp = (ip?: string | null) => (ip ? crypto.createHash("sha256").update(ip).digest("hex") : undefined);
+import prisma from "./../client";
+import { InteractionEventRepository } from "../../../repositories/analytics/InteractionEventRepository";
+import { InteractionEvent, RecordInteractionInput } from "../../../../domain/entities/analytics/InteractionEvent";
+import { hashIp } from "../../../security/hashIp";
 
 export class InteractionEventRepositoryPrisma implements InteractionEventRepository {
   async record(data: RecordInteractionInput): Promise<InteractionEvent> {
-    const row = await prisma.s_INTERACTION_EVENT.create({
+  const ipHash = await hashIp(data.ip);
+  const row = await prisma.s_INTERACTION_EVENT.create({
       data: {
         userId: data.userId ?? null,
         sessionId: data.sessionId ?? null,
@@ -15,7 +14,7 @@ export class InteractionEventRepositoryPrisma implements InteractionEventReposit
         contentType: data.contentType as unknown as typeof data.contentType,
         contentId: data.contentId ?? null,
         metadata: data.metadata == null ? undefined : (data.metadata as unknown as object),
-        ipHash: hashIp(data.ip) ?? null,
+        ipHash: ipHash ?? null,
         userAgent: data.userAgent ?? null,
         referrerHost: data.referrerHost ?? null,
         utmSource: data.utmSource ?? null,
