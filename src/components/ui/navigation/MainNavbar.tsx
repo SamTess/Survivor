@@ -1,8 +1,47 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { FaSearch, FaUser } from 'react-icons/fa';
+
+const NAV_LINKS = [
+  { href: '/home', label: 'Home' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/news', label: 'News' },
+  { href: '/events', label: 'Events' },
+];
+
+type NavLinksProps = {
+  variant: 'desktop' | 'mobile';
+  onItemClick?: () => void;
+};
+
+function NavLinks({ variant, onItemClick }: NavLinksProps) {
+  const pathname = usePathname();
+  const isMobile = variant === 'mobile';
+  const baseClasses =
+    'text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200';
+  const itemClasses = isMobile ? `${baseClasses} block` : baseClasses;
+
+  return (
+    <>
+      {NAV_LINKS.map(({ href, label }) => {
+        const isActive = pathname === href;
+        return (
+          <Link
+            key={href}
+            href={href}
+            onClick={onItemClick}
+            className={`${itemClasses} ${isActive ? 'text-purple-600' : ''}`}
+          >
+            {label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
 
 export default function MainNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -15,7 +54,7 @@ export default function MainNavbar() {
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex justify-between items-center h-14">
           {/* Left side - Site name */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 select-none">
             <Link href="/" className="text-2xl font-light tracking-wide text-black hover:text-purple-600 transition-colors duration-200">
               JEB
             </Link>
@@ -24,30 +63,7 @@ export default function MainNavbar() {
           {/* Middle - Navigation links */}
           <div className="hidden md:block">
             <div className="flex items-center space-x-12">
-              <Link
-                href="/home"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                Home
-              </Link>
-              <Link
-                href="/projects"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                Projects
-              </Link>
-              <Link
-                href="/news"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                News
-              </Link>
-              <Link
-                href="/events"
-                className="text-black hover:text-purple-600 text-sm font-normal tracking-wide transition-colors duration-200"
-              >
-                Events
-              </Link>
+              <NavLinks variant="desktop" />
             </div>
           </div>
 
@@ -109,34 +125,7 @@ export default function MainNavbar() {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed top-14 left-0 right-0 z-40 bg-white border-b border-gray-100 shadow-lg" id="mobile-menu">
           <div className="px-6 pt-3 pb-4 space-y-2 bg-white">
-            <Link
-              href="/home"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              Home
-            </Link>
-            <Link
-              href="/projects"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              Projects
-            </Link>
-            <Link
-              href="/news"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              News
-            </Link>
-            <Link
-              href="/events"
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="text-black hover:text-purple-600 block text-sm font-normal tracking-wide transition-colors duration-200"
-            >
-              Events
-            </Link>
+            <NavLinks variant="mobile" onItemClick={() => setIsMobileMenuOpen(false)} />
           </div>
         </div>
       )}
