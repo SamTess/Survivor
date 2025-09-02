@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: ..
-      dockerfile: Docker/Dockerfile.dev
+      dockerfile: Docker/Dockerfile.dev.web
     ports:
       - "3000:3000"
     env_file:
@@ -16,6 +16,8 @@ services:
       - ../tailwind.config.ts:/app/tailwind.config.ts
       - ../postcss.config.mjs:/app/postcss.config.mjs
       - ../eslint.config.mjs:/app/eslint.config.mjs
+      - ../prisma:/app/prisma
+      - ../scripts:/app/scripts
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}
@@ -31,7 +33,9 @@ services:
       - survivor-network
 
   db:
-    image: postgres:15-alpine
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile.dev.db
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -40,7 +44,6 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ../db:/docker-entrypoint-initdb.d
     networks:
       - survivor-network
 
