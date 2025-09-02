@@ -1,6 +1,4 @@
 // Entité domaine alignée directement sur le modèle Prisma S_STARTUP.
-// Pas de champs "mock only" ici pour éviter la confusion. Ceux nécessaires à l'UI
-// (funding, teamSize, founded, image…) pourront être gérés dans un DTO/ViewModel séparé.
 
 export type Startup = {
   id: number;
