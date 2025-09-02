@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Jeb",
+  title: "Jeb incubator",
   description: "Jeb incubator management platform",
 };
 
