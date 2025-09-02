@@ -1,17 +1,22 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { FaSearch, FaUser } from 'react-icons/fa';
 
 export default function MainNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  if (pathname.startsWith('/admin'))
+    return null;
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100">
+    <nav className="fixed top-0 left-0 right-0 z-500 bg-white border-b border-gray-100">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex justify-between items-center h-14">
           {/* Left side - Site name */}
