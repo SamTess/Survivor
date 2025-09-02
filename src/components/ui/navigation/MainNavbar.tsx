@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: '/projects', label: 'Projects' },
   { href: '/news', label: 'News' },
   { href: '/events', label: 'Events' },
+  { href: '/dashboard', label: 'Dashboard' },
 ];
 
 type NavLinksProps = {
