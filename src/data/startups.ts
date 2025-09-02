@@ -1,9 +1,21 @@
 import type { Startup } from '@/domain/entities/Startup'
 
-// UI extension type (évite de polluer l'entité domaine si image_url n'est pas dans la DB)
-export type StartupWithImage = Startup & { image_url?: string }
+const encoder = typeof TextEncoder !== 'undefined' ? new TextEncoder() : undefined as unknown as TextEncoder
 
-export const startups: StartupWithImage[] = [
+function makeSvg(label: string, bg: string, accent: string, accent2?: string): Uint8Array {
+  const safe = label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const grad = accent2 ? `<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="${accent}"/><stop offset="100%" stop-color="${accent2}"/></linearGradient>` : ''
+  const fill = accent2 ? 'url(#g)' : accent
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='225' viewBox='0 0 400 225'>`+
+    `<defs>${grad}<pattern id='grid' width='32' height='32' patternUnits='userSpaceOnUse'><rect width='32' height='32' fill='${bg}'/><path d='M0 0H32V32' fill='none' stroke='${fill}' stroke-width='2' opacity='0.25'/></pattern></defs>`+
+    `<rect width='400' height='225' fill='url(#grid)'/>`+
+    `<rect x='8' y='8' width='384' height='209' rx='16' fill='${fill}' opacity='0.12'/>`+
+    `<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='Arial, sans-serif' font-size='28' font-weight='700' fill='${accent2 ? accent2 : accent}'>${safe}</text>`+
+    `</svg>`
+  return encoder.encode(svg)
+}
+
+export const startups: Startup[] = [
   {
     id: 1,
     name: 'EcoTech Solutions',
@@ -14,9 +26,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Series A',
     email: 'contact@ecotech.io',
     description: 'Solutions de stockage d\'énergie durable pour optimiser la transition énergétique.',
-    image_data: null,
+    image_data: makeSvg('EcoTech', '#0f172a', '#00d37f', '#0066ff'),
     created_at: new Date('2024-01-02T00:00:00Z'),
-    image_url: '/sustainable-technology-clean-energy.png',
   },
   {
     id: 2,
@@ -28,9 +39,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Seed',
     email: 'hello@healthai.app',
     description: 'Diagnostic précoce assisté par IA pour maladies chroniques et rares.',
-    image_data: null,
+    image_data: makeSvg('HealthAI', '#1e293b', '#ff2e63', '#ffa600'),
     created_at: new Date('2024-02-10T00:00:00Z'),
-    image_url: '/medical-ai-diagnostic-technology.png',
   },
   {
     id: 3,
@@ -42,9 +52,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Pre-Seed',
     email: 'team@finflow.co',
     description: 'Plateforme de gestion de trésorerie automatisée pour PME.',
-    image_data: null,
+    image_data: makeSvg('FinFlow', '#0a0f1c', '#4f46e5', '#6366f1'),
     created_at: new Date('2024-03-05T00:00:00Z'),
-    image_url: '/financial-technology-dashboard.png',
   },
   {
     id: 4,
@@ -56,9 +65,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Seed',
     email: 'contact@agrismart.io',
     description: 'Capteurs IoT et analytics pour agriculture de précision et optimisation des intrants.',
-    image_data: null,
+    image_data: makeSvg('AgriSmart', '#052e16', '#16a34a', '#65d26e'),
     created_at: new Date('2024-03-20T00:00:00Z'),
-    image_url: '/smart-agriculture-iot-sensors.png',
   },
   {
     id: 5,
@@ -70,9 +78,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Series A',
     email: 'support@eduverse.app',
     description: 'Expériences immersives VR pour l\'apprentissage collaboratif international.',
-    image_data: null,
+    image_data: makeSvg('EduVerse', '#1e1b4b', '#6366f1', '#a78bfa'),
     created_at: new Date('2024-04-15T00:00:00Z'),
-    image_url: '/virtual-reality-education-classroom.png',
   },
   {
     id: 6,
@@ -84,9 +91,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Seed',
     email: 'security@cybershield.io',
     description: 'Détection proactive des menaces pour PME avec moteur ML temps réel.',
-    image_data: null,
+    image_data: makeSvg('CyberShield', '#111827', '#10b981', '#0ea5e9'),
     created_at: new Date('2024-05-01T00:00:00Z'),
-    image_url: '/cybersecurity-shield.png',
   },
   {
     id: 7,
@@ -98,9 +104,8 @@ export const startups: StartupWithImage[] = [
     maturity: 'Pre-Seed',
     email: 'mission@spacelogistics.ai',
     description: 'Traçabilité supply chain basée sur données satellites et optimisation de routes.',
-    image_data: null,
+    image_data: makeSvg('SpaceLog', '#020617', '#38bdf8', '#6366f1'),
     created_at: new Date('2024-05-18T00:00:00Z'),
-    image_url: '/satellite-space-logistics-tracking.png',
   },
   {
     id: 8,
@@ -112,8 +117,7 @@ export const startups: StartupWithImage[] = [
     maturity: 'Seed',
     email: 'hello@biomaterials.green',
     description: 'Matériaux d\'emballage biosourcés remplaçant les plastiques pétrochimiques.',
-    image_data: null,
+    image_data: makeSvg('BioMat', '#022c22', '#34d399', '#84cc16'),
     created_at: new Date('2024-06-07T00:00:00Z'),
-    image_url: '/sustainable-biomaterials-packaging.png',
   },
 ]
