@@ -5,9 +5,13 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
+    "build:legacy": "next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate:prod": "cp .env.production .env && npx prisma migrate deploy"
+    "migrate:dev": "npx prisma migrate dev",
+    "migrate:prod": "cp .env.production .env && npx prisma migrate deploy",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
@@ -29,6 +33,7 @@
     "eslint-config-next": "15.5.2",
     "prisma": "^6.15.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^2.1.9"
   }
 }
