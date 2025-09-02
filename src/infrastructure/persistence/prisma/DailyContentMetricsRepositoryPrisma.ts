@@ -1,14 +1,15 @@
 import prisma from "./client";
 import { DailyContentMetricsRepository } from "../../repositories/analytics/DailyContentMetricsRepository";
-import { ContentType } from "../../../domain/enums/Analytics";
+import { ContentType as DomainContentType } from "../../../domain/enums/Analytics";
 import { IncrementContentMetrics } from "../../../domain/entities/analytics/DailyContentMetrics";
 
 const zeroIfUndefined = (n?: number) => n ?? 0;
 
 export class DailyContentMetricsRepositoryPrisma implements DailyContentMetricsRepository {
-  async increment(day: Date, contentType: ContentType, contentId: number, inc: IncrementContentMetrics): Promise<void> {
+  async increment(day: Date, contentType: DomainContentType, contentId: number, inc: IncrementContentMetrics): Promise<void> {
+  const prismaContentType = contentType as unknown as typeof contentType; // domain enum string value acceptable for Prisma
     await prisma.s_DAILY_CONTENT_METRICS.upsert({
-  where: { day_contentType_contentId: { day, contentType: contentType as unknown as string, contentId } },
+      where: { day_contentType_contentId: { day, contentType: prismaContentType, contentId } },
       update: {
         views: { increment: zeroIfUndefined(inc.views) },
         uniqueUsers: { increment: zeroIfUndefined(inc.uniqueUsers) },
@@ -20,7 +21,7 @@ export class DailyContentMetricsRepositoryPrisma implements DailyContentMetricsR
       },
       create: {
         day,
-  contentType: contentType as unknown as string,
+        contentType: prismaContentType,
         contentId,
         views: zeroIfUndefined(inc.views),
         uniqueUsers: zeroIfUndefined(inc.uniqueUsers),
