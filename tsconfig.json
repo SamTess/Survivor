@@ -22,6 +22,7 @@
         "name": "next"
       }
     ],
+  // Ajoutez "vitest" dans types après installation des dépendances de test si nécessaire
   "paths": {
       "@/*": [
         "./src/*"
