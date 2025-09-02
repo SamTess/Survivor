@@ -1,4 +1,4 @@
-import { UserRepository } from "../../../infrastructure/repositories/UserRepository";
+import { UserRepository } from "../../../infrastructure/repositories/sync/UserRepository";
 import { User } from "../../../domain/entities/User";
 
 export class UserService {
