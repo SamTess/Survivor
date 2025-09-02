@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import eventsJson from "@/mocks/events.json";
 import newsJson from "@/mocks/news.json";
+import { EventApiResponse } from "@/domain/interfaces/Event";
+import { NewsDetailApiResponse } from "@/domain/interfaces/News";
 
 interface EventForm {
   name: string;
@@ -22,8 +24,8 @@ interface NewsForm {
 }
 
 export default function EventsNewsManager() {
-  const [events, setEvents] = useState(() => eventsJson.map(e => ({ ...e })));
-  const [news, setNews] = useState(() => newsJson.map(n => ({ ...n })));
+  const [events, setEvents] = useState<EventApiResponse[]>(() => eventsJson.map(e => ({ ...e })));
+  const [news, setNews] = useState<NewsDetailApiResponse[]>(() => newsJson.map(n => ({ ...n })));
 
   const [eventForm, setEventForm] = useState<EventForm>({ name: "", dates: "", location: "", description: "", event_type: "", target_audience: "" });
   const [newsForm, setNewsForm] = useState<NewsForm>({ title: "", news_date: "", location: "", category: "", description: "" });
@@ -33,29 +35,29 @@ export default function EventsNewsManager() {
 
   function addEvent(e: React.FormEvent) {
     e.preventDefault();
-    const payload = {
+    const payload: EventApiResponse = {
       id: nextEventId,
       ...eventForm,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as any;
+    };
     setEvents((prev) => [payload, ...prev]);
     setEventForm({ name: "", dates: "", location: "", description: "", event_type: "", target_audience: "" });
   }
 
   function addNews(e: React.FormEvent) {
     e.preventDefault();
-    const payload = {
+    const payload: NewsDetailApiResponse = {
       id: nextNewsId,
       title: newsForm.title,
       news_date: newsForm.news_date,
       location: newsForm.location,
       category: newsForm.category,
-      description: newsForm.description,
+      description: newsForm.description || "",
       startup_id: 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    } as any;
+    };
     setNews((prev) => [payload, ...prev]);
     setNewsForm({ title: "", news_date: "", location: "", category: "", description: "" });
   }
