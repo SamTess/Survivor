@@ -7,31 +7,27 @@ import Link from "next/link"
 import type { Startup } from "@/domain/entities/Startup"
 import Image from 'next/image'
 import { startupCardFieldConfig } from "@/components/catalog/startupCardFieldConfig"
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import { computeStartupImageSrc } from '@/application/services/startups/imageSrc'
 
-// Props extended with index to optionally tweak loading strategy (priority for first items)
-export function StartupCardItem({ s }: { s: Startup & { image_url?: string } }) {
-  // Explicit lazy loading (beyond next/image default): we avoid mounting the Image component until card is near viewport
+export function StartupCardItem({ s }: { s: Startup }) {
   const ref = useRef<HTMLDivElement | null>(null)
+  const imageSrc = computeStartupImageSrc(s as Startup & { image_url?: string })
 
-  useEffect(() => {
-    // No explicit lazy logic needed now (static list, no images)
-  }, [])
   return (
   <Card ref={ref} className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div className="aspect-video bg-muted rounded-t-lg relative overflow-hidden">
-        {s.image_url ? (
+  {imageSrc ? (
           <Image
-            src={s.image_url}
+            src={imageSrc}
             alt={s.name}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             loading="lazy"
+            unoptimized={imageSrc.startsWith('data:')}
           />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>
-        )}
+        ) : <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">No image</div>}
         <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/10 to-transparent" />
       </div>
       <CardHeader>
