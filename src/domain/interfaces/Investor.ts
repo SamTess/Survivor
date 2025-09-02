@@ -24,6 +24,5 @@ export interface InvestorApiResponse {
     investor_type?: string;
     investment_focus?: string;
     created_at: string;
-    updated_at: string;
 }
 
