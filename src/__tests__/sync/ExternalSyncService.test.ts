@@ -14,13 +14,11 @@ import { EventApiResponse } from '../../domain/interfaces/Event';
 import { UserApiResponse } from '../../domain/interfaces/User';
 import { NewsApiResponse } from '../../domain/interfaces/News';
 
-// Fake ExternalApiClient behaviour
 class FakeApiClient {
   constructor(private pages: Record<string, unknown[][] | unknown>, private binaries: Record<string, Buffer> = {}) {}
   getJson<T>(path: string, query?: Record<string, unknown>): Promise<T> {
     const key = path;
     const entry = this.pages[key];
-    // Non paginé (détail)
     if (entry && (!Array.isArray(entry) || (Array.isArray(entry) && entry.length && !Array.isArray(entry[0])))) {
       return Promise.resolve(entry as T);
     }
@@ -38,10 +36,14 @@ class FakeApiClient {
 
 
 class MemoryStartupRepo implements StartupRepository {
-  list: StartupListApiResponse[] = []; detail: StartupDetailApiResponse[] = []; founders: { startupId: number; founders: StartupFounder[] }[] = [];
+  list: StartupListApiResponse[] = [];
+  detail: StartupDetailApiResponse[] = [];
+  founders: { startupId: number; founders: StartupFounder[] }[] = [];
+  images: Record<number, Buffer> = {};
   async upsertList(item: StartupListApiResponse): Promise<void> { this.list.push(item); }
   async upsertDetail(item: StartupDetailApiResponse): Promise<void> { this.detail.push(item); }
   async upsertFounders(f: StartupFounder[], startupId: number): Promise<void> { this.founders.push({ startupId, founders: f }); }
+  async saveImage(startupId: number, data: Buffer): Promise<void> { this.images[startupId] = data; }
 }
 
 type AnyRepoEntity = InvestorApiResponse | PartnerApiResponse | EventApiResponse | UserApiResponse | NewsApiResponse;
@@ -62,7 +64,7 @@ describe('ExternalSyncService', () => {
   let newsRepo: MemorySimpleRepo;
 
   beforeEach(() => {
-    syncState.runs.length = 0; // reset
+    syncState.runs.length = 0;
     syncState.lastError = undefined;
     startupRepo = new MemoryStartupRepo();
     investorRepo = new MemorySimpleRepo();
@@ -85,12 +87,11 @@ describe('ExternalSyncService', () => {
     api = new FakeApiClient({ '/users': [Array(2).fill(repeated), Array(2).fill(repeated)] });
     service = new ExternalSyncService(api, startupRepo, investorRepo, partnerRepo, eventRepo, userRepo, newsRepo);
     const res = await service.syncUsers(2);
-  expect(res.length).toBe(2); // second page ignored
+  expect(res.length).toBe(2);
     expect(syncState.runs.find(r => r.scope === 'users')?.pages).toBe(1);
   });
 
   it('item errors do not abort processing the rest of the page', async () => {
-    // Make investor upsert throw for one item
   investorRepo.upsert = vi.fn().mockImplementation((item: InvestorApiResponse) => {
       if (item.id === 2) throw new Error('boom');
       return Promise.resolve();
