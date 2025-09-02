@@ -16,10 +16,10 @@ describe("ExternalSyncScheduler", () => {
     expect(syncAll.mock.calls.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("n'exécute pas de chevauchement si run longue", async () => {
+  it("don't run overlapping if long", async () => {
     let running = false;
   const syncAll = vi.fn<() => Promise<void>>().mockImplementation(async () => {
-      if (running) throw new Error("chevauchement");
+      if (running) throw new Error("overlapping");
       running = true;
       await new Promise(r => setTimeout(r, 40));
       running = false;

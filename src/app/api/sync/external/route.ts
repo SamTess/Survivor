@@ -43,7 +43,7 @@ export async function GET() {
   return NextResponse.json({
     usage: "POST /api/sync/external",
     bodyExample: { resources: ["startups","investors","partners","events","users"], limit: 100 },
-    note: "Ajouter X-SYNC-TOKEN si SYNC_TRIGGER_TOKEN est défini.",
+  note: "Add X-SYNC-TOKEN header if SYNC_TRIGGER_TOKEN is set.",
     lastRuns: syncState.runs.slice(-5),
     lastError: syncState.lastError,
   });

@@ -62,7 +62,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         await tx.s_STARTUP_DETAIL.create({
           data: {
             startup_id: item.id,
-            description: undefined,
+            description: "",
             website_url: item.website_url,
             social_media_url: item.social_media_url,
             project_status: item.project_status,

@@ -10,18 +10,18 @@ export class ExternalSyncScheduler {
 
   async runOnce(): Promise<void> {
     if (this.running) {
-      debugLog("scheduler", "Tick ignoré: exécution déjà en cours");
+  debugLog("scheduler", "Tick skipped: a run is already in progress");
       return;
     }
     this.running = true;
     const t0 = Date.now();
-    debugLog("scheduler", "Synchronisation démarrée", { intervalMs: this.intervalMs });
+  debugLog("scheduler", "Sync run started", { intervalMs: this.intervalMs });
     try {
       await this.syncService.syncAll();
-      debugLog("scheduler", "Synchronisation terminée", { ms: Date.now() - t0 });
+  debugLog("scheduler", "Sync run finished", { ms: Date.now() - t0 });
     } catch (e) {
       const err = e as Error;
-      debugLog("scheduler", "Erreur de synchronisation", { message: err.message });
+  debugLog("scheduler", "Sync run error", { message: err.message });
     } finally {
       this.running = false;
     }
@@ -30,7 +30,7 @@ export class ExternalSyncScheduler {
   start(): void {
     if (this.started) return;
     this.started = true;
-    debugLog("scheduler", "Démarrage du scheduler", { intervalMs: this.intervalMs });
+  debugLog("scheduler", "Scheduler start", { intervalMs: this.intervalMs });
     void this.runOnce();
     this.timer = setInterval(() => void this.runOnce(), this.intervalMs);
     this.timer.unref?.();
@@ -42,7 +42,7 @@ export class ExternalSyncScheduler {
       this.timer = null;
     }
     this.started = false;
-    debugLog("scheduler", "Scheduler arrêté");
+  debugLog("scheduler", "Scheduler stopped");
   }
 
   isRunning(): boolean { return this.running; }

@@ -72,7 +72,7 @@ describe('ExternalSyncService', () => {
     newsRepo = new MemorySimpleRepo();
   });
 
-  it('syncStartups consomme une seule page et enregistre', async () => {
+  it('syncStartups consumes one page and stores items', async () => {
     api = new FakeApiClient({ '/startups': [[{ id: 1, name: 'A', email: 'a@a' }]] });
     service = new ExternalSyncService(api, startupRepo, investorRepo, partnerRepo, eventRepo, userRepo, newsRepo);
     await service.syncStartups(50);
@@ -80,16 +80,16 @@ describe('ExternalSyncService', () => {
     expect(syncState.runs.some(r => r.scope === 'startups')).toBe(true);
   });
 
-  it('paginate garde-fou stoppe quand première entrée se répète (users)', async () => {
+  it('paginate safety guard stops when first element repeats (users)', async () => {
     const repeated = { id: 10, email: 'u@test', name: 'U', role: 'USER' };
     api = new FakeApiClient({ '/users': [Array(2).fill(repeated), Array(2).fill(repeated)] });
     service = new ExternalSyncService(api, startupRepo, investorRepo, partnerRepo, eventRepo, userRepo, newsRepo);
     const res = await service.syncUsers(2);
-    expect(res.length).toBe(2); // seconde page ignorée
+  expect(res.length).toBe(2); // second page ignored
     expect(syncState.runs.find(r => r.scope === 'users')?.pages).toBe(1);
   });
 
-  it('errors item n’arrêtent pas la page', async () => {
+  it('item errors do not abort processing the rest of the page', async () => {
     // Make investor upsert throw for one item
   investorRepo.upsert = vi.fn().mockImplementation((item: InvestorApiResponse) => {
       if (item.id === 2) throw new Error('boom');
