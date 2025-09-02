@@ -1,4 +1,4 @@
-import { UserApiResponse } from "../../domain/interfaces/User";
+import { UserApiResponse } from "../../../domain/interfaces/User";
 
 export interface ExternalUserRepository {
   upsert(item: UserApiResponse): Promise<void>;

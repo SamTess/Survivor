@@ -1,4 +1,4 @@
-import { StartupDetailApiResponse, StartupListApiResponse, StartupFounder } from "../../domain/interfaces/Startup";
+import { StartupDetailApiResponse, StartupListApiResponse, StartupFounder } from "../../../domain/interfaces/Startup";
 
 export interface StartupRepository {
   upsertList(item: StartupListApiResponse): Promise<void>;

@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { InvestorRepository } from "../../repositories/InvestorRepository";
-import { InvestorApiResponse } from "../../../domain/interfaces/Investor";
+import prisma from "./../client";
+import { InvestorRepository } from "../../../repositories/sync/InvestorRepository";
+import { InvestorApiResponse } from "../../../../domain/interfaces/Investor";
 
 export class InvestorRepositoryPrisma implements InvestorRepository {
   async upsert(item: InvestorApiResponse): Promise<void> {

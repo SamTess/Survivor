@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { EventRepository } from "../../repositories/EventRepository";
-import { EventApiResponse } from "../../../domain/interfaces/Event";
+import prisma from "./../client";
+import { EventRepository } from "../../../repositories/sync/EventRepository";
+import { EventApiResponse } from "../../../../domain/interfaces/Event";
 
 export class EventRepositoryPrisma implements EventRepository {
   async upsert(item: EventApiResponse): Promise<void> {

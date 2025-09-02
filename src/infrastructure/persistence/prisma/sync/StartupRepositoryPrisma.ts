@@ -1,6 +1,7 @@
-import prisma from "./client";
-import { StartupRepository } from "../../repositories/StartupRepository";
-import { StartupDetailApiResponse, StartupListApiResponse, StartupFounder } from "../../../domain/interfaces/Startup";
+import prisma from "../client";
+import { Prisma } from "@prisma/client";
+import { StartupRepository } from "../../../repositories/sync/StartupRepository";
+import { StartupDetailApiResponse, StartupListApiResponse, StartupFounder } from "../../../../domain/interfaces/Startup";
 
 const nz = (v: string | undefined | null) => v ?? "";
 
@@ -32,7 +33,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
   }
 
   async upsertDetail(item: StartupDetailApiResponse): Promise<void> {
-  await prisma.$transaction(async (tx: typeof prisma) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.s_STARTUP.upsert({
         where: { id: item.id },
         update: {
@@ -61,7 +62,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         await tx.s_STARTUP_DETAIL.create({
           data: {
             startup_id: item.id,
-            description: undefined, // unknown
+            description: undefined,
             website_url: item.website_url,
             social_media_url: item.social_media_url,
             project_status: item.project_status,
@@ -84,18 +85,14 @@ export class StartupRepositoryPrisma implements StartupRepository {
 
   async upsertFounders(founders: StartupFounder[], startupId: number): Promise<void> {
     if (!founders?.length) return;
-  await prisma.$transaction(async (tx: typeof prisma) => {
-      // Remove founders not present anymore? We'll soft sync by inserting missing ones only.
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       for (const f of founders) {
-        // We need a user row to satisfy foreign key. Try to find by id mapped maybe by email not provided.
-        // We'll synthesize an email to keep uniqueness stable.
         const syntheticEmail = `founder-${f.id}@external.local`;
         const user = await tx.s_USER.upsert({
           where: { id: f.id },
             update: { name: f.name, email: syntheticEmail, role: "FOUNDER", address: "", password_hash: "", },
             create: { id: f.id, name: f.name, email: syntheticEmail, role: "FOUNDER", address: "", password_hash: "" },
         });
-        // Upsert S_FOUNDER referencing same id? S_FOUNDER has its own autoincrement id; external founder id might collide with sequence but we can try to use given id.
         await tx.s_FOUNDER.upsert({
           where: { id: f.id },
           update: { startup_id: startupId, user_id: user.id },

@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { PartnerRepository } from "../../repositories/PartnerRepository";
-import { PartnerApiResponse } from "../../../domain/interfaces/Partner";
+import prisma from "../client";
+import { PartnerRepository } from "../../../repositories/sync/PartnerRepository";
+import { PartnerApiResponse } from "../../../../domain/interfaces/Partner";
 
 export class PartnerRepositoryPrisma implements PartnerRepository {
   async upsert(item: PartnerApiResponse): Promise<void> {

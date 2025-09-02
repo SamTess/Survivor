@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ExternalSyncService } from '../../application/services/sync/ExternalSyncService';
-import { StartupRepository } from '../../infrastructure/repositories/StartupRepository';
-import { InvestorRepository } from '../../infrastructure/repositories/InvestorRepository';
-import { PartnerRepository } from '../../infrastructure/repositories/PartnerRepository';
-import { EventRepository } from '../../infrastructure/repositories/EventRepository';
-import { ExternalUserRepository } from '../../infrastructure/repositories/ExternalUserRepository';
-import { NewsRepository } from '../../infrastructure/repositories/NewsRepository';
+import { StartupRepository } from '../../infrastructure/repositories/sync/StartupRepository';
+import { InvestorRepository } from '../../infrastructure/repositories/sync/InvestorRepository';
+import { PartnerRepository } from '../../infrastructure/repositories/sync/PartnerRepository';
+import { EventRepository } from '../../infrastructure/repositories/sync/EventRepository';
+import { ExternalUserRepository } from '../../infrastructure/repositories/sync/ExternalUserRepository';
+import { NewsRepository } from '../../infrastructure/repositories/sync/NewsRepository';
 import { syncState } from '../../infrastructure/logging/syncState';
 import { StartupListApiResponse, StartupDetailApiResponse, StartupFounder } from '../../domain/interfaces/Startup';
 import { InvestorApiResponse } from '../../domain/interfaces/Investor';

@@ -1,4 +1,4 @@
-import { EventApiResponse } from "../../domain/interfaces/Event";
+import { EventApiResponse } from "../../../domain/interfaces/Event";
 
 export interface EventRepository {
   upsert(item: EventApiResponse): Promise<void>;

@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { ExternalUserRepository } from "../../repositories/ExternalUserRepository";
-import { UserApiResponse } from "../../../domain/interfaces/User";
+import prisma from "./../client";
+import { ExternalUserRepository } from "../../../repositories/sync/ExternalUserRepository";
+import { UserApiResponse } from "../../../../domain/interfaces/User";
 
 export class ExternalUserRepositoryPrisma implements ExternalUserRepository {
   async upsert(item: UserApiResponse): Promise<void> {

@@ -1,4 +1,4 @@
-import { NewsApiResponse, NewsDetailApiResponse } from "../../domain/interfaces/News";
+import { NewsApiResponse, NewsDetailApiResponse } from "../../../domain/interfaces/News";
 
 export interface NewsRepository {
   upsert(item: NewsApiResponse | NewsDetailApiResponse): Promise<void>;

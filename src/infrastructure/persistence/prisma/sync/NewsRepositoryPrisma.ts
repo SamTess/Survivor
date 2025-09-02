@@ -1,6 +1,6 @@
-import prisma from "./client";
-import { NewsRepository } from "../../repositories/NewsRepository";
-import { NewsApiResponse, NewsDetailApiResponse } from "../../../domain/interfaces/News";
+import prisma from "./../client";
+import { NewsRepository } from "../../../repositories/sync/NewsRepository";
+import { NewsApiResponse, NewsDetailApiResponse } from "../../../../domain/interfaces/News";
 
 export class NewsRepositoryPrisma implements NewsRepository {
   async upsert(item: NewsApiResponse | NewsDetailApiResponse): Promise<void> {

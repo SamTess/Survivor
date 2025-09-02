@@ -1,9 +1,10 @@
 import { ExternalApiClient } from "../../../infrastructure/external/ExternalApiClient";
-import { StartupRepository } from "../../../infrastructure/repositories/StartupRepository";
-import { InvestorRepository } from "../../../infrastructure/repositories/InvestorRepository";
-import { PartnerRepository } from "../../../infrastructure/repositories/PartnerRepository";
-import { EventRepository } from "../../../infrastructure/repositories/EventRepository";
-import { ExternalUserRepository } from "../../../infrastructure/repositories/ExternalUserRepository";
+import { StartupRepository } from "../../../infrastructure/repositories/sync/StartupRepository";
+import { InvestorRepository } from "../../../infrastructure/repositories/sync/InvestorRepository";
+import { PartnerRepository } from "../../../infrastructure/repositories/sync/PartnerRepository";
+import { EventRepository } from "../../../infrastructure/repositories/sync/EventRepository";
+import { NewsRepository } from "../../../infrastructure/repositories/sync/NewsRepository";
+import { ExternalUserRepository } from "../../../infrastructure/repositories/sync/ExternalUserRepository";
 import { StartupDetailApiResponse, StartupListApiResponse } from "../../../domain/interfaces/Startup";
 import { InvestorApiResponse } from "../../../domain/interfaces/Investor";
 import { PartnerApiResponse } from "../../../domain/interfaces/Partner";
@@ -25,8 +26,8 @@ export class ExternalSyncService {
     private readonly investors: InvestorRepository,
     private readonly partners: PartnerRepository,
     private readonly events: EventRepository,
-  private readonly users: ExternalUserRepository,
-  private readonly newsRepo?: import("../../../infrastructure/repositories/NewsRepository").NewsRepository
+    private readonly users: ExternalUserRepository,
+    private readonly newsRepo: NewsRepository
   ) {}
 
   private async paginate<T>(path: string, limit = 100, handler: (items: T[], ctx: { page: number; skip: number }) => Promise<void>) {
