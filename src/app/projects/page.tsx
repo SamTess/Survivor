@@ -49,7 +49,6 @@ export default function ProjectsPage() {
       try {
         const response = await fetch('/api/startups');
         const data = await response.json();
-
         if (Array.isArray(data)) {
           setStartups(data);
         } else {
