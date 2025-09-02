@@ -22,6 +22,11 @@ model S_STARTUP {
   details      S_STARTUP_DETAIL[]
   founders     S_FOUNDER[]
   news         S_NEWS[]
+  viewsCount     Int      @default(0)
+  likesCount     Int      @default(0)
+  bookmarksCount Int      @default(0)
+  sharesCount    Int      @default(0)
+  followersCount Int      @default(0)
 }
 
 model S_STARTUP_DETAIL {
@@ -53,6 +58,13 @@ model S_USER {
   permissions   S_PERMISSION[]
   messages      S_MESSAGE[] @relation("SenderMessages")
   conversation_users S_CONVERSATION_USER[]
+  sessions      S_SESSION[]
+  interactionEvents S_INTERACTION_EVENT[]
+  follows       S_FOLLOW[]
+  likes         S_LIKE[]
+  bookmarks     S_BOOKMARK[]
+  pageViews     S_PAGE_VIEW[]
+  followersCount Int      @default(0)
 }
 
 model S_FOUNDER {
@@ -89,6 +101,10 @@ model S_NEWS {
   category    String?
   created_at  DateTime @default(now())
   startup     S_STARTUP @relation(fields: [startup_id], references: [id], onDelete: Cascade)
+  viewsCount     Int      @default(0)
+  likesCount     Int      @default(0)
+  bookmarksCount Int      @default(0)
+  sharesCount    Int      @default(0)
 }
 
 model S_EVENT {
@@ -101,6 +117,11 @@ model S_EVENT {
   event_type     String?
   target_audience String?
   created_at     DateTime @default(now())
+  viewsCount     Int      @default(0)
+  likesCount     Int      @default(0)
+  bookmarksCount Int      @default(0)
+  sharesCount    Int      @default(0)
+  attendeesCount Int      @default(0)
 }
 
 model S_ROLES_REF {
@@ -147,4 +168,179 @@ model S_MESSAGE {
   sent_at         DateTime @default(now())
   conversation    S_CONVERSATION @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   sender          S_USER         @relation("SenderMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+}
+
+enum ContentType {
+  USER
+  STARTUP
+  EVENT
+  NEWS
+  PAGE
+}
+
+enum EventType {
+  VIEW
+  CLICK
+  LIKE
+  BOOKMARK
+  SHARE
+  FOLLOW
+  UNFOLLOW
+  SIGNUP
+  LOGIN
+  COMMENT
+}
+
+model S_SESSION {
+  id           String      @id @default(uuid())
+  occurredAt   DateTime    @default(now())
+  userId       Int?
+  contentType  ContentType
+  contentId    Int?
+  metadata     Json?
+  ipHash       String?
+  userAgent    String?
+
+  referrerHost String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmTerm      String?
+  utmContent   String?
+
+  user              S_USER?           @relation(fields: [userId], references: [id])
+  interactionEvents S_INTERACTION_EVENT[]
+  pageViews         S_PAGE_VIEW[]
+
+  @@index([occurredAt])
+  @@index([userId])
+  @@index([contentType])
+  @@index([contentType, contentId, occurredAt])
+  @@index([utmSource, utmCampaign, occurredAt])
+}
+
+model S_INTERACTION_EVENT {
+  id           String      @id @default(uuid())
+  occurredAt   DateTime    @default(now())
+  userId       Int?
+  sessionId    String?
+  eventType    EventType
+  contentType  ContentType
+  contentId    Int?
+  metadata     Json?
+  ipHash       String?
+  userAgent    String?
+
+  referrerHost String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  utmTerm      String?
+  utmContent   String?
+
+  user    S_USER?  @relation(fields: [userId], references: [id])
+  session S_SESSION? @relation(fields: [sessionId], references: [id])
+
+  @@index([occurredAt])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([contentType])
+  @@index([contentId])
+  @@index([contentType, contentId, eventType, occurredAt])
+  @@index([utmSource, utmCampaign, occurredAt])
+}
+
+model S_FOLLOW {
+  followerId  Int
+  targetType  ContentType
+  targetId    Int
+  createdAt   DateTime @default(now())
+
+  follower    S_USER   @relation(fields: [followerId], references: [id])
+
+  @@id([followerId, targetType, targetId])
+  @@index([targetType, targetId])
+}
+
+model S_LIKE {
+  userId      Int
+  contentType ContentType
+  contentId   Int
+  createdAt   DateTime @default(now())
+
+  user        S_USER @relation(fields: [userId], references: [id])
+
+  @@id([userId, contentType, contentId])
+  @@index([contentType, contentId])
+}
+
+model S_BOOKMARK {
+  userId      Int
+  contentType ContentType
+  contentId   Int
+  createdAt   DateTime @default(now())
+
+  user        S_USER @relation(fields: [userId], references: [id])
+
+  @@id([userId, contentType, contentId])
+  @@index([contentType, contentId])
+}
+
+model S_DAILY_CONTENT_METRICS {
+  id String @id @default(uuid())
+  day DateTime
+  contentType ContentType
+  contentId Int
+  views Int @default(0)
+  uniqueUsers Int @default(0)
+  clicks Int @default(0)
+  likes Int @default(0)
+  bookmarks Int @default(0)
+  shares Int @default(0)
+  followers Int @default(0)
+
+
+  @@unique([day, contentType, contentId])
+  @@index([day])
+  @@index([contentType])
+  @@index([contentId])
+}
+
+model S_PAGE_VIEW {
+  id String @id @default(uuid())
+  occurredAt DateTime @default(now())
+  sessionId String?
+  userId Int?
+  path String
+  referrerHost String?
+  utmSource String?
+  utmMedium String?
+  utmCampaign String?
+
+
+  session S_SESSION? @relation(fields: [sessionId], references: [id])
+  user S_USER? @relation(fields: [userId], references: [id])
+
+
+  @@index([occurredAt])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([path])
+  @@index([path, occurredAt])
+}
+
+model S_DAILY_ACQUISITION_METRICS {
+  id String @id @default(uuid())
+  day DateTime
+  utmSource String?
+  utmMedium String?
+  utmCampaign String?
+  sessions Int @default(0)
+  users Int @default(0)
+  signups Int @default(0)
+
+
+  @@index([day])
+  @@index([utmSource, utmCampaign, day])
 }
