@@ -34,7 +34,6 @@ const generateProjectImage = (sector: string, id: number) => {
     'Mobility': `https://picsum.photos/400/300?random=${id}&transport`,
     'default': `https://picsum.photos/400/300?random=${id}`
   };
-
   return sectorImages[sector] || sectorImages['default'];
 };
 

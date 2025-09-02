@@ -1,0 +1,5 @@
+FROM postgres:16-alpine
+
+ENV POSTGRES_DB=survivor_db
+ENV POSTGRES_USER=survivor_user
+ENV POSTGRES_PASSWORD=survivor_password
