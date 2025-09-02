@@ -8,7 +8,8 @@ export async function hashIp(ip?: string | null): Promise<string | undefined> {
       const data = encoder.encode(ip);
       const digest = await webCrypto.subtle.digest("SHA-256", data);
       return bufferToHex(digest);
-    } catch {
+    } catch (err) {
+      console.error("Web Crypto API failed to hash IP:", err);
     }
   }
   return sha256Sync(ip);
