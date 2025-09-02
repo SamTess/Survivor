@@ -2,14 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { externalSyncService } from "../../../../composition/container";
 import { syncState } from "../../../../infrastructure/logging/syncState";
 
-// POST /api/sync/external
-// Body (JSON) optionnel:
-// {
-//   "resources": ["startups", "investors", "partners", "events", "users" | "all"],
-//   "limit": 100
-// }
-// Sécurité: si process.env.SYNC_TRIGGER_TOKEN est défini, exiger l'entête x-sync-token
-
 export async function POST(req: NextRequest) {
   try {
     const tokenRequired = process.env.SYNC_TRIGGER_TOKEN;

@@ -41,7 +41,6 @@ export class ExternalSyncService {
       const dt = Date.now() - t0;
       debugLog("paginate", `Fetched page ${page} size=${items.length} ms=${dt}`, { path, skip });
       if (!items.length) break;
-      // Guard: identical first element key => potential infinite loop, abort.
       const currentFirstKey = JSON.stringify(items[0]);
       if (lastFirstKey === currentFirstKey) {
         debugLog("paginate", "Detected repeating first element; aborting loop", { page, skip });
@@ -52,7 +51,6 @@ export class ExternalSyncService {
       if (items.length < limit) break;
       skip += limit;
       page += 1;
-      // Safety cap: avoid runaway loops if API ignores skip
       if (page > 500) {
         debugLog("paginate", "Aborting after 500 pages (safety cap)", {});
         break;
@@ -275,13 +273,12 @@ export class ExternalSyncService {
   debugLog("all", "Global sync done", { ms: Date.now() - t0 });
   }
 
-  // NEWS
   async syncNews(limit = 100): Promise<NewsApiResponse[]> {
     if (!this.newsRepo) return [];
     debugLog("news", "Sync start", { limit });
     const collected: NewsApiResponse[] = [];
     let processed = 0;
-    const run: import("../../../infrastructure/logging/syncState").SyncRunSummary = { scope: "news", startedAt: new Date().toISOString(), pages: 0, items: 0, errors: [] };
+    const run: SyncRunSummary = { scope: "news", startedAt: new Date().toISOString(), pages: 0, items: 0, errors: [] };
     syncState.push(run);
     await this.paginate<NewsApiResponse>("/news", limit, async (items, ctx) => {
       collected.push(...items);

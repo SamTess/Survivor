@@ -14,6 +14,7 @@ import { EventRepositoryPrisma } from "../infrastructure/persistence/prisma/sync
 import { ExternalUserRepositoryPrisma } from "../infrastructure/persistence/prisma/sync/ExternalUserRepositoryPrisma";
 import { ExternalSyncService } from "../application/services/sync/ExternalSyncService";
 import { NewsRepositoryPrisma } from "../infrastructure/persistence/prisma/sync/NewsRepositoryPrisma";
+import { ensureExternalSyncSchedulerInstance } from "../application/services/sync/ExternalSyncScheduler";
 
 const userRepo = new UserRepositoryPrisma();
 export const userService = new UserService(userRepo);
@@ -48,4 +49,15 @@ export const externalSyncService = new ExternalSyncService(
 	extUserRepo,
 	newsRepo
 );
+
+if (process.env.SYNC_AUTO !== "0") {
+	const g = globalThis as unknown as { __syncSchedulerStarted?: boolean };
+	if (!g.__syncSchedulerStarted) {
+		const intervalMs = parseInt(process.env.SYNC_INTERVAL_MS || "3600000", 10);
+		const scheduler = ensureExternalSyncSchedulerInstance(externalSyncService, intervalMs);
+		scheduler.start();
+		g.__syncSchedulerStarted = true;
+	}
+}
+
 
