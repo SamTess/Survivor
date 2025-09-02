@@ -12,5 +12,8 @@ npx prisma generate
 echo "Running Prisma migrations..."
 npx prisma migrate deploy
 
-echo "Starting development server..."
-npm run build
+echo "Building prod server..."
+npm run build:legacy
+
+echo "Starting prod server..."
+npm start

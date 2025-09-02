@@ -7,9 +7,9 @@ import PitchDeckButton from '@/components/ui/PitchDeckButton';
 import { ContentType } from '@/domain/enums/Analytics';
 
 interface ProjectPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 type ProjectDetail = {

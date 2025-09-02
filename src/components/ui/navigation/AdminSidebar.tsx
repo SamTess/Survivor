@@ -18,7 +18,7 @@ const AdminSidebar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
 
-  if (!pathname.startsWith('/admin'))
+  if (!pathname || !pathname.startsWith('/admin'))
     return null;
   return (
     <div
