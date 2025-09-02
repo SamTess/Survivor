@@ -12,6 +12,36 @@ interface ProjectPageProps {
   };
 }
 
+type ProjectDetail = {
+  id: number;
+  description: string | null;
+  startup_id: number;
+  website_url: string | null;
+  social_media_url: string | null;
+  project_status: string | null;
+  needs: string | null;
+};
+
+type ProjectFounder = {
+  id: number;
+  startup_id: number;
+  user_id: number;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    password_hash: string;
+    address: string;
+    phone: string | null;
+    legal_status: string | null;
+    description: string | null;
+    image_data: Uint8Array | null;
+    created_at: Date;
+    role: string;
+    followersCount: number;
+  };
+};
+
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { id } = await params;
   const projectId = parseInt(id, 10);
@@ -92,8 +122,20 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 likesCount: project.likesCount || 0,
                 bookmarksCount: project.bookmarksCount || 0,
                 followersCount: project.followersCount || 0,
-                details: project.details,
-                founders: project.founders,
+                details: project.details.map((detail: ProjectDetail) => ({
+                  description: detail.description || undefined,
+                  website_url: detail.website_url || undefined,
+                  social_media_url: detail.social_media_url || undefined,
+                  project_status: detail.project_status || undefined,
+                  needs: detail.needs || undefined,
+                })),
+                founders: project.founders.map((founder: ProjectFounder) => ({
+                  user: {
+                    name: founder.user.name,
+                    email: founder.user.email,
+                    phone: founder.user.phone || undefined,
+                  },
+                })),
               }}
               className="text-lg px-6 py-3"
             />
@@ -129,7 +171,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Founders</h2>
             <div className="space-y-2">
-              {project.founders.map((founder) => (
+              {project.founders.map((founder: ProjectFounder) => (
                 <div key={founder.id} className="bg-gray-100 p-3 rounded">
                   <p className="font-medium">{founder.user.name}</p>
                   <p className="text-sm text-gray-600">{founder.user.email}</p>
