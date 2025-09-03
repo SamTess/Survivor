@@ -1,5 +1,5 @@
 import type { Startup } from '@/domain/entities/Startup'
-import { bytesToDataUrl } from '@/lib/image'
+import { bytesToDataUrl } from '@/utils/image'
 
 export function computeStartupImageSrc(s: Startup & { image_url?: string }): string | null {
   if (s.image_url) return s.image_url

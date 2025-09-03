@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Search, Menu, X, Sparkles } from "lucide-react"
 import { useState } from "react"
-import { cn } from "@/lib/utils"
+import { cn } from "@/utils/utils"
 
 type NavItem = {
   href: string
