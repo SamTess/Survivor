@@ -34,12 +34,10 @@ export default function NewsPage() {
   useEffect(() => {
     let filtered = [...news];
 
-    // Filter by category
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(item => item.category && item.category.toLowerCase() === selectedCategory.toLowerCase());
     }
 
-    // Filter by time
     if (selectedTimeFilter === 'recent') {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -50,7 +48,6 @@ export default function NewsPage() {
       filtered = filtered.filter(item => item.news_date && new Date(item.news_date) < thirtyDaysAgo);
     }
 
-    // Sort by date (newest first)
     filtered.sort((a, b) => {
       if (!a.news_date) return 1;
       if (!b.news_date) return -1;
