@@ -9,4 +9,4 @@ else
 fi
 
 echo "Starting production server..."
-npm start
+pnpm start
