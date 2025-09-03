@@ -102,7 +102,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">User Not Found</h1>
-          <p className="text-gray-600">The user you're looking for doesn't exist.</p>
+          <p className="text-gray-600">The user you&apos;re looking for doesn&apos;t exist.</p>
         </div>
       </div>
     );
