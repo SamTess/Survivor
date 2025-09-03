@@ -21,7 +21,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard' },
 ]
 
-export function Navigation() {
+export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
 
