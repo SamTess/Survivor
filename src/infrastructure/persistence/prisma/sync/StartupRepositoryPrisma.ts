@@ -106,7 +106,4 @@ export class StartupRepositoryPrisma implements StartupRepository {
     await prisma.s_STARTUP.update({ where: { id: startupId }, data: { image_data: data } });
   }
 
-  async saveImage(startupId: number, data: Buffer): Promise<void> {
-    await prisma.s_STARTUP.update({ where: { id: startupId }, data: { image_data: data } });
-  }
 }
