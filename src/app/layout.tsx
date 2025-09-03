@@ -4,7 +4,6 @@ import "./globals.css";
 import AdminSidebar from "@/components/navigation/AdminSidebar";
 import MainNavbar from "@/components/navigation/MainNavbar";
 import { AuthProvider } from "../context/AuthContext";
-import { Navigation } from "@/components/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
