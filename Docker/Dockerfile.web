@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci --prefer-offline --no-audit --omit=dev
+RUN npm ci --prefer-offline --no-audit
 
 COPY prisma ./prisma/
 RUN npx prisma generate
