@@ -6,9 +6,6 @@ while ! nc -z db 5432; do
 done
 echo "Database is ready!"
 
-echo "Generating Prisma client..."
-npx prisma generate
-
 if [ -d "prisma/migrations" ] && [ "$(ls -A prisma/migrations 2>/dev/null)" ]; then
   echo "Running Prisma migrations..."
   npx prisma migrate deploy
@@ -16,9 +13,6 @@ else
   echo "No migrations found, pushing schema..."
   npx prisma db push
 fi
-
-echo "Building application..."
-npm run build:legacy
 
 echo "Starting production server..."
 npm start
