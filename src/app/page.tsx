@@ -1,4 +1,4 @@
-import { HeroSection } from "@/components/hero-section";
+import { HeroSection } from "@/components/navigation/hero-section";
 import { FeaturedStartups } from "@/components/home/FeaturedStartups";
 import { UpcomingEvents } from "@/components/home/UpcomingEvents";
 import { LatestNews } from "@/components/home/LatestNews";
