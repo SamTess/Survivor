@@ -128,8 +128,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                       type="text"
                       value={editedUser?.name || ''}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="Enter your name"
-                      className="text-3xl font-bold text-gray-900 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-blue-500 placeholder:text-gray-500"
+                      className="text-3xl font-bold text-gray-900 border-b-2 border-gray-300 bg-transparent focus:outline-none focus:border-blue-500"
                     />
                   ) : (
                     <h1 className="text-3xl font-bold text-gray-900">{user.name}</h1>
@@ -193,8 +192,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                       type="email"
                       value={editedUser?.email || ''}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="Enter your email address"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white placeholder:text-gray-500"
+                      className="w-full px-3 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
                     />
                   ) : (
                     <p className="text-gray-900">{user.email}</p>
