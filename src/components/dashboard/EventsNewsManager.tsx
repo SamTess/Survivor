@@ -63,21 +63,21 @@ export default function EventsNewsManager() {
   }
 
   return (
-    <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card">
+    <section className="grid grid-cols-1 gap-4 lg:grid-cols-2 pb-16">
+      <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Events</h2>
-          <p className="text-sm text-gray-700">Create and manage upcoming events.</p>
+          <h2 className="text-lg font-semibold text-foreground">Events</h2>
+          <p className="text-sm text-muted-foreground">Create and manage upcoming events.</p>
         </div>
         <form onSubmit={addEvent} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Name" value={eventForm.name} onChange={(e) => setEventForm({ ...eventForm, name: e.target.value })} required />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Date (YYYY-MM-DD)" value={eventForm.dates} onChange={(e) => setEventForm({ ...eventForm, dates: e.target.value })} />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Location" value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Type" value={eventForm.event_type} onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })} />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2 sm:col-span-2" placeholder="Target audience" value={eventForm.target_audience} onChange={(e) => setEventForm({ ...eventForm, target_audience: e.target.value })} />
-          <textarea className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2 sm:col-span-2" placeholder="Description" value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Name" value={eventForm.name} onChange={(e) => setEventForm({ ...eventForm, name: e.target.value })} required />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Date (YYYY-MM-DD)" value={eventForm.dates} onChange={(e) => setEventForm({ ...eventForm, dates: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Location" value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Type" value={eventForm.event_type} onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 sm:col-span-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Target audience" value={eventForm.target_audience} onChange={(e) => setEventForm({ ...eventForm, target_audience: e.target.value })} />
+          <textarea className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 sm:col-span-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Description" value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} />
           <div className="sm:col-span-2 flex justify-end">
-            <button type="submit" className="rounded-md bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">Add event</button>
+            <button type="submit" className="rounded-2xl bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 transition-all duration-200 border border-primary/20">Add event</button>
           </div>
         </form>
 
@@ -97,19 +97,19 @@ export default function EventsNewsManager() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card">
+      <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
         <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">News</h2>
-          <p className="text-sm text-gray-700">Publish product or company updates.</p>
+          <h2 className="text-lg font-semibold text-foreground">News</h2>
+          <p className="text-sm text-muted-foreground">Publish product or company updates.</p>
         </div>
         <form onSubmit={addNews} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Title" value={newsForm.title} onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })} required />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Date (YYYY-MM-DD)" value={newsForm.news_date} onChange={(e) => setNewsForm({ ...newsForm, news_date: e.target.value })} />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Category" value={newsForm.category} onChange={(e) => setNewsForm({ ...newsForm, category: e.target.value })} />
-          <input className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2" placeholder="Location" value={newsForm.location} onChange={(e) => setNewsForm({ ...newsForm, location: e.target.value })} />
-          <textarea className="rounded-md border border-gray-300 text-gray-700 placeholder:text-gray-400 px-3 py-2 sm:col-span-2" placeholder="Description" value={newsForm.description} onChange={(e) => setNewsForm({ ...newsForm, description: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Title" value={newsForm.title} onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })} required />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Date (YYYY-MM-DD)" value={newsForm.news_date} onChange={(e) => setNewsForm({ ...newsForm, news_date: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Category" value={newsForm.category} onChange={(e) => setNewsForm({ ...newsForm, category: e.target.value })} />
+          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Location" value={newsForm.location} onChange={(e) => setNewsForm({ ...newsForm, location: e.target.value })} />
+          <textarea className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 sm:col-span-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Description" value={newsForm.description} onChange={(e) => setNewsForm({ ...newsForm, description: e.target.value })} />
           <div className="sm:col-span-2 flex justify-end">
-            <button type="submit" className="rounded-md bg-gray-900 px-4 py-2 text-white hover:bg-black">Publish</button>
+            <button type="submit" className="rounded-2xl bg-foreground px-4 py-2 text-background hover:bg-foreground/90 transition-all duration-200 border border-foreground/20">Publish</button>
           </div>
         </form>
 
