@@ -3,7 +3,6 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Composant qui utilise useSearchParams
 function ResetPasswordForm() {
   const [token, setToken] = useState('');
   const [password, setPassword] = useState('');
@@ -307,7 +306,6 @@ function ResetPasswordForm() {
   );
 }
 
-// Composant de fallback pour Suspense
 function LoadingFallback() {
   return React.createElement('div', {
     style: {
@@ -330,7 +328,6 @@ function LoadingFallback() {
   );
 }
 
-// Composant principal avec Suspense
 export default function ResetPasswordPage() {
   return React.createElement(Suspense, {
     fallback: React.createElement(LoadingFallback, null)

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 
-// Mock des services avec des types appropriés - utilisation de vi.hoisted
+// Mock services with appropriate types - using vi.hoisted
 const mockPasswordResetService = vi.hoisted(() => ({
   createResetToken: vi.fn(),
   validateResetToken: vi.fn(),

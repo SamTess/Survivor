@@ -40,7 +40,6 @@ export default function LoginPage() {
       } else {
         const data = await res.json().catch(() => ({}));
         
-        // Cas spécial pour le reset de password
         if (data.requiresPasswordReset) {
           setError(data.error || 'Un email de création de mot de passe vous a été envoyé. Veuillez vérifier votre boîte mail.');
         } else {

@@ -18,10 +18,9 @@ export class EmailService {
     this.transporter = nodemailer.createTransport({
       host: config.host,
       port: config.port,
-      secure: config.secure, // true pour 465, false pour autres ports
+      secure: config.secure,
       auth: config.auth,
       tls: {
-        // ne pas échouer sur les certificats invalides
         rejectUnauthorized: false
       }
     });
@@ -29,7 +28,7 @@ export class EmailService {
 
   async sendPasswordResetEmail(to: string, resetToken: string, userName: string): Promise<void> {
     const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
-    
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>

@@ -35,11 +35,9 @@ export async function verifyJwtEdge(token: string | undefined | null, secret: st
     const dataBuf = msg.byteOffset === 0 && msg.byteLength === msg.buffer.byteLength
       ? msg.buffer
       : msg.buffer.slice(msg.byteOffset, msg.byteOffset + msg.byteLength);
-  // Conversion explicite vers ArrayBuffer standard pour éviter conflits de types TS
-  const sigView = new Uint8Array(sigBuf.slice(0));
-  const dataView = new Uint8Array(dataBuf.slice(0));
-  // Cast explicite pour satisfaire le typage TS dans l'environnement Edge
-  const ok = await crypto.subtle.verify('HMAC', key, sigView as unknown as BufferSource, dataView as unknown as BufferSource);
+    const sigView = new Uint8Array(sigBuf.slice(0));
+    const dataView = new Uint8Array(dataBuf.slice(0));
+    const ok = await crypto.subtle.verify('HMAC', key, sigView as unknown as BufferSource, dataView as unknown as BufferSource);
     if (!ok) return null;
     const payload: JwtPayloadEdge = JSON.parse(new TextDecoder().decode(base64UrlDecode(payloadB64)));
     if (payload.exp < Math.floor(Date.now()/1000)) return null;

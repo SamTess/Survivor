@@ -1,5 +1,5 @@
 import { randomBytes, scryptSync, timingSafeEqual, createHmac } from 'crypto';
-export const __SERVER_ONLY__ = true; // hint
+export const __SERVER_ONLY__ = true;
 
 export interface JwtPayload {
   userId: number;

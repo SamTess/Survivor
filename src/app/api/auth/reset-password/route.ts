@@ -29,7 +29,6 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Valide le token
     const { userId, valid } = await passwordResetService.validateResetToken(token);
 
     if (!valid) {
@@ -38,16 +37,13 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    // Hash le nouveau mot de passe
     const hashedPassword = hashPassword(password);
 
-    // Met à jour le mot de passe de l'utilisateur
     await prisma.s_USER.update({
       where: { id: userId },
       data: { password_hash: hashedPassword }
     });
 
-    // Marque le token comme utilisé
     await passwordResetService.useResetToken(token);
 
     return NextResponse.json({ 
@@ -55,7 +51,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Erreur lors de la réinitialisation du mot de passe:', error);
+    console.error('Error during password reset:', error);
     return NextResponse.json({ 
       error: 'Erreur interne du serveur' 
     }, { status: 500 });
@@ -67,18 +63,13 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const token = url.searchParams.get('token');
 
-    console.log('🔍 GET /api/auth/reset-password - Validation du token:', token);
-
     if (!token) {
-      console.log('❌ Token manquant');
       return NextResponse.json({ 
         error: 'Token requis' 
       }, { status: 400 });
     }
 
-    // Valide le token
     const result = await passwordResetService.validateResetToken(token);
-    console.log('🔍 Résultat validation:', result);
 
     return NextResponse.json({ valid: result.valid });
 

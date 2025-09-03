@@ -12,7 +12,6 @@ if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
 const passwordResetService = new PasswordResetService();
 
-// Configuration email
 const emailConfig = {
   host: process.env.EMAIL_HOST || 'localhost',
   port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -35,22 +34,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email requis' }, { status: 400 });
     }
 
-    // Cherche l'utilisateur par email
     const user = await prisma.s_USER.findFirst({ 
       where: { email: email.toLowerCase().trim() } 
     });
 
     if (!user) {
-      // Pour des raisons de sécurité, on ne révèle pas que l'email n'existe pas
       return NextResponse.json({ 
         message: 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.' 
       });
     }
 
-    // Génère un token de réinitialisation
     const resetToken = await passwordResetService.createResetToken(user.id);
 
-    // Envoie l'email
     try {
       await emailService.sendPasswordResetEmail(user.email, resetToken, user.name);
     } catch (emailError) {
@@ -65,7 +60,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Erreur lors de la demande de réinitialisation:', error);
+    console.error('Error during password reset request:', error);
     return NextResponse.json({ 
       error: 'Erreur interne du serveur' 
     }, { status: 500 });

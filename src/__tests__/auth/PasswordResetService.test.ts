@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-// Utiliser vi.hoisted pour déclarer les mocks
+// Use vi.hoisted to declare mocks
 const mockPrisma = vi.hoisted(() => ({
   s_PASSWORD_RESET: {
     updateMany: vi.fn(),

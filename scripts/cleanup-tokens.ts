@@ -1,18 +1,18 @@
 import { PasswordResetService } from '../src/infrastructure/services/PasswordResetService';
 
 /**
- * Script utilitaire pour nettoyer les tokens de reset de mot de passe expirés
+ * Utility script to clean up expired password reset tokens
  * Usage: npm run cleanup-tokens
  */
 async function cleanupExpiredTokens() {
   const passwordResetService = new PasswordResetService();
   
   try {
-    console.log('🧹 Nettoyage des tokens expirés...');
+    console.log('🧹 Cleaning up expired tokens...');
     const deletedCount = await passwordResetService.cleanupExpiredTokens();
-    console.log(`✅ ${deletedCount} token(s) expiré(s) supprimé(s)`);
+    console.log(`✅ ${deletedCount} expired token(s) deleted`);
   } catch (error) {
-    console.error('❌ Erreur lors du nettoyage:', error);
+    console.error('❌ Error during cleanup:', error);
     process.exit(1);
   }
 }
