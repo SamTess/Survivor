@@ -1,16 +1,14 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache netcat-openbsd
+RUN apk add --no-cache netcat-openbsd curl
 
 WORKDIR /app
 
 COPY package*.json ./
-
-RUN npm ci
-
-COPY Docker/.env .env
+RUN npm ci --only=production && npm cache clean --force
 
 COPY . .
+COPY Docker/.env .env
 
 RUN chmod +x ./scripts/start-prod.sh
 

@@ -78,6 +78,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
       - name: Install Docker Compose
         run: |
           sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -140,75 +148,40 @@ jobs:
       - name: Build and start production containers
         run: |
           cd Docker
-          echo "Starting production containers..."
+          echo "Starting production containers with health checks..."
           docker-compose -f docker-compose.prod.yml up --build -d
-          echo "Containers started, checking status..."
-          docker-compose -f docker-compose.prod.yml ps
+          echo "Containers started, waiting for health checks..."
 
       - name: Wait for services to be ready
         run: |
-          echo "Waiting for database container to be running..."
           cd Docker
-          export $(cat .env | xargs)
+          echo "Waiting for services to be healthy..."
 
-          timeout 30 bash -c '
-            until [ "$(docker-compose -f docker-compose.prod.yml ps -q db)" ]; do
-              echo "db container not created yet, waiting..."
-              sleep 2
-            done
-            CID=$(docker-compose -f docker-compose.prod.yml ps -q db)
-
-            STATE=$(docker inspect -f "{{.State.Status}}" $CID 2>/dev/null || echo "unknown")
-            if [ "$STATE" = "exited" ] || [ "$STATE" = "dead" ] || [ "$STATE" = "created" ]; then
-              echo "db container created but in terminal state: $STATE"
-              echo "==== Container inspect ===="
-              docker inspect $CID || true
-              echo "==== Container logs ===="
-              docker logs $CID || true
-              exit 1
-            fi
-
-            restart_count=0
-            until [ "$(docker inspect -f "{{.State.Running}}" $CID)" = "true" ]; do
-              CUR=$(docker inspect -f "{{.State.Status}}" $CID 2>/dev/null || echo "unknown")
-              echo "db container present but not running yet (state: $CUR)..."
-              docker-compose -f docker-compose.prod.yml ps -a || true
-              sleep 2
-              if [ "$CUR" = "exited" ] || [ "$CUR" = "dead" ]; then
-                echo "db container entered terminal state: $CUR"
-                echo "==== Container inspect ===="
-                docker inspect $CID || true
-                echo "==== Container logs ===="
-                docker logs $CID || true
-                exit 1
-              fi
-              if [ "$CUR" = "restarting" ]; then
-                restart_count=$((restart_count+1))
-                echo "db container is restarting (count: $restart_count)."
-                if [ $restart_count -ge 4 ]; then
-                  echo "db container restarted too many times, dumping logs and failing"
-                  echo "==== Container inspect ===="
-                  docker inspect $CID || true
-                  echo "==== Container logs ===="
-                  docker logs $CID || true
-                  exit 1
+          timeout 120 bash -c '
+            while true; do
+              if docker-compose -f docker-compose.prod.yml ps | grep -q "Up (healthy)"; then
+                db_status=$(docker-compose -f docker-compose.prod.yml ps db | grep "Up (healthy)" || echo "not ready")
+                web_status=$(docker-compose -f docker-compose.prod.yml ps web | grep "Up (healthy)" || echo "not ready")
+                if [[ "$db_status" != "not ready" ]] && [[ "$web_status" != "not ready" ]]; then
+                  echo "All services are healthy!"
+                  break
                 fi
               fi
+
+              if docker-compose -f docker-compose.prod.yml ps | grep -E "(Exit|Restarting)"; then
+                echo "Service health check failed!"
+                docker-compose -f docker-compose.prod.yml ps
+                docker-compose -f docker-compose.prod.yml logs
+                exit 1
+              fi
+
+              echo "Waiting for services to become healthy..."
+              sleep 5
             done
           '
-          echo "db container is running; checking PostgreSQL readiness inside container..."
 
-          timeout 30 bash -c '
-            until docker-compose -f docker-compose.prod.yml exec -T db sh -c "pg_isready -q"; do
-              echo "Postgres not ready yet, waiting..."
-              sleep 2
-            done
-          '
-          echo "Postgres reports it is ready"
-
-          echo "Waiting for web application to respond on http://localhost:3000 ..."
-          timeout 120 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do echo "Web app not ready, waiting..."; sleep 2; done'
-          echo "Web application is ready!"
+          echo "Services are ready! Final status check:"
+          docker-compose -f docker-compose.prod.yml ps
 
       - name: Run Prisma migrations (or push schema)
         run: |
