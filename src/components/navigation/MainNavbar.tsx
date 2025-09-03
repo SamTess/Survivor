@@ -3,14 +3,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { FaSearch, FaUser } from 'react-icons/fa';
 
-const NAV_LINKS = [
+const NAV_LINKS: { href: string; label: string; roles?: string[]; permissions?: string[] }[] = [
   { href: '/home', label: 'Home' },
   { href: '/projects', label: 'Projects' },
   { href: '/news', label: 'News' },
   { href: '/events', label: 'Events' },
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard', label: 'Dashboard', roles: ['ADMIN','MODERATOR'] },
 ];
 
 type NavLinksProps = {
@@ -20,6 +21,7 @@ type NavLinksProps = {
 
 function NavLinks({ variant, onItemClick }: NavLinksProps) {
   const pathname = usePathname();
+  const { hasRole, hasPermission } = useAuth();
   const isMobile = variant === 'mobile';
   const baseClasses =
     'text-black hover:text-indigo-600 text-sm font-normal tracking-wide transition-colors duration-200';
@@ -27,7 +29,11 @@ function NavLinks({ variant, onItemClick }: NavLinksProps) {
 
   return (
     <>
-      {NAV_LINKS.map(({ href, label }) => {
+      {NAV_LINKS.filter(l => {
+        if (l.roles && !hasRole(l.roles as ('USER'|'ADMIN'|'MODERATOR')[])) return false;
+        if (l.permissions && !hasPermission(l.permissions)) return false;
+        return true;
+      }).map(({ href, label }) => {
         const isActive = pathname === href;
         return (
           <Link
@@ -47,6 +53,7 @@ function NavLinks({ variant, onItemClick }: NavLinksProps) {
 export default function MainNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, loading, logout } = useAuth();
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -74,18 +81,23 @@ export default function MainNavbar() {
 
           {/* Right side - Search and Login icons */}
           <div className="flex items-center space-x-2">
-            <button
-              className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
-              aria-label="Search"
-            >
+            <button className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg" aria-label="Search">
               <FaSearch className="h-4 w-4" />
             </button>
-            <button
-              className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
-              aria-label="Login"
-            >
-              <FaUser className="h-4 w-4" />
-            </button>
+            {loading ? (
+              <span className="text-xs text-gray-500">...</span>
+            ) : user ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-700 max-w-[140px] truncate">{user.name} ({user.role})</span>
+                <button onClick={logout} className="text-black hover:text-red-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg" aria-label="Logout">
+                  <FaUser className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <Link href="/login" className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg" aria-label="Login">
+                <FaUser className="h-4 w-4" />
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
