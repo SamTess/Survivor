@@ -58,7 +58,7 @@ export const useLike = ({
         body: JSON.stringify({
           userId,
           sessionId,
-          eventType: newIsLiked ? EventType.LIKE : EventType.UNFOLLOW,
+          eventType: newIsLiked ? EventType.LIKE : EventType.UNLIKE,
           contentType,
           contentId,
           metadata: { action: newIsLiked ? 'like' : 'unlike' },

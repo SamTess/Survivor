@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if bookmark already exists
     const existingBookmark = await prisma.s_BOOKMARK.findUnique({
       where: {
         userId_contentType_contentId: {
@@ -33,7 +32,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create bookmark
     await prisma.s_BOOKMARK.create({
       data: {
         userId,
@@ -42,7 +40,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update bookmark count based on content type
     let bookmarkCount = 0;
     if (contentType === ContentType.STARTUP) {
       const startup = await prisma.s_STARTUP.update({
@@ -85,7 +82,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete bookmark
     await prisma.s_BOOKMARK.delete({
       where: {
         userId_contentType_contentId: {
@@ -96,7 +92,6 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    // Update bookmark count based on content type
     let bookmarkCount = 0;
     if (contentType === ContentType.STARTUP) {
       const startup = await prisma.s_STARTUP.update({

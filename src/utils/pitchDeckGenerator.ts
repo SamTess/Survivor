@@ -69,32 +69,43 @@ export const generatePitchDeck = (project: ProjectData) => {
     return y + (lines.length * lineHeight) + 5;
   };
 
-    const addSection = (title: string, content: string, startY: number) => {
+  const getTextLinesAndHeight = (text: string, fontSize: number, maxWidth: number) => {
+    pdf.setFontSize(fontSize);
+    const lines = pdf.splitTextToSize(text, maxWidth);
+    const height = lines.length * (fontSize * 1.2);
+    return { lines, height };
+  };
+
+  const ensureSectionFits = (startY: number, sectionHeight: number) => {
+    if (startY + sectionHeight > pageHeight - margin) {
+      pdf.addPage();
+      return margin;
+    }
+    return startY;
+  };
+
+  const drawSectionRect = (y: number, height: number) => {
+    pdf.setDrawColor(200, 200, 200);
+    pdf.setLineWidth(0.5);
+    pdf.rect(margin, y, usableWidth, height);
+  };
+
+  const addSection = (title: string, content: string, startY: number) => {
     const contentMaxWidth = usableWidth - 20;
     const titleFontSize = 14;
     const contentFontSize = 10;
     const padding = 10;
     const spaceBetweenTitleAndContent = 5;
 
-    pdf.setFontSize(titleFontSize);
-    const titleLines = pdf.splitTextToSize(title, contentMaxWidth);
-    const titleHeight = titleLines.length * (titleFontSize * 1.2);
-
-    pdf.setFontSize(contentFontSize);
-    const contentLines = pdf.splitTextToSize(content, contentMaxWidth);
-    const contentHeight = contentLines.length * (contentFontSize * 1.2);
+    const { height: titleHeight } = getTextLinesAndHeight(title, titleFontSize, contentMaxWidth);
+    const { height: contentHeight } = getTextLinesAndHeight(content, contentFontSize, contentMaxWidth);
 
     const totalContentHeight = padding + titleHeight + spaceBetweenTitleAndContent + contentHeight + padding;
     const sectionHeight = Math.max(totalContentHeight, 35);
 
-    if (startY + sectionHeight > pageHeight - margin) {
-      pdf.addPage();
-      startY = margin;
-    }
+    startY = ensureSectionFits(startY, sectionHeight);
 
-    pdf.setDrawColor(200, 200, 200);
-    pdf.setLineWidth(0.5);
-    pdf.rect(margin, startY, usableWidth, sectionHeight);
+    drawSectionRect(startY, sectionHeight);
 
     const nextY = addText(title, margin + padding, startY + padding, {
       fontSize: titleFontSize,
