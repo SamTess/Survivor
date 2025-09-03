@@ -39,7 +39,6 @@ const getSectorGradient = (sector: string, index: number) => {
     'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
     'linear-gradient(135deg, #ff8a80 0%, #ff80ab 100%)',
   ];
-
   const gradientIndex = index % gradients.length;
   return gradients[gradientIndex];
 };

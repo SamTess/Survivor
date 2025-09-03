@@ -7,7 +7,7 @@ import Link from 'next/link';
 import DarkModeToggle from '../layout/DarkModeToggle';
 
 const adminSidebarItems = [
-  { icon: FaHome, redirection: '/home', text: 'Home' },
+  { icon: FaHome, redirection: '/', text: 'Home' },
   { icon: FaCalendarAlt, redirection: '/admin/events-management', text: 'Events' },
   { icon: FaProjectDiagram, redirection: '/admin/projects-management', text: 'Projects' },
   { icon: FaNewspaper, redirection: '/admin/news-management', text: 'News'},
