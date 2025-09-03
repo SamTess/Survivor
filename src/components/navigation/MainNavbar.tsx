@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { FaSearch, FaUser } from 'react-icons/fa';
 
 const NAV_LINKS = [
-  { href: '/home', label: 'Home' },
+  { href: '/', label: 'Home' },
   { href: '/projects', label: 'Projects' },
   { href: '/news', label: 'News' },
   { href: '/events', label: 'Events' },
