@@ -1,73 +1,67 @@
 'use client';
 
 import Image from 'next/image';
-import { FaCalendarAlt, FaMapMarkerAlt, FaTag } from 'react-icons/fa';
+import { FaCalendarAlt } from 'react-icons/fa';
 import { formatDate } from '@/utils/dateUtils';
-import { getNewsCategoryColor } from '@/utils/styleUtils';
 
 interface NewsCardProps {
   id: number;
   title: string;
-  news_date: string;
-  location: string;
-  category: string;
-  startup_id: number;
-  description: string;
+  news_date?: string;
+  location?: string;
+  category?: string;
+  startup_id?: number;
+  description?: string;
   imageUrl?: string;
+  onClick?: () => void;
 }
 
 export default function NewsCard({
   title,
   news_date,
-  location,
-  category,
   description,
   imageUrl,
+  onClick,
 }: NewsCardProps) {
-
+  // Default image if none provided
   const defaultImage = '/logo.png';
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group">
-      {/* Image Section */}
-      <div className="relative h-48 w-full overflow-hidden">
-        <Image
-          src={imageUrl || defaultImage}
-          alt={title}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-        <div className="absolute top-3 left-3">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getNewsCategoryColor(category)}`}>
-            <FaTag className="w-3 h-3 mr-1" />
-            {category}
-          </span>
+    <div
+      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden group cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="flex h-32">
+        {/* Image Section */}
+        <div className="relative w-48 h-full overflow-hidden flex-shrink-0">
+          <Image
+            src={imageUrl || defaultImage}
+            alt={title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="192px"
+          />
         </div>
-      </div>
 
-      {/* Content Section */}
-      <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-200">
-          {title}
-        </h3>
+        {/* Content Section */}
+        <div className="flex-1 p-4 flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-200">
+              {title}
+            </h3>
 
-        <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-          {description}
-        </p>
+            <p className="text-gray-600 text-sm line-clamp-2">
+              {description || 'No description available'}
+            </p>
+          </div>
 
-        {/* Meta Information */}
-        <div className="flex items-center justify-between text-sm text-gray-500">
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <FaCalendarAlt className="w-4 h-4 mr-1" />
+          {/* Date - Discrete */}
+          {news_date && (
+            <div className="flex items-center text-xs text-gray-400 mt-2">
+              <FaCalendarAlt className="w-3 h-3 mr-1" />
               <span>{formatDate(news_date)}</span>
             </div>
-            <div className="flex items-center">
-              <FaMapMarkerAlt className="w-4 h-4 mr-1" />
-              <span>{location}</span>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
