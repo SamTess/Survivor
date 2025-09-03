@@ -191,9 +191,13 @@ function ResetPasswordForm() {
 
 function LoadingFallback() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-md text-center">
-        <div className="text-lg text-gray-600">Chargement...</div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="max-w-md w-full bg-white/80 backdrop-blur-sm p-10 rounded-2xl shadow-xl border border-white/50 text-center">
+        <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-100 rounded-full mb-4">
+          <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+        <div className="text-lg font-medium text-gray-900">Chargement...</div>
+        <div className="text-sm text-gray-600 mt-2">Vérification des informations</div>
       </div>
     </div>
   );
