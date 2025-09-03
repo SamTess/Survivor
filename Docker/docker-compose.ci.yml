@@ -1,12 +1,6 @@
 services:
   web:
-    build:
-      context: ..
-      dockerfile: Docker/Dockerfile.web
-      cache_from:
-        - node:20-alpine
-      args:
-        BUILDKIT_INLINE_CACHE: 1
+    image: docker-web:latest
     ports:
       - "3000:3000"
     env_file:
