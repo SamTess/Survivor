@@ -50,25 +50,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies for linting
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          npm install --no-save eslint typescript @types/node @types/react
 
       - name: Run ESLint
-        run: pnpm run lint
+        run: npm run lint
 
       - name: Check TypeScript types
-        run: pnpm exec tsc --noEmit
+        run: npx tsc --noEmit
 
   docker-integration-test:
     name: Docker Integration Test
@@ -92,7 +88,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-v2-${{ hashFiles('package*.json', 'pnpm-lock.yaml', 'Docker/Dockerfile*', 'prisma/schema.prisma') }}
+          key: ${{ runner.os }}-buildx-v2-${{ hashFiles('package*.json', 'Docker/Dockerfile*', 'prisma/schema.prisma') }}
           restore-keys: |
             ${{ runner.os }}-buildx-v2-
             ${{ runner.os }}-buildx-
@@ -312,22 +308,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 8
-
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Run unit tests (Vitest)
-        run: pnpm run test -- --run --passWithNoTests
+        run: npm test -- --run --passWithNoTests
 
 
   push_to_mirror:
@@ -346,4 +337,3 @@ jobs:
         with:
           target_repo_url: ${{ env.GITHUB_URL }}
           ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
-
