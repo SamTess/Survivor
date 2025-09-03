@@ -182,6 +182,7 @@ enum EventType {
   VIEW
   CLICK
   LIKE
+  UNLIKE
   BOOKMARK
   SHARE
   FOLLOW
