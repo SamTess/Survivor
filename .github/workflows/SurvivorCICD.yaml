@@ -79,22 +79,18 @@ jobs:
         with:
           driver-opts: |
             image=moby/buildkit:buildx-stable-1
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 4
 
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('package*.json', 'Docker/Dockerfile*', 'prisma/schema.prisma') }}
+          key: ${{ runner.os }}-buildx-v2-${{ hashFiles('package*.json', 'Docker/Dockerfile*', 'prisma/schema.prisma') }}
           restore-keys: |
+            ${{ runner.os }}-buildx-v2-
             ${{ runner.os }}-buildx-
-
-      - name: Cache Node.js dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
 
       - name: Install Docker Compose
         run: |
@@ -149,9 +145,7 @@ jobs:
       - name: Build and start production containers
         run: |
           cd Docker
-          echo "Building with BuildKit caching..."
-
-          mkdir -p /tmp/.buildx-cache
+          echo "Building with optimized BuildKit caching..."
 
           docker buildx build \
             --file Dockerfile.web \
@@ -160,17 +154,16 @@ jobs:
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg NODE_ENV=production \
+            --build-arg NEXT_TELEMETRY_DISABLED=1 \
+            --progress=plain \
             --load \
             ..
 
-
-          if [ -d "/tmp/.buildx-cache-new" ]; then
-            rm -rf /tmp/.buildx-cache
-            mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-          fi
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
           echo "Starting production containers..."
-          docker-compose -f docker-compose.ci.yml up -d
+          docker-compose -f docker-compose.ci.yml up -d --no-recreate
           echo "Containers started, waiting for health checks..."
 
       - name: Wait for services to be ready
@@ -306,8 +299,8 @@ jobs:
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
-    needs: [docker-integration-test]
-    if: needs.docker-integration-test.result == 'success'
+    needs: [cancel-if-mirror, lint]
+    if: needs.cancel-if-mirror.outputs.should_cancel == 'false'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
