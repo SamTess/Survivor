@@ -146,6 +146,8 @@ jobs:
           cd Docker
           echo "Building with optimized BuildKit caching..."
 
+          export $(cat .env | xargs)
+
           docker buildx build \
             --file Dockerfile.web \
             --tag docker-web:latest \
@@ -154,6 +156,7 @@ jobs:
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --build-arg NODE_ENV=production \
             --build-arg NEXT_TELEMETRY_DISABLED=1 \
+            --build-arg DATABASE_URL="$DATABASE_URL" \
             --progress=plain \
             --load \
             ..
