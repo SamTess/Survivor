@@ -5,9 +5,6 @@ import NewsCard from '@/components/cards/NewsCard';
 import NewsModal from '@/components/modals/NewsModal';
 import { NewsDetailApiResponse } from '@/domain/interfaces/News';
 
-// TODO REMOVE
-import newsData from '@/mocks/news.json';
-
 export default function NewsPage() {
   const [news, setNews] = useState<NewsDetailApiResponse[]>([]);
   const [filteredNews, setFilteredNews] = useState<NewsDetailApiResponse[]>([]);
@@ -15,6 +12,7 @@ export default function NewsPage() {
   const [selectedTimeFilter, setSelectedTimeFilter] = useState<'all' | 'recent' | 'older'>('all');
   const [selectedNewsItem, setSelectedNewsItem] = useState<NewsDetailApiResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const handleNewsClick = (newsItem: NewsDetailApiResponse) => {
     setSelectedNewsItem(newsItem);
@@ -27,8 +25,26 @@ export default function NewsPage() {
   };
 
   useEffect(() => {
-    setNews(newsData);
-    setFilteredNews(newsData);
+    const fetchNews = async () => {
+      try {
+        const response = await fetch('/api/news');
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          setNews(result.data);
+        } else {
+          console.error('API returned invalid data structure:', result);
+          setNews([]);
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        setNews([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNews();
   }, []);
 
   useEffect(() => {
@@ -109,7 +125,11 @@ export default function NewsPage() {
         </div>
 
         {/* News Grid */}
-        {filteredNews.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-lg mb-2">Loading news...</div>
+          </div>
+        ) : filteredNews.length > 0 ? (
           <div className="space-y-4">
             {filteredNews.map((newsItem) => (
               <NewsCard
