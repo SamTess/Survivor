@@ -11,6 +11,7 @@ export enum EventType {
   VIEW = "VIEW",
   CLICK = "CLICK",
   LIKE = "LIKE",
+  UNLIKE = "UNLIKE",
   BOOKMARK = "BOOKMARK",
   SHARE = "SHARE",
   FOLLOW = "FOLLOW",
