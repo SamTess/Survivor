@@ -1,4 +1,3 @@
-
 # README
 
 Ce projet utilise Next.js pour le routage et l'affichage côté client, ainsi qu'une architecture en oignon (onion architecture) pour organiser la logique métier et les services.

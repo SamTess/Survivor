@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "name": "Demo Day Paris",
+    "dates": "2025-09-15",
+    "location": "Station F",
+    "description": "Pitch session and networking.",
+    "event_type": "Pitch",
+    "target_audience": "Investors",
+    "created_at": "2025-07-01T09:00:00.000Z",
+    "updated_at": "2025-07-01T09:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Product Webinar",
+    "dates": "2025-10-02",
+    "location": "Online",
+    "description": "Showing our latest features.",
+    "event_type": "Webinar",
+    "target_audience": "Partners",
+    "created_at": "2025-08-10T09:00:00.000Z",
+    "updated_at": "2025-08-10T09:00:00.000Z"
+  }
+]
