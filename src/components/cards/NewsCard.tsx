@@ -23,7 +23,7 @@ export default function NewsCard({
   imageUrl,
   onClick,
 }: NewsCardProps) {
-  // Default image if none provided
+
   const defaultImage = '/logo.png';
 
   return (

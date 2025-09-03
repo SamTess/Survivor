@@ -12,7 +12,6 @@ export default function Dashboard() {
   const [active, setActive] = useState(0); // 0=Stats, 1=Startup, 2=Events/News
   const [isDesktop, setIsDesktop] = useState(false);
 
-  // Check if device is desktop
   useEffect(() => {
     const checkDesktop = () => {
       setIsDesktop(window.innerWidth >= 768); // md breakpoint

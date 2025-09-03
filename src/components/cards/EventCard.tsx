@@ -28,7 +28,7 @@ export default function EventCard({
 
   const defaultImage = '/logo.png';
 
-  // Check if event is upcoming or past (only if dates is provided)
+  // (only if dates is provided)
   const isUpcoming = dates ? isUpcomingDate(dates) : false;
 
   return (
