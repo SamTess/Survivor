@@ -10,7 +10,6 @@ export interface StartupCardFieldDescriptor<K extends StartupCardFieldKey = Star
   format?: (value: Startup[K], full: Startup) => string
 }
 
-// Order determines rendering order beneath description.
 export const startupCardFieldConfig: StartupCardFieldDescriptor[] = [
   { key: 'address', label: 'Address', icon: MapPin },
   { key: 'legal_status', label: 'Legal', icon: Building2 },
@@ -18,7 +17,3 @@ export const startupCardFieldConfig: StartupCardFieldDescriptor[] = [
   { key: 'email', label: 'Email', icon: Mail },
   { key: 'created_at', label: 'Created', icon: Calendar, format: (v) => v instanceof Date ? v.toISOString().slice(0,10) : '' },
 ]
-
-// Helper to easily extend / prune fields in one place.
-// To remove a field from the card, delete it from the array above.
-// To add: push a new descriptor with { key, label, icon?, format? }.
