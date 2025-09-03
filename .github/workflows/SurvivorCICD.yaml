@@ -30,7 +30,6 @@ jobs:
         run: |
           REPO_URL=$(git config --get remote.origin.url)
 
-          # Normalize URLs by removing any trailing `.git`
           REPO_URL=${REPO_URL%.git}
           MIRROR_URL=${MIRROR_URL%.git}
 
@@ -77,14 +76,25 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:buildx-stable-1
 
       - name: Cache Docker layers
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          key: ${{ runner.os }}-buildx-${{ hashFiles('package*.json', 'Docker/Dockerfile*', 'prisma/schema.prisma') }}
           restore-keys: |
             ${{ runner.os }}-buildx-
+
+      - name: Cache Node.js dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
 
       - name: Install Docker Compose
         run: |
@@ -103,17 +113,6 @@ jobs:
           NODE_ENV: ${{ secrets.NODE_ENV }}
         run: |
           cd Docker/
-          # Valeurs par défaut si certains secrets manquent (ex: DB_USER)
-          : "${DB_USER:=postgres}"
-          : "${DB_PORT:=5432}"
-          : "${DB_NAME:=app}"
-          if [ -z "${DB_PASSWORD}" ]; then
-            echo "DB_PASSWORD manquant (secret)." >&2
-            exit 1
-          fi
-          # Reconstruit DATABASE_URL de manière fiable (évite ordre env)
-          DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST:-localhost}:${DB_PORT}/${DB_NAME}"
-          cat > .env << EOF
           DB_HOST=${DB_HOST}
           DB_PORT=${DB_PORT}
           DB_NAME=${DB_NAME}
@@ -150,16 +149,23 @@ jobs:
           cd Docker
           echo "Building with BuildKit caching..."
 
+          mkdir -p /tmp/.buildx-cache
+
           docker buildx build \
             --file Dockerfile.web \
             --tag docker-web:latest \
             --cache-from=type=local,src=/tmp/.buildx-cache \
             --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg NODE_ENV=production \
             --load \
             ..
 
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+          if [ -d "/tmp/.buildx-cache-new" ]; then
+            rm -rf /tmp/.buildx-cache
+            mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          fi
 
           echo "Starting production containers..."
           docker-compose -f docker-compose.ci.yml up -d
