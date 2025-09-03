@@ -109,7 +109,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 {/* Avatar */}
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold backdrop-blur-md border border-primary/20">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
                   {user.name.split(' ').map(n => n[0]).join('')}
                 </div>
 

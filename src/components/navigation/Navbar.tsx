@@ -34,11 +34,11 @@ export function Navbar() {
             className="flex items-center gap-2 text-2xl font-bold text-foreground transition-all duration-300"
           >
             <div className="relative group">
-              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center border border-border hover:border-white hover:bg-transparent hover:scale-105 transition-all duration-300">
+              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center hover:bg-transparent hover:scale-105 transition-all duration-300">
                 <Sparkles className="w-4 h-4 text-white group-hover:text-primary transition-colors" />
               </div>
             </div>
-            <span className="text-gray-700 font-medium">
+            <span className="text-gray-500 font-medium">
               JEB
             </span>
           </Link>
@@ -69,14 +69,14 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Button
               size="sm"
-              className="group rounded-full w-10 h-10 p-0 border border-border hover:border-white hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
               <Search className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
             </Button>
             <Button
               asChild
               size="sm"
-              className="group rounded-full w-10 h-10 p-0 border border-border hover:border-white hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
               <Link href="/profile/1">
                 <User className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
@@ -85,7 +85,7 @@ export function Navbar() {
             <Button
               asChild
               size="sm"
-              className="group rounded-full p-5 border border-border hover:border-white hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="group rounded-full p-5 hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
               <Link href="/admin">
                 <span className="text-sm font-medium text-white group-hover:text-primary transition-colors">Admin</span>
