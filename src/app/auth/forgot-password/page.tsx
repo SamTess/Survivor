@@ -45,12 +45,12 @@ export default function ForgotPasswordPage() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <div className="text-center mb-8 animate-fade-in">
-            <div className="inline-block p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl shadow-lg">
+            <div className="inline-block p-3 shadow-lg">
               <Image
                 src="/logo.png"
                 alt="Jeb Incubator"
-                width={40}
-                height={40}
+                width={100}
+                height={100}
                 className="w-10 h-10"
               />
             </div>
