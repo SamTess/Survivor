@@ -148,8 +148,21 @@ jobs:
       - name: Build and start production containers
         run: |
           cd Docker
-          echo "Starting production containers with health checks..."
-          docker-compose -f docker-compose.prod.yml up --build -d
+          echo "Building with BuildKit caching..."
+
+          docker buildx build \
+            --file Dockerfile.web \
+            --tag docker-web:latest \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            --load \
+            ..
+
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+          echo "Starting production containers..."
+          docker-compose -f docker-compose.ci.yml up -d
           echo "Containers started, waiting for health checks..."
 
       - name: Wait for services to be ready
@@ -159,19 +172,21 @@ jobs:
 
           timeout 120 bash -c '
             while true; do
-              if docker-compose -f docker-compose.prod.yml ps | grep -q "Up (healthy)"; then
-                db_status=$(docker-compose -f docker-compose.prod.yml ps db | grep "Up (healthy)" || echo "not ready")
-                web_status=$(docker-compose -f docker-compose.prod.yml ps web | grep "Up (healthy)" || echo "not ready")
+              if docker-compose -f docker-compose.ci.yml ps | grep -q "Up (healthy)"; then
+                db_status=$(docker-compose -f docker-compose.ci.yml ps db | grep "Up (healthy)" || echo "not ready")
+                web_status=$(docker-compose -f docker-compose.ci.yml ps web | grep "Up (healthy)" || echo "not ready")
+
                 if [[ "$db_status" != "not ready" ]] && [[ "$web_status" != "not ready" ]]; then
                   echo "All services are healthy!"
                   break
                 fi
               fi
 
-              if docker-compose -f docker-compose.prod.yml ps | grep -E "(Exit|Restarting)"; then
+              # Check for failed containers
+              if docker-compose -f docker-compose.ci.yml ps | grep -E "(Exit|Restarting)"; then
                 echo "Service health check failed!"
-                docker-compose -f docker-compose.prod.yml ps
-                docker-compose -f docker-compose.prod.yml logs
+                docker-compose -f docker-compose.ci.yml ps
+                docker-compose -f docker-compose.ci.yml logs
                 exit 1
               fi
 
@@ -181,7 +196,7 @@ jobs:
           '
 
           echo "Services are ready! Final status check:"
-          docker-compose -f docker-compose.prod.yml ps
+          docker-compose -f docker-compose.ci.yml ps
 
       - name: Run Prisma migrations (or push schema)
         run: |
@@ -189,35 +204,35 @@ jobs:
           cd Docker
           export $(cat .env | xargs)
           set -e
-          HAS_MIGRATIONS=$(docker-compose -f docker-compose.prod.yml exec -T web sh -c 'ls -1 prisma/migrations 2>/dev/null | grep -v "^$" || true' | wc -l | tr -d '[:space:]')
+          HAS_MIGRATIONS=$(docker-compose -f docker-compose.ci.yml exec -T web sh -c 'ls -1 prisma/migrations 2>/dev/null | grep -v "^$" || true' | wc -l | tr -d '[:space:]')
           if [ "$HAS_MIGRATIONS" -gt 0 ]; then
             echo "Migrations détectées ($HAS_MIGRATIONS dossiers) -> prisma migrate deploy"
-            docker-compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy
+            docker-compose -f docker-compose.ci.yml exec -T web npx prisma migrate deploy
           else
             echo "Aucune migration versionnée détectée -> prisma db push"
-            docker-compose -f docker-compose.prod.yml exec -T web npx prisma db push
+            docker-compose -f docker-compose.ci.yml exec -T web npx prisma db push
           fi
           echo "Etat des tables après synchronisation:" \
-            && docker-compose -f docker-compose.prod.yml exec -T db psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"
+            && docker-compose -f docker-compose.ci.yml exec -T db psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"
 
       - name: Test database connection and schema
         run: |
           echo "Testing database connection and checking tables..."
           cd Docker
           export $(cat .env | xargs)
-          EXPECTED=$(docker-compose -f docker-compose.prod.yml exec -T web sh -c "grep -E '^model ' prisma/schema.prisma | wc -l" | tr -d '[:space:]')
+          EXPECTED=$(docker-compose -f docker-compose.ci.yml exec -T web sh -c "grep -E '^model ' prisma/schema.prisma | wc -l" | tr -d '[:space:]')
           echo "Expected Prisma models: $EXPECTED"
-          COUNT=$(docker-compose -f docker-compose.prod.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" | tr -d '[:space:]')
+          COUNT=$(docker-compose -f docker-compose.ci.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" | tr -d '[:space:]')
           echo "Actual table count: $COUNT"
           if [ "$COUNT" -lt "$EXPECTED" ]; then
             echo "Table count ($COUNT) < expected models ($EXPECTED) => échec" >&2
             echo "Listing current tables:" >&2
-            docker-compose -f docker-compose.prod.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;" >&2 || true
+            docker-compose -f docker-compose.ci.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;" >&2 || true
             exit 1
           fi
 
           echo "Testing specific table exists..."
-          docker-compose -f docker-compose.prod.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "
+          docker-compose -f docker-compose.ci.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "
             SELECT 1
             FROM information_schema.tables
             WHERE table_schema = 'public' AND lower(table_name) = 's_user'
@@ -246,7 +261,7 @@ jobs:
           echo "Testing if web app can connect to database..."
           cd Docker
           export $(cat .env | xargs)
-          logs=$(docker-compose -f docker-compose.prod.yml logs web 2>&1)
+          logs=$(docker-compose -f docker-compose.ci.yml logs web 2>&1)
           if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
             echo "Database connection errors found in web app logs:"
             echo "$logs"
@@ -260,20 +275,20 @@ jobs:
           echo "=== Container Status ==="
           cd Docker
           export $(cat .env | xargs)
-          docker-compose -f docker-compose.prod.yml ps
+          docker-compose -f docker-compose.ci.yml ps
           echo ""
           echo "=== Web App Logs ==="
-          docker-compose -f docker-compose.prod.yml logs web
+          docker-compose -f docker-compose.ci.yml logs web
           echo ""
           echo "=== Database Logs ==="
-          docker-compose -f docker-compose.prod.yml logs db
+          docker-compose -f docker-compose.ci.yml logs db
 
       - name: Cleanup
         if: always()
         run: |
           cd Docker
           export $(cat .env | xargs)
-          docker-compose -f docker-compose.prod.yml down -v
+          docker-compose -f docker-compose.ci.yml down -v
 
   unit-tests:
     name: Unit Tests
