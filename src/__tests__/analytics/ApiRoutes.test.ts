@@ -10,7 +10,7 @@ vi.mock('../../composition/container', () => {
   };
 });
 
-// Import après mock
+// Import after mock
 import * as sessionRoute from '../../app/api/analytics/session/route';
 import * as pvRoute from '../../app/api/analytics/page-view/route';
 import * as interactionRoute from '../../app/api/analytics/interaction/route';

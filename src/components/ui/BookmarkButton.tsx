@@ -48,7 +48,6 @@ export default function BookmarkButton({
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!userId) {
-      console.log('User must be logged in to bookmark');
       return;
     }
     toggleBookmark();
