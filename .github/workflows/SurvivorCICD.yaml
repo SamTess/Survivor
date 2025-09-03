@@ -113,6 +113,7 @@ jobs:
           NODE_ENV: ${{ secrets.NODE_ENV }}
         run: |
           cd Docker/
+          cat > .env << EOF
           DB_HOST=${DB_HOST}
           DB_PORT=${DB_PORT}
           DB_NAME=${DB_NAME}
