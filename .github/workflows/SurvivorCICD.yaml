@@ -123,8 +123,7 @@ jobs:
 
           echo ".env file created successfully"
           echo "Sanity check (password masqué):"
-          grep -E '^(DB_HOST|DB_PORT|DB_NAME|DB_USER|NODE_ENV|NEXT_PUBLIC_APP_URL)=' .env || true
-          echo "DATABASE_URL user=$(echo "$DATABASE_URL" | sed -E 's#postgresql://([^:]+):.*@.*#\1#') host=$(echo "$DATABASE_URL" | sed -E 's#.*@([^:/]+).*#\1#')"
+          grep -E '^(DB_HOST|DB_PORT|DB_NAME|DB_USER|NODE_ENV|NEXT_PUBLIC_APP_URL|DATABASE_URL)=' .env || true
 
       - name: Validate environment variables
         run: |
