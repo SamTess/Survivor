@@ -5,11 +5,24 @@ import StartupForm from "@/components/dashboard/StartupForm";
 import EventsNewsManager from "@/components/dashboard/EventsNewsManager";
 import { useEffect, useRef, useState } from "react";
 import Dock from "@/components/ui/Dock";
-import { FaChartLine, FaRocket, FaNewspaper } from "react-icons/fa";
+import { FaChartLine, FaRocket, FaNewspaper, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 export default function Dashboard() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0); // 0=Stats, 1=Startup, 2=Events/News
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  // Check if device is desktop
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+    };
+
+    checkDesktop();
+    window.addEventListener('resize', checkDesktop);
+
+    return () => window.removeEventListener('resize', checkDesktop);
+  }, []);
 
   function goTo(index: number) {
     const el = scrollRef.current;
@@ -62,6 +75,37 @@ export default function Dashboard() {
               </section>
             </div>
 
+            {/* Floating Navigation Arrows for Desktop */}
+            {isDesktop && (
+              <>
+                {/* Left Arrow */}
+                {active > 0 && (
+                  <button
+                    onClick={() => goTo(active - 1)}
+                    className="fixed left-8 top-1/2 -translate-y-1/2 z-40 group"
+                    aria-label="Previous section"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <FaChevronLeft className="text-gray-600 group-hover:text-indigo-600 transition-colors duration-200" size={16} />
+                    </div>
+                  </button>
+                )}
+
+                {/* Right Arrow */}
+                {active < 2 && (
+                  <button
+                    onClick={() => goTo(active + 1)}
+                    className="fixed right-8 top-1/2 -translate-y-1/2 z-40 group"
+                    aria-label="Next section"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <FaChevronRight className="text-gray-600 group-hover:text-indigo-600 transition-colors duration-200" size={16} />
+                    </div>
+                  </button>
+                )}
+              </>
+            )}
+
             <nav className="fixed inset-x-0 bottom-4 z-40 flex items-center justify-center" aria-label="Slide navigation">
               <div className="flex items-center gap-2 rounded-full border border-gray-200 bg-white/90 px-3 py-2 shadow-sm backdrop-blur animate-fade-in-up">
                 {[0, 1, 2].map((i) => (
@@ -80,23 +124,26 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
-      <Dock className="fixed bottom-15 right-4 z-10 border-none"  items={[
-        {
-          label: "Project statistics",
-          icon: <FaChartLine className="text-white text-lg" />,
-          onClick: () => goTo(0)
-        },
-        {
-          label: "Startup overview",
-          icon: <FaRocket className="text-white text-lg" />,
-          onClick: () => goTo(1)
-        },
-        {
-          label: "News & Events",
-          icon: <FaNewspaper className="text-white text-lg" />,
-          onClick: () => goTo(2)
-        },
-      ]} />
+      {/* Hide Dock on mobile devices */}
+      {isDesktop && (
+        <Dock className="fixed bottom-15 right-4 z-10 border-none"  items={[
+          {
+            label: "Project statistics",
+            icon: <FaChartLine className="text-white text-lg" />,
+            onClick: () => goTo(0)
+          },
+          {
+            label: "Startup overview",
+            icon: <FaRocket className="text-white text-lg" />,
+            onClick: () => goTo(1)
+          },
+          {
+            label: "News & Events",
+            icon: <FaNewspaper className="text-white text-lg" />,
+            onClick: () => goTo(2)
+          },
+        ]} />
+      )}
     </>
   );
 }
