@@ -24,7 +24,7 @@ export default function NewsCard({
   description,
   imageUrl,
 }: NewsCardProps) {
-  // Default image if none provided
+
   const defaultImage = '/logo.png';
 
   return (
@@ -51,7 +51,7 @@ export default function NewsCard({
         <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-200">
           {title}
         </h3>
-        
+
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
           {description}
         </p>

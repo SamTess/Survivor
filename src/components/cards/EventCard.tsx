@@ -25,9 +25,9 @@ export default function EventCard({
   target_audience,
   imageUrl,
 }: EventCardProps) {
-  // Default image if none provided
+
   const defaultImage = '/logo.png';
-  
+
   // Check if event is upcoming or past
   const isUpcoming = isUpcomingDate(dates);
 
@@ -60,7 +60,7 @@ export default function EventCard({
         <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2 group-hover:text-indigo-600 transition-colors duration-200">
           {name}
         </h3>
-        
+
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
           {description}
         </p>
