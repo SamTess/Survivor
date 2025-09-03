@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "email": "jane.doe@acme.io",
+    "name": "Jane Doe",
+    "role": "founder",
+    "founder_id": 1,
+    "created_at": "2024-01-10T09:00:00.000Z",
+    "updated_at": "2025-08-15T10:30:00.000Z"
+  },
+  {
+    "id": 2,
+    "email": "john.smith@acme.io",
+    "name": "John Smith",
+    "role": "founder",
+    "founder_id": 2,
+    "created_at": "2024-01-10T09:15:00.000Z",
+    "updated_at": "2025-08-15T10:30:00.000Z"
+  },
+  {
+    "id": 3,
+    "email": "sarah.connor@techflow.com",
+    "name": "Sarah Connor",
+    "role": "founder",
+    "founder_id": 3,
+    "created_at": "2024-02-15T14:20:00.000Z",
+    "updated_at": "2025-08-20T16:45:00.000Z"
+  },
+  {
+    "id": 4,
+    "email": "mike.wilson@techflow.com",
+    "name": "Mike Wilson",
+    "role": "founder",
+    "founder_id": 4,
+    "created_at": "2024-02-15T14:25:00.000Z",
+    "updated_at": "2025-08-20T16:45:00.000Z"
+  },
+  {
+    "id": 5,
+    "email": "alex.venture@capital.com",
+    "name": "Alex Venture",
+    "role": "investor",
+    "investor_id": 1,
+    "created_at": "2024-01-05T08:00:00.000Z",
+    "updated_at": "2025-09-01T12:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "email": "lisa.investment@fund.com",
+    "name": "Lisa Investment",
+    "role": "investor",
+    "investor_id": 2,
+    "created_at": "2024-01-08T10:30:00.000Z",
+    "updated_at": "2025-09-01T12:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "email": "david.angel@investor.net",
+    "name": "David Angel",
+    "role": "investor",
+    "investor_id": 3,
+    "created_at": "2024-03-12T11:15:00.000Z",
+    "updated_at": "2025-09-02T14:20:00.000Z"
+  },
+  {
+    "id": 8,
+    "email": "emma.startup@greentech.io",
+    "name": "Emma Green",
+    "role": "founder",
+    "founder_id": 5,
+    "created_at": "2024-05-20T13:45:00.000Z",
+    "updated_at": "2025-08-25T09:30:00.000Z"
+  },
+  {
+    "id": 9,
+    "email": "robert.tech@innovate.com",
+    "name": "Robert Tech",
+    "role": "founder",
+    "founder_id": 6,
+    "created_at": "2024-06-10T16:20:00.000Z",
+    "updated_at": "2025-08-28T11:15:00.000Z"
+  },
+  {
+    "id": 10,
+    "email": "sophia.capital@megafund.com",
+    "name": "Sophia Capital",
+    "role": "investor",
+    "investor_id": 4,
+    "created_at": "2024-04-18T09:30:00.000Z",
+    "updated_at": "2025-09-02T15:45:00.000Z"
+  },
+  {
+    "id": 11,
+    "email": "admin@survivor.com",
+    "name": "System Administrator",
+    "role": "admin",
+    "created_at": "2024-01-01T00:00:00.000Z",
+    "updated_at": "2025-09-03T08:00:00.000Z"
+  },
+  {
+    "id": 12,
+    "email": "tom.mentor@advisor.com",
+    "name": "Tom Mentor",
+    "role": "mentor",
+    "created_at": "2024-07-22T14:10:00.000Z",
+    "updated_at": "2025-08-30T10:20:00.000Z"
+  },
+  {
+    "id": 13,
+    "email": "anna.advisor@consultant.com",
+    "name": "Anna Advisor",
+    "role": "mentor",
+    "created_at": "2024-08-05T12:35:00.000Z",
+    "updated_at": "2025-09-01T16:40:00.000Z"
+  },
+  {
+    "id": 14,
+    "email": "carlos.blockchain@crypto.io",
+    "name": "Carlos Blockchain",
+    "role": "founder",
+    "founder_id": 7,
+    "created_at": "2024-09-12T10:45:00.000Z",
+    "updated_at": "2025-09-02T13:25:00.000Z"
+  },
+  {
+    "id": 15,
+    "email": "maria.venture@earlystage.com",
+    "name": "Maria Venture",
+    "role": "investor",
+    "investor_id": 5,
+    "created_at": "2024-10-03T15:20:00.000Z",
+    "updated_at": "2025-09-03T09:15:00.000Z"
+  }
+]
