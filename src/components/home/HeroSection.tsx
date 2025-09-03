@@ -5,7 +5,7 @@ import { ArrowRight, Rocket, Users, TrendingUp } from "lucide-react"
 
 export function HeroSection() {
   return (
-    <section className="relative bg-gradient-to-br from-background to-muted py-20 lg:py-32">
+    <section className="relative bg-gradient-to-br from-background to-muted pt-40 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6 text-balance">

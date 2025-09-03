@@ -60,68 +60,68 @@ export default function StatsSection() {
 
   return (
     <section className="space-y-6">
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm animate-card">
-        <h2 className="text-lg font-semibold text-gray-900">Statistics</h2>
-        <p className="text-sm text-gray-700">All the stats you need to know about your project.</p>
+      <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm animate-card transition-all duration-300">
+        <h2 className="text-lg font-semibold text-foreground">Statistics</h2>
+        <p className="text-sm text-muted-foreground">All the stats you need to know about your project.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card transition-transform duration-200 hover:scale-[1.01] hover:shadow-md">
+        <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-700">Views (this month)</p>
-              <p className="text-2xl font-semibold text-gray-900">{formatNumber(stats.viewsThisMonth)}</p>
+              <p className="text-sm text-muted-foreground">Views (this month)</p>
+              <p className="text-2xl font-semibold text-foreground">{formatNumber(stats.viewsThisMonth)}</p>
             </div>
-            <FiTrendingUp className="text-indigo-600" size={24} />
+            <FiTrendingUp className="text-primary" size={24} />
           </div>
           <div className="mt-2"><Sparkline data={stats.monthlyViews} /></div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card transition-transform duration-200 hover:scale-[1.01] hover:shadow-md">
+        <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-700">Total funding</p>
-              <p className="text-2xl font-semibold text-gray-900">€{formatNumber(totalFunding)}</p>
+              <p className="text-sm text-muted-foreground">Total funding</p>
+              <p className="text-2xl font-semibold text-foreground">€{formatNumber(totalFunding)}</p>
             </div>
-            <FiBarChart2 className="text-emerald-600" size={24} />
+            <FiBarChart2 className="text-accent" size={24} />
           </div>
           <div className="mt-2">
             <Bars data={stats.fundingHistory.map(f => Math.round(f.amount / 1000))} />
-            <p className="mt-1 text-xs text-gray-700">k€ by round</p>
+            <p className="mt-1 text-xs text-muted-foreground">k€ by round</p>
           </div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card transition-transform duration-200 hover:scale-[1.01] hover:shadow-md">
+        <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-700">Conversion rate</p>
-              <p className="text-2xl font-semibold text-gray-900">{formatPercent(stats.conversionRate)}</p>
+              <p className="text-sm text-muted-foreground">Conversion rate</p>
+              <p className="text-2xl font-semibold text-foreground">{formatPercent(stats.conversionRate)}</p>
             </div>
-            <FiTrendingUp className="text-indigo-600" size={24} />
+            <FiTrendingUp className="text-primary" size={24} />
           </div>
           <div className="mt-2"><Sparkline data={stats.activeUsers} color="#6610F2" /></div>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card transition-transform duration-200 hover:scale-[1.01] hover:shadow-md">
+        <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300 hover:scale-[1.01] hover:shadow-md hover:border-primary/20">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-700">Active users</p>
-              <p className="text-2xl font-semibold text-gray-900">{formatNumber(stats.activeUsers.at(-1) || 0)}</p>
+              <p className="text-sm text-muted-foreground">Active users</p>
+              <p className="text-2xl font-semibold text-foreground">{formatNumber(stats.activeUsers.at(-1) || 0)}</p>
             </div>
-            <FiUsers className="text-indigo-600" size={24} />
+            <FiUsers className="text-primary" size={24} />
           </div>
           <div className="mt-2"><Bars data={stats.activeUsers} color="#6610F2" /></div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm animate-card">
-        <h3 className="text-sm font-medium text-gray-900">Funding rounds</h3>
+      <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
+        <h3 className="text-sm font-medium text-foreground">Funding rounds</h3>
         <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {stats.fundingHistory.map((f) => (
-            <div key={f.label} className="rounded-lg border border-gray-200 p-3 transition-transform duration-200 hover:scale-[1.01] hover:shadow-sm">
-              <p className="text-sm text-gray-700">{f.label}</p>
-              <p className="text-lg font-semibold text-gray-900">€{formatNumber(f.amount)}</p>
-              <p className="text-xs text-gray-700">{new Date(f.date).toLocaleDateString()}</p>
+            <div key={f.label} className="rounded-2xl border border-border/20 bg-background/50 p-3 transition-all duration-300 hover:scale-[1.01] hover:shadow-sm hover:border-primary/20">
+              <p className="text-sm text-muted-foreground">{f.label}</p>
+              <p className="text-lg font-semibold text-foreground">€{formatNumber(f.amount)}</p>
+              <p className="text-xs text-muted-foreground">{new Date(f.date).toLocaleDateString()}</p>
             </div>
           ))}
         </div>
