@@ -15,7 +15,7 @@ interface Startup {
     website_url?: string;
     project_status?: string;
   }>;
-  founders: Array<{
+  founders?: Array<{
     user: {
       name: string;
     };
@@ -49,12 +49,12 @@ export default function ProjectsPage() {
     const fetchStartups = async () => {
       try {
         const response = await fetch('/api/startups');
-        const data = await response.json();
+        const result = await response.json();
 
-        if (Array.isArray(data)) {
-          setStartups(data);
+        if (result.success && Array.isArray(result.data)) {
+          setStartups(result.data);
         } else {
-          console.error('API returned non-array data:', data);
+          console.error('API returned invalid data structure:', result);
           setStartups([]);
         }
       } catch (error) {
