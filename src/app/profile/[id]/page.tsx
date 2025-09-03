@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserApiResponse } from '@/domain/interfaces/User';
+import { formatDate } from '@/utils/dateUtils';
 import usersData from '@/mocks/users.json'; // TODO REMOVE
 
 interface ProfilePageProps {
@@ -37,7 +38,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         setLoading(false);
       }
     };
-
     fetchUser();
   }, [id]);
 
@@ -79,14 +79,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
   };
 
   if (loading) {
