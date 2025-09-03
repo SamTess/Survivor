@@ -6,6 +6,7 @@ export class ExternalSyncScheduler {
   private running = false;
   private started = false;
   private lastImagesSync: number | null = null;
+  private pending = false;
 
   constructor(
     private readonly syncService: ExternalSyncService,
@@ -88,6 +89,15 @@ export class ExternalSyncScheduler {
     debugLog("scheduler", "Sync run error", { message: err.message });
     } finally {
       this.running = false;
+      const duration = Date.now() - t0;
+      if (this.pending) {
+        this.pending = false;
+        debugLog("scheduler", "Running deferred tick immediately after long run");
+        void this.runOnce();
+      } else if (duration >= this.intervalMs && this.started) {
+        debugLog("scheduler", "Duration exceeded interval without explicit pending; triggering extra run", { duration, intervalMs: this.intervalMs });
+        void this.runOnce();
+      }
     }
   }
 
@@ -96,7 +106,15 @@ export class ExternalSyncScheduler {
     this.started = true;
     debugLog("scheduler", "Scheduler start", { intervalMs: this.intervalMs });
     void this.runOnce();
-    this.timer = setInterval(() => void this.runOnce(), this.intervalMs);
+    this.timer = setInterval(() => {
+      if (this.running) {
+        // On note qu'un tick a été manqué; une exécution sera déclenchée dès la fin
+        this.pending = true;
+        debugLog("scheduler", "Tick deferred: run in progress");
+      } else {
+        void this.runOnce();
+      }
+    }, this.intervalMs);
     this.timer.unref?.();
   }
 
