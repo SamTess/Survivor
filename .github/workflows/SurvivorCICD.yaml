@@ -176,14 +176,14 @@ jobs:
                 db_status=$(docker-compose -f docker-compose.ci.yml ps db | grep "Up (healthy)" || echo "not ready")
                 web_status=$(docker-compose -f docker-compose.ci.yml ps web | grep "Up (healthy)" || echo "not ready")
 
-                echo "current_web_satus = $web_status and current_db_status = $db_status"
-                docker-compose -f docker-compose.ci.yml ps
-
                 if [[ "$db_status" != "not ready" ]] && [[ "$web_status" != "not ready" ]]; then
                   echo "All services are healthy!"
                   break
                 fi
               fi
+
+              echo "current_web_satus = $web_status and current_db_status = $db_status"
+              docker-compose -f docker-compose.ci.yml ps
 
               if docker-compose -f docker-compose.ci.yml ps | grep -E "(Exit|Restarting)"; then
                 echo "Service health check failed!"
