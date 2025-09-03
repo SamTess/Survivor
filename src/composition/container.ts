@@ -59,5 +59,3 @@ if (process.env.SYNC_AUTO !== "0") {
 		g.__syncSchedulerStarted = true;
 	}
 }
-
-

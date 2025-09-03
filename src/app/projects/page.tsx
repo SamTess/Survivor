@@ -34,6 +34,7 @@ const generateProjectImage = (sector: string, id: number) => {
     'Mobility': `https://picsum.photos/400/300?random=${id}&transport`,
     'default': `https://picsum.photos/400/300?random=${id}`
   };
+
   return sectorImages[sector] || sectorImages['default'];
 };
 
@@ -49,6 +50,7 @@ export default function ProjectsPage() {
       try {
         const response = await fetch('/api/startups');
         const data = await response.json();
+
         if (Array.isArray(data)) {
           setStartups(data);
         } else {
@@ -213,5 +215,5 @@ export default function ProjectsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

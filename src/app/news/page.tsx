@@ -144,5 +144,5 @@ export default function NewsPage() {
         newsItem={selectedNewsItem}
       />
     </div>
-  )
+  );
 }
