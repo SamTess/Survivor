@@ -1,8 +1,10 @@
-export default function AboutPage() {
+"use server";
+
+export default async function AboutPage() {
   return (
     <div className="h-screen bg-white overflow-y-auto snap-y snap-mandatory">
       {/* Hero Section */}
-      <section className="min-h-[40vh] flex items-center justify-center snap-start py-12 pt-30">
+      <section className="min-h-[20vh] flex items-center justify-center snap-start mt-30">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <h1 className="text-5xl font-light text-black mb-6">About JEB Platform</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -12,13 +14,13 @@ export default function AboutPage() {
       </section>
 
       {/* Mission Section */}
-      <section className="min-h-[40vh] flex items-center justify-center snap-start py-12">
+      <section className="min-h-[40vh] flex items-center justify-center snap-center">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-light text-black mb-8 text-center">Our Mission</h2>
           <div className="bg-gray-50 rounded-2xl p-8">
             <p className="text-lg text-gray-700 leading-relaxed text-center max-w-4xl mx-auto">
-              We bridge the gap between innovative startups and the resources they need to thrive. 
-              Our platform provides visibility for emerging projects, facilitates meaningful connections 
+              We bridge the gap between innovative startups and the resources they need to thrive.
+              Our platform provides visibility for emerging projects, facilitates meaningful connections
               with investors and partners, and promotes a culture of innovation and collaboration.
             </p>
           </div>
@@ -26,7 +28,7 @@ export default function AboutPage() {
       </section>
 
       {/* Key Objectives Section */}
-      <section className="min-h-[40vh] flex items-center justify-center snap-start py-12">
+      <section className="min-h-[40vh] flex items-center justify-center snap-center py-12">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-light text-black mb-8 text-center">What We Do</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -75,7 +77,7 @@ export default function AboutPage() {
       </section>
 
       {/* Target Audience Section */}
-      <section className="min-h-[40vh] flex items-center justify-center snap-start py-12">
+      <section className="min-h-[40vh] flex items-center justify-center snap-center py-12">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-light text-black mb-8 text-center">Who We Serve</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -113,7 +115,7 @@ export default function AboutPage() {
       </section>
 
       {/* Platform Features Section */}
-      <section className="min-h-[100vh] flex items-center justify-center snap-start py-12">
+      <section className="min-h-[40vh] flex items-center justify-center snap-center py-12">
         <div className="max-w-6xl mx-auto px-6">
           <h2 className="text-3xl font-light text-black mb-8 text-center">Platform Features</h2>
           <div className="space-y-8">
@@ -205,12 +207,12 @@ export default function AboutPage() {
       </section>
 
       {/* Call to Action Section */}
-      <section className="min-h-[40vh] flex items-center justify-center snap-start py-12">
+      <section className="min-h-[40vh] flex items-center justify-center snap-center py-12">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center bg-gray-900 rounded-2xl p-12">
             <h2 className="text-3xl font-light text-white mb-4">Ready to Get Started?</h2>
             <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-              Whether you're a startup looking for visibility, an investor seeking opportunities, 
+              Whether you&apos;re a startup looking for visibility, an investor seeking opportunities,
               or a partner wanting to collaborate, our platform connects you with the right people.
             </p>
             <div className="space-x-4">
