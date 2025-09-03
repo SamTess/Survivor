@@ -172,21 +172,24 @@ jobs:
 
           timeout 120 bash -c '
             while true; do
-              if docker-compose -f docker-compose.ci.yml ps | grep -q "Up (healthy)"; then
-                db_status=$(docker-compose -f docker-compose.ci.yml ps db | grep "Up (healthy)" || echo "not ready")
-                web_status=$(docker-compose -f docker-compose.ci.yml ps web | grep "Up (healthy)" || echo "not ready")
+              db_healthy=$(docker inspect $(docker-compose -f docker-compose.ci.yml ps -q db) --format="{{.State.Health.Status}}" 2>/dev/null || echo "none")
+              web_healthy=$(docker inspect $(docker-compose -f docker-compose.ci.yml ps -q web) --format="{{.State.Health.Status}}" 2>/dev/null || echo "none")
 
-                if [[ "$db_status" != "not ready" ]] && [[ "$web_status" != "not ready" ]]; then
-                  echo "All services are healthy!"
-                  break
-                fi
+
+              if [[ "$db_healthy" == "healthy" ]] && [[ "$web_healthy" == "healthy" ]]; then
+                echo "All services are healthy!"
+                break
               fi
-
-              echo "current_web_satus = $web_status and current_db_status = $db_status"
-              docker-compose -f docker-compose.ci.yml ps
 
               if docker-compose -f docker-compose.ci.yml ps | grep -E "(Exit|Restarting)"; then
                 echo "Service health check failed!"
+                docker-compose -f docker-compose.ci.yml ps
+                docker-compose -f docker-compose.ci.yml logs
+                exit 1
+              fi
+
+              if [[ "$db_healthy" == "unhealthy" ]] || [[ "$web_healthy" == "unhealthy" ]]; then
+                echo "Service health check failed - unhealthy containers!"
                 docker-compose -f docker-compose.ci.yml ps
                 docker-compose -f docker-compose.ci.yml logs
                 exit 1
