@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 
 export function FinalCTA() {
   return (
-    <section className="py-20 relative">
+  <section className="pt-14 pb-32 relative">
       <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 pointer-events-none" />
       <div className="max-w-3xl mx-auto px-4 text-center relative">
   <h2 className="text-3xl md:text-4xl font-bold mb-6">Ready to accelerate your startup?</h2>

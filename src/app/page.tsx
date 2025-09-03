@@ -7,7 +7,7 @@ import { FinalCTA } from "@/components/home/FinalCTA";
 
 export default function Root() {
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-y-auto">
       <main className="flex-1">
         <HeroSection />
         <FeaturedStartups />

@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-x-hidden`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-hidden`}
       >
         <Navigation />
         <AdminSidebar />
