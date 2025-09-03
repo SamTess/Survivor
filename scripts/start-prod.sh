@@ -9,7 +9,6 @@ echo "Database is ready!"
 echo "Generating Prisma client..."
 npx prisma generate
 
-# Check if migrations exist, otherwise use db push
 if [ -d "prisma/migrations" ] && [ "$(ls -A prisma/migrations 2>/dev/null)" ]; then
   echo "Running Prisma migrations..."
   npx prisma migrate deploy
@@ -19,7 +18,7 @@ else
 fi
 
 echo "Building application..."
-npm run build
+npm run build:legacy
 
 echo "Starting production server..."
 npm start
