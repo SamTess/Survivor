@@ -54,6 +54,7 @@ EMAIL_SECURE=false
 EMAIL_USER=your-email@example.com
 EMAIL_PASS=your-password
 EMAIL_FROM=noreply@jeb-incubator.com
+EMAIL_REJECT_UNAUTHORIZED=true
 
 # URL de l'application (pour les liens dans les emails)
 NEXT_PUBLIC_APP_URL=https://your-domain.com
@@ -68,6 +69,7 @@ EMAIL_PORT=587
 EMAIL_SECURE=false
 EMAIL_USER=your-gmail@gmail.com
 EMAIL_PASS=your-app-password
+EMAIL_REJECT_UNAUTHORIZED=true
 ```
 
 Pour SendGrid :
@@ -77,7 +79,17 @@ EMAIL_PORT=587
 EMAIL_SECURE=false
 EMAIL_USER=apikey
 EMAIL_PASS=your-sendgrid-api-key
+EMAIL_REJECT_UNAUTHORIZED=true
 ```
+
+### Configuration de sécurité TLS
+
+La variable `EMAIL_REJECT_UNAUTHORIZED` contrôle la validation des certificats TLS lors de la connexion SMTP :
+
+- `EMAIL_REJECT_UNAUTHORIZED=true` (recommandé) : Valide les certificats TLS pour assurer la sécurité des connexions
+- `EMAIL_REJECT_UNAUTHORIZED=false` : Désactive la validation TLS (à utiliser uniquement en développement avec des certificats auto-signés)
+
+**⚠️ Attention** : Ne jamais utiliser `EMAIL_REJECT_UNAUTHORIZED=false` en production, car cela rend les connexions vulnérables aux attaques man-in-the-middle.
 
 ## API Endpoints
 

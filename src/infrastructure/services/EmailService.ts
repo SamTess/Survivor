@@ -9,6 +9,7 @@ export interface EmailConfig {
     pass: string;
   };
   from: string;
+  rejectUnauthorized?: boolean;
 }
 
 export class EmailService {
@@ -21,7 +22,7 @@ export class EmailService {
       secure: config.secure,
       auth: config.auth,
       tls: {
-        rejectUnauthorized: false
+        rejectUnauthorized: config.rejectUnauthorized !== false
       }
     });
   }

@@ -23,6 +23,7 @@ const emailConfig = {
     pass: process.env.EMAIL_PASS || '',
   },
   from: process.env.EMAIL_FROM || 'noreply@jeb-incubator.com',
+  rejectUnauthorized: process.env.EMAIL_REJECT_UNAUTHORIZED !== 'false',
 };
 
 const emailService = new EmailService(emailConfig);

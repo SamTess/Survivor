@@ -92,244 +92,117 @@ function ResetPasswordForm() {
   };
 
   if (checkingToken) {
-    return React.createElement('div', {
-      style: {
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5'
-      }
-    }, 
-      React.createElement('div', {
-        style: {
-          maxWidth: '400px',
-          padding: '40px',
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }
-      }, 'Vérification du token...')
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-md text-center">
+          <div className="text-lg text-gray-600">Vérification du token...</div>
+        </div>
+      </div>
     );
   }
 
   if (!validToken) {
-    return React.createElement('div', {
-      style: {
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#f5f5f5'
-      }
-    }, 
-      React.createElement('div', {
-        style: {
-          maxWidth: '400px',
-          padding: '40px',
-          backgroundColor: 'white',
-          borderRadius: '8px',
-          textAlign: 'center'
-        }
-      }, [
-        React.createElement('h2', { 
-          key: 'title',
-          style: { color: '#e74c3c', marginBottom: '20px' } 
-        }, 'Token invalide'),
-        React.createElement('p', { 
-          key: 'error',
-          style: { color: '#666', marginBottom: '30px' } 
-        }, error),
-        React.createElement('button', {
-          key: 'button',
-          onClick: () => router.push('/login'),
-          style: {
-            padding: '12px 24px',
-            backgroundColor: '#3498db',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }
-        }, 'Retour à la connexion')
-      ])
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-md text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-5">Token invalide</h2>
+          <p className="text-gray-600 mb-8">{error}</p>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-blue-500 text-white border-none rounded hover:bg-blue-600 cursor-pointer transition-colors"
+          >
+            Retour à la connexion
+          </button>
+        </div>
+      </div>
     );
   }
 
-  return React.createElement('div', {
-    style: {
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#f5f5f5',
-      padding: '20px'
-    }
-  }, 
-    React.createElement('div', {
-      style: {
-        maxWidth: '400px',
-        width: '100%',
-        padding: '40px',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }
-    }, [
-      React.createElement('h2', {
-        key: 'title',
-        style: { textAlign: 'center', marginBottom: '30px', color: '#333' }
-      }, 'Créer votre mot de passe'),
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-5">
+      <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-lg">
+        <h2 className="text-center text-2xl font-semibold text-gray-800 mb-8">
+          Créer votre mot de passe
+        </h2>
 
-      message ? React.createElement('div', {
-        key: 'message',
-        style: {
-          padding: '12px',
-          backgroundColor: '#d4edda',
-          color: '#155724',
-          border: '1px solid #c3e6cb',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          textAlign: 'center'
-        }
-      }, message) : null,
+        {message && (
+          <div className="p-3 mb-5 bg-green-100 text-green-800 border border-green-300 rounded text-center">
+            {message}
+          </div>
+        )}
 
-      error ? React.createElement('div', {
-        key: 'error',
-        style: {
-          padding: '12px',
-          backgroundColor: '#f8d7da',
-          color: '#721c24',
-          border: '1px solid #f5c6cb',
-          borderRadius: '4px',
-          marginBottom: '20px',
-          textAlign: 'center'
-        }
-      }, error) : null,
+        {error && (
+          <div className="p-3 mb-5 bg-red-100 text-red-800 border border-red-300 rounded text-center">
+            {error}
+          </div>
+        )}
 
-      React.createElement('form', {
-        key: 'form',
-        onSubmit: handleSubmit
-      }, [
-        React.createElement('div', {
-          key: 'password-field',
-          style: { marginBottom: '20px' }
-        }, [
-          React.createElement('label', {
-            key: 'password-label',
-            style: {
-              display: 'block',
-              marginBottom: '8px',
-              color: '#333',
-              fontWeight: '500'
-            }
-          }, 'Nouveau mot de passe'),
-          React.createElement('input', {
-            key: 'password-input',
-            type: 'password',
-            required: true,
-            value: password,
-            onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value),
-            style: {
-              width: '100%',
-              padding: '12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '16px',
-              boxSizing: 'border-box'
-            },
-            minLength: 8,
-            placeholder: 'Au moins 8 caractères'
-          })
-        ]),
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block mb-2 text-gray-700 font-medium">
+              Nouveau mot de passe
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              minLength={8}
+              placeholder="Au moins 8 caractères"
+            />
+          </div>
 
-        React.createElement('div', {
-          key: 'confirm-field',
-          style: { marginBottom: '30px' }
-        }, [
-          React.createElement('label', {
-            key: 'confirm-label',
-            style: {
-              display: 'block',
-              marginBottom: '8px',
-              color: '#333',
-              fontWeight: '500'
-            }
-          }, 'Confirmer le mot de passe'),
-          React.createElement('input', {
-            key: 'confirm-input',
-            type: 'password',
-            required: true,
-            value: confirmPassword,
-            onChange: (e: React.ChangeEvent<HTMLInputElement>) => setConfirmPassword(e.target.value),
-            style: {
-              width: '100%',
-              padding: '12px',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-              fontSize: '16px',
-              boxSizing: 'border-box'
-            },
-            minLength: 8,
-            placeholder: 'Répétez votre mot de passe'
-          })
-        ]),
+          <div>
+            <label className="block mb-2 text-gray-700 font-medium">
+              Confirmer le mot de passe
+            </label>
+            <input
+              type="password"
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              minLength={8}
+              placeholder="Répétez votre mot de passe"
+            />
+          </div>
 
-        React.createElement('button', {
-          key: 'submit',
-          type: 'submit',
-          disabled: loading,
-          style: {
-            width: '100%',
-            padding: '14px',
-            backgroundColor: loading ? '#95a5a6' : '#27ae60',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '16px',
-            fontWeight: '500',
-            cursor: loading ? 'not-allowed' : 'pointer'
-          }
-        }, loading ? 'Création en cours...' : 'Créer le mot de passe')
-      ]),
+          <button
+            type="submit"
+            disabled={loading}
+            className={`w-full py-3 px-4 text-white font-medium rounded text-base transition-colors ${
+              loading 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-green-600 hover:bg-green-700 cursor-pointer'
+            }`}
+          >
+            {loading ? 'Création en cours...' : 'Créer le mot de passe'}
+          </button>
+        </form>
 
-      React.createElement('div', {
-        key: 'info',
-        style: {
-          marginTop: '20px',
-          textAlign: 'center',
-          fontSize: '14px',
-          color: '#666'
-        }
-      }, React.createElement('p', { key: 'requirement' }, 'Votre mot de passe doit contenir au minimum 8 caractères.'))
-    ])
+        <div className="mt-5 text-center text-sm text-gray-600">
+          <p>Votre mot de passe doit contenir au minimum 8 caractères.</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
 function LoadingFallback() {
-  return React.createElement('div', {
-    style: {
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: '#f5f5f5'
-    }
-  }, 
-    React.createElement('div', {
-      style: {
-        maxWidth: '400px',
-        padding: '40px',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        textAlign: 'center'
-      }
-    }, 'Chargement...')
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-md text-center">
+        <div className="text-lg text-gray-600">Chargement...</div>
+      </div>
+    </div>
   );
 }
 
 export default function ResetPasswordPage() {
-  return React.createElement(Suspense, {
-    fallback: React.createElement(LoadingFallback, null)
-  }, React.createElement(ResetPasswordForm, null));
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ResetPasswordForm />
+    </Suspense>
+  );
 }
