@@ -39,7 +39,7 @@ export default function EventsPage() {
 
   return (
     <div className="h-screen bg-gray-50 pt-14 overflow-y-auto">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="px-4 py-8 max-w-[70rem] mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">Events</h1>

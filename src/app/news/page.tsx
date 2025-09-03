@@ -62,7 +62,7 @@ export default function NewsPage() {
 
   return (
     <div className="h-screen bg-gray-50 pt-14 overflow-y-auto">
-      <div className="px-4 py-8  max-w-[70rem] mx-auto">
+      <div className="px-4 py-8 max-w-[70rem] mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">News</h1>
