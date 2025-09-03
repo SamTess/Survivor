@@ -80,12 +80,13 @@ export default function MainNavbar() {
             >
               <FaSearch className="h-4 w-4" />
             </button>
-            <button
+            <Link
+              href="/profile/1"
               className="text-black hover:text-indigo-600 transition-colors duration-200 p-1.5 hover:bg-gray-50 rounded-lg"
-              aria-label="Login"
+              aria-label="Profile"
             >
               <FaUser className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
