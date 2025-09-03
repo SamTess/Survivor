@@ -21,14 +21,12 @@ export default function EventsPage() {
   useEffect(() => {
     let filtered = [...events];
 
-    // Filter by time (upcoming/past)
     if (selectedFilter === 'upcoming') {
       filtered = filtered.filter(event => event.dates && new Date(event.dates) > new Date());
     } else if (selectedFilter === 'past') {
       filtered = filtered.filter(event => event.dates && new Date(event.dates) <= new Date());
     }
 
-    // Filter by event type
     if (selectedType !== 'all') {
       filtered = filtered.filter(event => event.event_type && event.event_type.toLowerCase() === selectedType.toLowerCase());
     }
