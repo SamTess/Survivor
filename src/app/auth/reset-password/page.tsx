@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ResetPasswordPage() {
+// Composant qui utilise useSearchParams
+function ResetPasswordForm() {
   const [token, setToken] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -304,4 +305,34 @@ export default function ResetPasswordPage() {
       }, React.createElement('p', { key: 'requirement' }, 'Votre mot de passe doit contenir au minimum 8 caractères.'))
     ])
   );
+}
+
+// Composant de fallback pour Suspense
+function LoadingFallback() {
+  return React.createElement('div', {
+    style: {
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: '#f5f5f5'
+    }
+  }, 
+    React.createElement('div', {
+      style: {
+        maxWidth: '400px',
+        padding: '40px',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        textAlign: 'center'
+      }
+    }, 'Chargement...')
+  );
+}
+
+// Composant principal avec Suspense
+export default function ResetPasswordPage() {
+  return React.createElement(Suspense, {
+    fallback: React.createElement(LoadingFallback, null)
+  }, React.createElement(ResetPasswordForm, null));
 }
