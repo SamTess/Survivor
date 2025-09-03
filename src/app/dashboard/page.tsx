@@ -129,17 +129,17 @@ export default function Dashboard() {
         <Dock className="fixed bottom-15 right-4 z-10 border-none"  items={[
           {
             label: "Project statistics",
-            icon: <FaChartLine className="text-white text-lg" />,
+            icon: <FaChartLine className={`${active == 0 ? "text-white text-xl" : "text-gray-400 text-md"}`} />,
             onClick: () => goTo(0)
           },
           {
             label: "Startup overview",
-            icon: <FaRocket className="text-white text-lg" />,
+            icon: <FaRocket className={`${active == 1 ? "text-white text-xl" : "text-gray-400 text-md"}`} />,
             onClick: () => goTo(1)
           },
           {
             label: "News & Events",
-            icon: <FaNewspaper className="text-white text-lg" />,
+            icon: <FaNewspaper className={`${active == 2 ? "text-white text-xl" : "text-gray-400 text-md"}`} />,
             onClick: () => goTo(2)
           },
         ]} />
