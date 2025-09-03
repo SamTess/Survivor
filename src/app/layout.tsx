@@ -4,6 +4,7 @@ import "./globals.css";
 import AdminSidebar from "@/components/navigation/AdminSidebar";
 import MainNavbar from "@/components/navigation/MainNavbar";
 import { AuthProvider } from "../context/AuthContext";
+import { Navigation } from "@/components/navigation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,8 +28,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full overflow-hidden`}>
-        <AuthProvider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen overflow-hidden`}
+      >
+          <AuthProvider>
           <MainNavbar />
           <AdminSidebar />
           {children}

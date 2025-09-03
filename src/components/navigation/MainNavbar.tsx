@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { FaSearch, FaUser } from 'react-icons/fa';
 
 const NAV_LINKS: { href: string; label: string; roles?: string[]; permissions?: string[] }[] = [
-  { href: '/home', label: 'Home' },
+  { href: '/', label: 'Home' },
   { href: '/projects', label: 'Projects' },
   { href: '/news', label: 'News' },
   { href: '/events', label: 'Events' },
