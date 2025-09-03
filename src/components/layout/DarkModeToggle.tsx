@@ -17,7 +17,7 @@ const DarkModeToggle = () => {
       const initial = stored !== null ? stored === 'true' : prefersDark;
       setDarkMode(initial);
       document.documentElement.classList.toggle('dark', initial);
-    } catch (_) {
+    } catch {
       // ignore
     }
   }, []);
@@ -27,7 +27,7 @@ const DarkModeToggle = () => {
     if (!mounted) return;
     try {
       window.localStorage.setItem('darkMode', darkMode.toString());
-    } catch (_) {/* ignore */}
+    } catch { /* ignore */ }
     document.documentElement.classList.toggle('dark', darkMode);
   }, [darkMode, mounted]);
 
