@@ -30,3 +30,31 @@ Ce projet utilise Next.js pour le routage et l'affichage côté client, ainsi qu
 ---
 
 Pour toute question sur la structure ou l'architecture, consultez ce README ou la documentation Next.js.
+
+## Authentification
+
+Une authentification basique a été ajoutée avec JWT signé (HMAC SHA-256) stocké dans un cookie httpOnly `auth`.
+
+Pages publiques : `/login`, `/signup`, routes `/api/auth/*`.
+Toute autre page redirige vers `/login` si l'utilisateur n'est pas connecté.
+
+### Variables d'environnement
+
+Ajouter dans `.env` :
+
+```
+AUTH_SECRET="change_me_en_prod"
+```
+
+### Routes API
+
+- POST `/api/auth/signup` `{ name, email, password }`
+- POST `/api/auth/login` `{ email, password }`
+- POST `/api/auth/logout`
+
+### Sécurité
+
+- Hash mot de passe: scrypt (Node.js crypto).
+- Changer `AUTH_SECRET` en production pour une valeur longue et aléatoire.
+- Pour fonctionnalités avancées (OAuth, MFA, reset password), intégrer une solution dédiée.
+

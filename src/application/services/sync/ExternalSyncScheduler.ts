@@ -108,7 +108,7 @@ export class ExternalSyncScheduler {
     void this.runOnce();
     this.timer = setInterval(() => {
       if (this.running) {
-        // On note qu'un tick a été manqué; une exécution sera déclenchée dès la fin
+        // Note that a tick was missed; execution will be triggered as soon as it finishes
         this.pending = true;
         debugLog("scheduler", "Tick deferred: run in progress");
       } else {

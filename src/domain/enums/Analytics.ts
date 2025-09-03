@@ -1,4 +1,4 @@
-// Domain-level enums (découplés de Prisma) reflétant les valeurs de schema.prisma
+// Domain-level enums (decoupled from Prisma) reflecting schema.prisma values
 export enum ContentType {
   USER = "USER",
   STARTUP = "STARTUP",

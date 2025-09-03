@@ -1,0 +1,143 @@
+"use client"
+
+import React from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Search, Menu, X, Sparkles, User } from "lucide-react"
+import { useState } from "react"
+import { cn } from "@/utils/utils"
+
+type NavItem = {
+  href: string
+  label: string
+}
+
+const navItems: NavItem[] = [
+  { href: '/', label: 'Home' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/news', label: 'News' },
+  { href: '/events', label: 'Events' },
+  { href: '/dashboard', label: 'Dashboard' },
+]
+
+export function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  return (
+    <nav className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="flex items-center justify-between h-16">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-2xl font-bold text-foreground transition-all duration-300"
+          >
+            <div className="relative group">
+              <div className="border-none w-8 h-8 bg-accent rounded-lg flex items-center justify-center hover:bg-transparent hover:scale-105 transition-all duration-300">
+                <Sparkles className="border-none w-4 h-4 text-white group-hover:text-primary transition-colors" />
+              </div>
+            </div>
+            <span className="text-gray-500 font-medium">
+              JEB
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center gap-1">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 group",
+                    isActive
+                      ? "text-primary bg-primary/10"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                  )}
+                >
+                  {item.label}
+                  {isActive && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 rounded-full" />
+                  )}
+                </Link>
+              )
+            })}
+          </div>
+
+          <div className="hidden md:flex items-center gap-3">
+            <Button
+              size="sm"
+              className="border-none group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
+            >
+              <Search className="border-none h-5 w-5 text-white group-hover:text-primary transition-colors" />
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              className="border-none group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
+            >
+              <Link href="/profile/1">
+                <User className="border-none h-5 w-5 text-white group-hover:text-primary transition-colors" />
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="sm"
+              className="border-none group rounded-full p-5 hover:bg-transparent hover:scale-105 transition-all duration-200"
+            >
+              <Link href="/admin">
+                <span className="border-none text-sm font-medium text-white group-hover:text-primary transition-colors">Admin</span>
+              </Link>
+            </Button>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="border-none md:hidden rounded-full w-10 h-10 p-0"
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
+
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-border/20 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col gap-2">
+              {navItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={cn(
+                      "border-none px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
+                      isActive
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                    )}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              })}
+              <div className="px-4 pt-2">
+                <div className="flex gap-2 mb-2">
+                  <Button asChild className="border-none flex-1 rounded-full">
+                    <Link href="/profile/1">Profile</Link>
+                  </Button>
+                  <Button asChild className="border-none flex-1 rounded-full">
+                    <Link href="/admin">Admin</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </nav>
+  )
+}

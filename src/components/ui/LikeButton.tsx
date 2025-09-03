@@ -49,7 +49,6 @@ export default function LikeButton({
     e.stopPropagation();
     if (!userId) {
       // TODO: Show login modal or redirect to login
-      console.log('User must be logged in to like');
       return;
     }
     toggleLike();
