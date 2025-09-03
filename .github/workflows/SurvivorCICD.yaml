@@ -62,7 +62,7 @@ jobs:
 
       - name: Install dependencies for linting
         run: |
-          pnpm install --no-save eslint typescript @types/node @types/react
+          pnpm install eslint typescript @types/node @types/react
 
       - name: Run ESLint
         run: pnpm run lint
