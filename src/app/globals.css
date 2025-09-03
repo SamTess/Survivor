@@ -1,9 +1,5 @@
 @import "tailwindcss";
 
-@plugin "tailwindcss-animate"; /* Requires tailwindcss-animate package */
-
-@custom-variant dark (&:is(.dark *));
-
 :root {
   /* Updated color tokens to match startup incubator design brief */
   --background: oklch(1 0 0);
@@ -123,7 +119,6 @@
   }
 }
 
-
 html {
   height: 100%;
   overflow-x: hidden;
@@ -139,7 +134,6 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* Hide scrollbar cross-browser when using overflow utilities */
 .scrollbar-none {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -175,7 +169,3 @@ body {
 .animate-card { animation: card-in .35s ease-out both; }
 .animate-draw { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw-line 1s ease-out forwards; }
 .animate-bar { transform-origin: bottom; animation: bar-raise 1s ease-out both; }
-  body {
-    @apply bg-background text-foreground;
-  }
-
