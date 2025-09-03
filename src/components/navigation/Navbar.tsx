@@ -34,8 +34,8 @@ export function Navbar() {
             className="flex items-center gap-2 text-2xl font-bold text-foreground transition-all duration-300"
           >
             <div className="relative group">
-              <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center hover:bg-transparent hover:scale-105 transition-all duration-300">
-                <Sparkles className="w-4 h-4 text-white group-hover:text-primary transition-colors" />
+              <div className="border-none w-8 h-8 bg-accent rounded-lg flex items-center justify-center hover:bg-transparent hover:scale-105 transition-all duration-300">
+                <Sparkles className="border-none w-4 h-4 text-white group-hover:text-primary transition-colors" />
               </div>
             </div>
             <span className="text-gray-500 font-medium">
@@ -69,26 +69,26 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Button
               size="sm"
-              className="group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="border-none group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
-              <Search className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
+              <Search className="border-none h-5 w-5 text-white group-hover:text-primary transition-colors" />
             </Button>
             <Button
               asChild
               size="sm"
-              className="group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="border-none group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
               <Link href="/profile/1">
-                <User className="h-5 w-5 text-white group-hover:text-primary transition-colors" />
+                <User className="border-none h-5 w-5 text-white group-hover:text-primary transition-colors" />
               </Link>
             </Button>
             <Button
               asChild
               size="sm"
-              className="group rounded-full p-5 hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="border-none group rounded-full p-5 hover:bg-transparent hover:scale-105 transition-all duration-200"
             >
               <Link href="/admin">
-                <span className="text-sm font-medium text-white group-hover:text-primary transition-colors">Admin</span>
+                <span className="border-none text-sm font-medium text-white group-hover:text-primary transition-colors">Admin</span>
               </Link>
             </Button>
           </div>
@@ -97,7 +97,7 @@ export function Navbar() {
             variant="ghost"
             size="sm"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden rounded-full w-10 h-10 p-0"
+            className="border-none md:hidden rounded-full w-10 h-10 p-0"
           >
             {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
@@ -114,7 +114,7 @@ export function Navbar() {
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
-                      "px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
+                      "border-none px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                       isActive
                         ? "text-primary bg-primary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
@@ -126,10 +126,10 @@ export function Navbar() {
               })}
               <div className="px-4 pt-2">
                 <div className="flex gap-2 mb-2">
-                  <Button asChild className="flex-1 rounded-full">
+                  <Button asChild className="border-none flex-1 rounded-full">
                     <Link href="/profile/1">Profile</Link>
                   </Button>
-                  <Button asChild className="flex-1 rounded-full">
+                  <Button asChild className="border-none flex-1 rounded-full">
                     <Link href="/admin">Admin</Link>
                   </Button>
                 </div>
