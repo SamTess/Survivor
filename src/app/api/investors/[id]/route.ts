@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { InvestorService } from '../../../../application/services/investors/InvestorService';
 import { InvestorRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/InvestorRepositoryPrisma';
 
-// Initialize dependencies
 const investorRepository = new InvestorRepositoryPrisma();
 const investorService = new InvestorService(investorRepository);
 

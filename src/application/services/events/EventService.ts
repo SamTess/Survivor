@@ -5,12 +5,10 @@ export class EventService {
   constructor(private readonly eventRepository: EventRepository) {}
 
   async createEvent(event: Omit<Event, 'id' | 'created_at' | 'updated_at'>): Promise<Event> {
-    // Validate required fields
     if (!event.name) {
       throw new Error("Event name is required");
     }
 
-    // Validate date format if provided
     if (event.dates) {
       const eventDate = new Date(event.dates);
       if (isNaN(eventDate.getTime())) {
@@ -86,7 +84,6 @@ export class EventService {
       throw new Error("Invalid event ID");
     }
 
-    // Validate date format if provided
     if (updates.dates) {
       const eventDate = new Date(updates.dates);
       if (isNaN(eventDate.getTime())) {

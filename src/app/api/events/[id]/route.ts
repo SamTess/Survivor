@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EventService } from '../../../../application/services/events/EventService';
 import { EventRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/EventRepositoryPrisma';
 
-// Initialize dependencies
 const eventRepository = new EventRepositoryPrisma();
 const eventService = new EventService(eventRepository);
 

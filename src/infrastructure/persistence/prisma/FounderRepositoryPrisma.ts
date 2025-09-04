@@ -17,12 +17,11 @@ export class FounderRepositoryPrisma implements FounderRepository {
       name: prismaFounder.user.name,
       startup_id: prismaFounder.startup_id,
       created_at: prismaFounder.user.created_at,
-      updated_at: prismaFounder.user.created_at, // Prisma doesn't have updated_at
+      updated_at: prismaFounder.user.created_at,
     };
   }
 
   async create(founder: Omit<Founder, 'id' | 'created_at' | 'updated_at'>): Promise<Founder> {
-    // First, we need to find the user by name or create relationship
     const user = await prisma.s_USER.findFirst({
       where: { name: founder.name },
     });
@@ -93,8 +92,6 @@ export class FounderRepositoryPrisma implements FounderRepository {
 
   async update(id: number, founder: Partial<Omit<Founder, 'id' | 'created_at' | 'updated_at'>>): Promise<Founder | null> {
     try {
-      // Note: We can't easily update the name through the founder table
-      // This would require updating the associated user
       const updated = await prisma.s_FOUNDER.update({
         where: { id },
         data: {

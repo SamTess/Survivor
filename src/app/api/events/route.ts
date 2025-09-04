@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { EventService } from '../../../application/services/events/EventService';
 import { EventRepositoryPrisma } from '../../../infrastructure/persistence/prisma/EventRepositoryPrisma';
 
-// Initialize dependencies
 const eventRepository = new EventRepositoryPrisma();
 const eventService = new EventService(eventRepository);
 
@@ -19,37 +18,31 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate');
     const upcoming = searchParams.get('upcoming') === 'true';
 
-    // Handle search query
     if (search) {
       const events = await eventService.searchEvents(search);
       return NextResponse.json({ success: true, data: events });
     }
 
-    // Handle upcoming events filter
     if (upcoming) {
       const events = await eventService.getUpcomingEvents();
       return NextResponse.json({ success: true, data: events });
     }
 
-    // Handle filtering by event type
     if (eventType) {
       const events = await eventService.getEventsByType(eventType);
       return NextResponse.json({ success: true, data: events });
     }
 
-    // Handle filtering by target audience
     if (targetAudience) {
       const events = await eventService.getEventsByTargetAudience(targetAudience);
       return NextResponse.json({ success: true, data: events });
     }
 
-    // Handle filtering by location
     if (location) {
       const events = await eventService.getEventsByLocation(location);
       return NextResponse.json({ success: true, data: events });
     }
 
-    // Handle filtering by date range
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
@@ -63,7 +56,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: events });
     }
 
-    // Handle pagination
     if (page > 1 || limit !== 10) {
       const result = await eventService.getEventsPaginated(page, limit);
       return NextResponse.json({ 
@@ -78,7 +70,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Default: get all events
     const events = await eventService.getAllEvents();
     return NextResponse.json({ success: true, data: events });
 

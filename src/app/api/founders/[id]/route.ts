@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FounderService } from '../../../../application/services/founders/FounderService';
 import { FounderRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/FounderRepositoryPrisma';
 
-// Initialize dependencies
 const founderRepository = new FounderRepositoryPrisma();
 const founderService = new FounderService(founderRepository);
 

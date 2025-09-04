@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PartnerService } from '../../../../application/services/partners/PartnerService';
 import { PartnerRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/PartnerRepositoryPrisma';
 
-// Initialize dependencies
 const partnerRepository = new PartnerRepositoryPrisma();
 const partnerService = new PartnerService(partnerRepository);
 

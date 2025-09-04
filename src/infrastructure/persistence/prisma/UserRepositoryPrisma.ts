@@ -13,7 +13,6 @@ export class UserRepositoryPrisma implements UserRepository {
     legal_status: string | null;
     description: string | null;
     created_at: Date;
-    // For forward-compat if updated_at later added in DB we can map it; fallback to created_at
     updated_at?: Date;
     founders?: Array<{ id: number }>;
     investors?: Array<{ id: number }>;
@@ -40,7 +39,7 @@ export class UserRepositoryPrisma implements UserRepository {
         name: user.name,
         email: user.email,
         role: user.role,
-        password_hash: '', // This should be set during user creation
+        password_hash: '',
         address: user.address,
         phone: user.phone ?? null,
         legal_status: user.legal_status ?? null,

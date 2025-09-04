@@ -5,18 +5,15 @@ export class PartnerService {
   constructor(private readonly partnerRepository: PartnerRepository) {}
 
   async createPartner(partner: Omit<Partner, 'id' | 'created_at' | 'updated_at'>): Promise<Partner> {
-    // Validate required fields
     if (!partner.name || !partner.email) {
       throw new Error("Name and email are required");
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(partner.email)) {
       throw new Error("Invalid email format");
     }
 
-    // Check if email already exists
     const existingPartner = await this.partnerRepository.getByEmail(partner.email);
     if (existingPartner) {
       throw new Error("Partner with this email already exists");
@@ -66,14 +63,12 @@ export class PartnerService {
       throw new Error("Invalid partner ID");
     }
 
-    // Validate email if provided
     if (updates.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(updates.email)) {
         throw new Error("Invalid email format");
       }
 
-      // Check if email is already used by another partner
       const existingPartner = await this.partnerRepository.getByEmail(updates.email);
       if (existingPartner && existingPartner.id !== id) {
         throw new Error("Email already used by another partner");

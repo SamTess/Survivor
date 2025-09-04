@@ -5,7 +5,6 @@ export class NewsService {
   constructor(private readonly newsRepository: NewsRepository) {}
 
   async createNews(news: Omit<News, 'id' | 'created_at' | 'startup'>): Promise<News> {
-    // Validate required fields
     if (!news.title || !news.startup_id) {
       throw new Error("Title and startup ID are required");
     }

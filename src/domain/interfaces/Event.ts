@@ -7,7 +7,7 @@ export interface Event {
     description?: string;
     event_type?: string;
     target_audience?: string;
-    image_url?: string; // URL vers l'image servie par l'API
+    image_url?: string;
     created_at: Date;
     updated_at: Date;
 }

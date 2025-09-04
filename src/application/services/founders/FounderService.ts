@@ -5,7 +5,6 @@ export class FounderService {
   constructor(private readonly founderRepository: FounderRepository) {}
 
   async createFounder(founder: Omit<Founder, 'id' | 'created_at' | 'updated_at'>): Promise<Founder> {
-    // Validate required fields
     if (!founder.name || !founder.startup_id) {
       throw new Error("Name and startup ID are required");
     }

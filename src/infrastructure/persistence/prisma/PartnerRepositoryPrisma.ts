@@ -27,7 +27,7 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
       partnership_type: prismaPartner.partnership_type || undefined,
       description: prismaPartner.user.description || undefined,
       created_at: prismaPartner.user.created_at,
-      updated_at: prismaPartner.user.created_at, // Prisma doesn't have updated_at
+      updated_at: prismaPartner.user.created_at,
     };
   }
 
@@ -38,7 +38,7 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
         name: partner.name,
         email: partner.email,
         role: 'partner',
-        password_hash: '', // Should be set during registration
+        password_hash: '',
         legal_status: partner.legal_status || null,
         address: partner.address || '',
         phone: partner.phone || null,
@@ -138,7 +138,6 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
 
       if (!existing) return null;
 
-      // Update user fields if provided
       if (partner.name || partner.email || partner.legal_status || partner.address || partner.phone || partner.description) {
         await prisma.s_USER.update({
           where: { id: existing.user_id },
@@ -153,7 +152,6 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
         });
       }
 
-      // Update partner-specific fields
       const updated = await prisma.s_PARTNER.update({
         where: { id },
         data: {
@@ -178,7 +176,6 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
 
       if (!partner) return false;
 
-      // Delete partner record (user will be deleted by cascade if needed)
       await prisma.s_PARTNER.delete({
         where: { id },
       });

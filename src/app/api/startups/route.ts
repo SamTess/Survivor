@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StartupService } from '../../../application/services/startups/StartupService';
 import { StartupRepositoryPrisma } from '../../../infrastructure/persistence/prisma/StartupRepositoryPrisma';
 
-// Initialize dependencies
 const startupRepository = new StartupRepositoryPrisma();
 const startupService = new StartupService(startupRepository);
 
@@ -15,25 +14,21 @@ export async function GET(request: NextRequest) {
     const maturity = searchParams.get('maturity');
     const search = searchParams.get('search');
 
-    // Handle search query
     if (search) {
       const startups = await startupService.searchStartups(search);
       return NextResponse.json({ success: true, data: startups });
     }
 
-    // Handle filtering by sector
     if (sector) {
       const startups = await startupService.getStartupsBysector(sector);
       return NextResponse.json({ success: true, data: startups });
     }
 
-    // Handle filtering by maturity
     if (maturity) {
       const startups = await startupService.getStartupsByMaturity(maturity);
       return NextResponse.json({ success: true, data: startups });
     }
 
-    // Handle pagination
     if (page > 1 || limit !== 10) {
       const result = await startupService.getStartupsPaginated(page, limit);
       return NextResponse.json({ 
@@ -48,7 +43,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Default: get all startups
     const startups = await startupService.getAllStartups();
     return NextResponse.json({ success: true, data: startups });
 

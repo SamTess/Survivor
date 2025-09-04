@@ -29,18 +29,17 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
       investor_type: prismaInvestor.investor_type || undefined,
       investment_focus: prismaInvestor.investment_focus || undefined,
       created_at: prismaInvestor.user.created_at,
-      updated_at: prismaInvestor.user.created_at, // Prisma doesn't have updated_at
+      updated_at: prismaInvestor.user.created_at,
     };
   }
 
   async create(investor: Omit<Investor, 'id' | 'created_at' | 'updated_at'>): Promise<Investor> {
-    // First create or find the user
     const user = await prisma.s_USER.create({
       data: {
         email: investor.email,
         name: investor.name,
         role: 'investor',
-        password_hash: '', // Should be set during registration
+        password_hash: '',
         address: investor.address || '',
         phone: investor.phone || null,
         legal_status: investor.legal_status || null,

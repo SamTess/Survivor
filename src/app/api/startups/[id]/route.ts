@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { StartupService } from '../../../../application/services/startups/StartupService';
 import { StartupRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/StartupRepositoryPrisma';
 
-// Initialize dependencies
 const startupRepository = new StartupRepositoryPrisma();
 const startupService = new StartupService(startupRepository);
 

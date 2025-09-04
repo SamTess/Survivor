@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '../../../../application/services/users/UserService';
 import { UserRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/UserRepositoryPrisma';
 
-// Initialize dependencies
 const userRepository = new UserRepositoryPrisma();
 const userService = new UserService(userRepository);
 

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '../../../application/services/users/UserService';
 import { UserRepositoryPrisma } from '../../../infrastructure/persistence/prisma/UserRepositoryPrisma';
 
-// Initialize dependencies
 const userRepository = new UserRepositoryPrisma();
 const userService = new UserService(userRepository);
 
@@ -16,31 +15,26 @@ export async function GET(request: NextRequest) {
     const founders = searchParams.get('founders') === 'true';
     const investors = searchParams.get('investors') === 'true';
 
-    // Handle search query
     if (search) {
       const users = await userService.searchUsers(search);
       return NextResponse.json({ success: true, data: users });
     }
 
-    // Handle founders filter
     if (founders) {
       const users = await userService.getFounders();
       return NextResponse.json({ success: true, data: users });
     }
 
-    // Handle investors filter
     if (investors) {
       const users = await userService.getInvestors();
       return NextResponse.json({ success: true, data: users });
     }
 
-    // Handle filtering by role
     if (role) {
       const users = await userService.getUsersByRole(role);
       return NextResponse.json({ success: true, data: users });
     }
 
-    // Handle pagination
     if (page > 1 || limit !== 10) {
       const result = await userService.getUsersPaginated(page, limit);
       return NextResponse.json({ 
@@ -55,7 +49,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Default: get all users
     const users = await userService.getAllUsers();
     return NextResponse.json({ success: true, data: users });
 

@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { NewsService } from '../../../application/services/news/NewsService';
 import { NewsRepositoryPrisma } from '../../../infrastructure/persistence/prisma/NewsRepositoryPrisma';
 
-// Initialize dependencies
 const newsRepository = new NewsRepositoryPrisma();
 const newsService = new NewsService(newsRepository);
 
@@ -17,13 +16,11 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    // Handle search query
     if (search) {
       const news = await newsService.searchNews(search);
       return NextResponse.json({ success: true, data: news });
     }
 
-    // Handle filtering by startup
     if (startupId) {
       const id = parseInt(startupId);
       if (isNaN(id)) {
@@ -36,13 +33,11 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: news });
     }
 
-    // Handle filtering by category
     if (category) {
       const news = await newsService.getNewsByCategory(category);
       return NextResponse.json({ success: true, data: news });
     }
 
-    // Handle filtering by date range
     if (startDate && endDate) {
       const start = new Date(startDate);
       const end = new Date(endDate);
@@ -56,7 +51,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: news });
     }
 
-    // Handle pagination
     if (page > 1 || limit !== 10) {
       const result = await newsService.getNewsPaginated(page, limit);
       return NextResponse.json({ 
@@ -71,7 +65,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Default: get all news
     const news = await newsService.getAllNews();
     return NextResponse.json({ success: true, data: news });
 

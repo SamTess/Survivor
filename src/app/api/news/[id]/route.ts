@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { NewsService } from '../../../../application/services/news/NewsService';
 import { NewsRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/NewsRepositoryPrisma';
 
-// Initialize dependencies
 const newsRepository = new NewsRepositoryPrisma();
 const newsService = new NewsService(newsRepository);
 

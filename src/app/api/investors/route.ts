@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { InvestorService } from '../../../application/services/investors/InvestorService';
 import { InvestorRepositoryPrisma } from '../../../infrastructure/persistence/prisma/InvestorRepositoryPrisma';
 
-// Initialize dependencies
 const investorRepository = new InvestorRepositoryPrisma();
 const investorService = new InvestorService(investorRepository);
 
@@ -15,25 +14,21 @@ export async function GET(request: NextRequest) {
     const investmentFocus = searchParams.get('investmentFocus');
     const search = searchParams.get('search');
 
-    // Handle search query
     if (search) {
       const investors = await investorService.searchInvestors(search);
       return NextResponse.json({ success: true, data: investors });
     }
 
-    // Handle filtering by investor type
     if (investorType) {
       const investors = await investorService.getInvestorsByType(investorType);
       return NextResponse.json({ success: true, data: investors });
     }
 
-    // Handle filtering by investment focus
     if (investmentFocus) {
       const investors = await investorService.getInvestorsByFocus(investmentFocus);
       return NextResponse.json({ success: true, data: investors });
     }
 
-    // Handle pagination
     if (page > 1 || limit !== 10) {
       const result = await investorService.getInvestorsPaginated(page, limit);
       return NextResponse.json({ 
@@ -48,7 +43,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Default: get all investors
     const investors = await investorService.getAllInvestors();
     return NextResponse.json({ success: true, data: investors });
 

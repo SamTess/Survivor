@@ -5,18 +5,15 @@ export class StartupService {
   constructor(private readonly startupRepository: StartupRepository) {}
 
   async createStartup(startup: Omit<Startup, 'id' | 'created_at'>): Promise<Startup> {
-    // Validate required fields
     if (!startup.name || !startup.email || !startup.legal_status || !startup.address || !startup.phone || !startup.sector || !startup.maturity || !startup.description) {
       throw new Error("Missing required fields");
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(startup.email)) {
       throw new Error("Invalid email format");
     }
 
-    // Check if email already exists
     const existingStartup = await this.startupRepository.getByEmail(startup.email);
     if (existingStartup) {
       throw new Error("Startup with this email already exists");
@@ -66,14 +63,12 @@ export class StartupService {
       throw new Error("Invalid startup ID");
     }
 
-    // Validate email if provided
     if (updates.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(updates.email)) {
         throw new Error("Invalid email format");
       }
 
-      // Check if email is already used by another startup
       const existingStartup = await this.startupRepository.getByEmail(updates.email);
       if (existingStartup && existingStartup.id !== id) {
         throw new Error("Email already used by another startup");

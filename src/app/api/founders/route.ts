@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { FounderService } from '../../../application/services/founders/FounderService';
 import { FounderRepositoryPrisma } from '../../../infrastructure/persistence/prisma/FounderRepositoryPrisma';
 
-// Initialize dependencies
 const founderRepository = new FounderRepositoryPrisma();
 const founderService = new FounderService(founderRepository);
 
@@ -12,7 +11,6 @@ export async function GET(request: NextRequest) {
     const startupId = searchParams.get('startupId');
     const userId = searchParams.get('userId');
 
-    // Handle filtering by startup
     if (startupId) {
       const id = parseInt(startupId);
       if (isNaN(id)) {
@@ -25,7 +23,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: founders });
     }
 
-    // Handle filtering by user
     if (userId) {
       const id = parseInt(userId);
       if (isNaN(id)) {
@@ -38,7 +35,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, data: founders });
     }
 
-    // Default: get all founders
     const founders = await founderService.getAllFounders();
     return NextResponse.json({ success: true, data: founders });
 

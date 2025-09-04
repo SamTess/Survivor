@@ -17,7 +17,6 @@ export function UpcomingEvents() {
         const res = await fetch('/api/events?upcoming=true&limit=6');
         const json = await res.json();
         if (!cancelled && json.success && Array.isArray(json.data)) {
-          // prendre les 3 premiers
             setEvents(json.data.slice(0,3));
         }
   } catch {

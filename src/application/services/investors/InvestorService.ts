@@ -5,18 +5,15 @@ export class InvestorService {
   constructor(private readonly investorRepository: InvestorRepository) {}
 
   async createInvestor(investor: Omit<Investor, 'id' | 'created_at' | 'updated_at'>): Promise<Investor> {
-    // Validate required fields
     if (!investor.name || !investor.email) {
       throw new Error("Name and email are required");
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(investor.email)) {
       throw new Error("Invalid email format");
     }
 
-    // Check if email already exists
     const existingInvestor = await this.investorRepository.getByEmail(investor.email);
     if (existingInvestor) {
       throw new Error("Investor with this email already exists");
@@ -74,14 +71,12 @@ export class InvestorService {
       throw new Error("Invalid investor ID");
     }
 
-    // Validate email if provided
     if (updates.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(updates.email)) {
         throw new Error("Invalid email format");
       }
 
-      // Check if email is already used by another investor
       const existingInvestor = await this.investorRepository.getByEmail(updates.email);
       if (existingInvestor && existingInvestor.id !== id) {
         throw new Error("Email already used by another investor");

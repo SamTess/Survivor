@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PartnerService } from '../../../application/services/partners/PartnerService';
 import { PartnerRepositoryPrisma } from '../../../infrastructure/persistence/prisma/PartnerRepositoryPrisma';
 
-// Initialize dependencies
 const partnerRepository = new PartnerRepositoryPrisma();
 const partnerService = new PartnerService(partnerRepository);
 
@@ -14,19 +13,16 @@ export async function GET(request: NextRequest) {
     const partnershipType = searchParams.get('partnershipType');
     const search = searchParams.get('search');
 
-    // Handle search query
     if (search) {
       const partners = await partnerService.searchPartners(search);
       return NextResponse.json({ success: true, data: partners });
     }
 
-    // Handle filtering by partnership type
     if (partnershipType) {
       const partners = await partnerService.getPartnersByType(partnershipType);
       return NextResponse.json({ success: true, data: partners });
     }
 
-    // Handle pagination
     if (page > 1 || limit !== 10) {
       const result = await partnerService.getPartnersPaginated(page, limit);
       return NextResponse.json({ 
@@ -41,7 +37,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Default: get all partners
     const partners = await partnerService.getAllPartners();
     return NextResponse.json({ success: true, data: partners });
 

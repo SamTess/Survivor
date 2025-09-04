@@ -5,18 +5,15 @@ export class UserService {
   constructor(private readonly userRepository: UserRepository) {}
 
   async createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
-    // Validate required fields
     if (!user.name || !user.email || !user.role) {
       throw new Error("Name, email, and role are required");
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(user.email)) {
       throw new Error("Invalid email format");
     }
 
-    // Check if email already exists
     const existingUser = await this.userRepository.getByEmail(user.email);
     if (existingUser) {
       throw new Error("User with this email already exists");
@@ -74,14 +71,12 @@ export class UserService {
       throw new Error("Invalid user ID");
     }
 
-    // Validate email if provided
     if (updates.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(updates.email)) {
         throw new Error("Invalid email format");
       }
 
-      // Check if email is already used by another user
       const existingUser = await this.userRepository.getByEmail(updates.email);
       if (existingUser && existingUser.id !== id) {
         throw new Error("Email already used by another user");
@@ -140,7 +135,6 @@ export class UserService {
     await this.userRepository.update(id, { email: email.trim() });
   }
 
-  // Authentication related methods
   async getUserWithPassword(email: string): Promise<User & { password_hash: string } | null> {
     return this.userRepository.getUserWithPassword(email);
   }
