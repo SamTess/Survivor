@@ -331,7 +331,7 @@ export class ExternalSyncService {
    * Sinon: laisser vide (ambigu) et log.
    */
   async reconcileFoundersMissingUser(): Promise<void> {
-    if (process.env.VITEST) {
+  if (process.env.VITEST || process.env.NODE_ENV === 'test') {
       debugLog("founderReconcile", "Skipped in test environment", {});
       return;
     }
