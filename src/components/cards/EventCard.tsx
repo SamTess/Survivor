@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaClock } from 'react-icons/fa';
 import { formatDate, isUpcomingDate } from '@/utils/dateUtils';
-import { getEventTypeColor } from '@/utils/styleUtils';
 
 interface EventCardProps {
   id: number;

@@ -13,6 +13,8 @@ import { UserApiResponse } from "../../../domain/interfaces/User";
 import { NewsApiResponse, NewsDetailApiResponse } from "../../../domain/interfaces/News";
 import { debugLog } from "../../../infrastructure/logging/debugLog";
 import { syncState, SyncRunSummary } from "../../../infrastructure/logging/syncState";
+import prisma from "@/infrastructure/persistence/prisma/client";
+import { StartupDetailApiResponse as ReconcileStartupDetail } from "../../../domain/interfaces/Startup";
 
 export interface ExternalApiLike {
   getJson<T>(path: string, query?: Record<string, unknown>): Promise<T>;
@@ -269,15 +271,16 @@ export class ExternalSyncService {
   }
 
   async syncAll(): Promise<void> {
-  debugLog("all", "Global sync start", {});
-  const t0 = Date.now();
-  await this.syncStartups();
-  await this.syncInvestors();
-  await this.syncPartners();
-  await this.syncEvents();
-  await this.syncUsers();
+    debugLog("all", "Global sync start", {});
+    const t0 = Date.now();
+    await this.syncStartups();
+    await this.syncInvestors();
+    await this.syncPartners();
+    await this.syncEvents();
+    await this.syncUsers();
     if (this.newsRepo) await this.syncNews();
-  debugLog("all", "Global sync done", { ms: Date.now() - t0 });
+  await this.reconcileFoundersMissingUser();
+    debugLog("all", "Global sync done", { ms: Date.now() - t0 });
   }
 
   async syncNews(limit = 100): Promise<NewsApiResponse[]> {
@@ -319,5 +322,95 @@ export class ExternalSyncService {
     const data = await this.api.getBinary(`/news/${id}/image`);
     await this.newsRepo.saveImage(id, data);
     debugLog("newsImage", "Saved", { id, bytes: data.byteLength });
+  }
+
+  /**
+   * Post-sync reconciliation: associer les S_FOUNDER sans user_id à un S_USER selon les règles:
+   * - Si exactement un user porte ce nom => assigner.
+   * - Si plusieurs users portent ce nom mais le nombre de users == nombre de founders manquants de ce nom pour la startup => assignation 1-1 par ordre d’id.
+   * Sinon: laisser vide (ambigu) et log.
+   */
+  async reconcileFoundersMissingUser(): Promise<void> {
+    const missing = await prisma.s_FOUNDER.findMany({ where: { user_id: null } });
+    if (!missing.length) {
+      debugLog("founderReconcile", "No founders to reconcile", {});
+      return;
+    }
+    debugLog("founderReconcile", "Start", { count: missing.length });
+
+    // Grouper par startup pour limiter les appels API
+    const byStartup = new Map<number, typeof missing>();
+    for (const f of missing) {
+      if (!byStartup.has(f.startup_id)) byStartup.set(f.startup_id, []);
+      byStartup.get(f.startup_id)!.push(f);
+    }
+
+    let linked = 0;
+    for (const [startupId, founders] of byStartup.entries()) {
+      // Récupérer la liste externe des founders pour obtenir les noms
+      let externalFounders: { id: number; name: string; startup_id: number }[] = [];
+      try {
+        const detail = await this.api.getJson<ReconcileStartupDetail>(`/startups/${startupId}`);
+        externalFounders = detail.founders || [];
+      } catch (e) {
+        debugLog("founderReconcile", "Could not fetch startup detail", { startupId, error: (e as Error).message });
+        continue;
+      }
+      if (!externalFounders.length) continue;
+      const idToName = new Map<number, string>();
+      for (const ef of externalFounders) idToName.set(ef.id, ef.name);
+
+      // Regrouper les founders S_FOUNDER manquants par nom (via mapping externe)
+      const byName = new Map<string, typeof founders>();
+      for (const f of founders) {
+        const name = idToName.get(f.id);
+        if (!name) continue;
+        if (!byName.has(name)) byName.set(name, []);
+        byName.get(name)!.push(f);
+      }
+
+      for (const [name, founderRows] of byName.entries()) {
+        // Vérifier que le nom figure bien dans le détail externe (sinon on continue quand même)
+        const candidates = await prisma.s_USER.findMany({
+          where: { name },
+          orderBy: { id: 'asc' },
+        });
+        if (!candidates.length) {
+          debugLog("founderReconcile", "No user candidates for name", { startupId, name });
+          continue;
+        }
+        if (candidates.length === 1) {
+          // assigner tous les founders (souvent un seul) à ce user si pas déjà pris pour un autre founder de ce startup
+          const userId = candidates[0].id;
+          for (const fr of founderRows) {
+            try {
+              await prisma.s_FOUNDER.update({ where: { id: fr.id }, data: { user_id: userId } });
+              linked++;
+              debugLog("founderReconcile", "Linked single candidate", { founderId: fr.id, userId, startupId, name });
+            } catch (e) {
+              debugLog("founderReconcile", "Link failed", { founderId: fr.id, userId, error: (e as Error).message });
+            }
+          }
+          continue;
+        }
+        // Cas multi-candidats: si cardinalité exacte => mapping 1-1
+        if (candidates.length === founderRows.length) {
+          for (let i = 0; i < founderRows.length; i++) {
+            const fr = founderRows[i];
+            const userId = candidates[i].id;
+            try {
+              await prisma.s_FOUNDER.update({ where: { id: fr.id }, data: { user_id: userId } });
+              linked++;
+              debugLog("founderReconcile", "Linked matched cardinality", { founderId: fr.id, userId, startupId, name });
+            } catch (e) {
+              debugLog("founderReconcile", "Link failed", { founderId: fr.id, userId, error: (e as Error).message });
+            }
+          }
+        } else {
+          debugLog("founderReconcile", "Ambiguous mapping skipped", { startupId, name, founderMissing: founderRows.length, userCandidates: candidates.length });
+        }
+      }
+    }
+    debugLog("founderReconcile", "Done", { linked, remaining: missing.length - linked });
   }
 }

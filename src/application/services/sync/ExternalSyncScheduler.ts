@@ -71,6 +71,7 @@ export class ExternalSyncScheduler {
       this.lastImagesSync = now;
       debugLog("scheduler", "Images sync cycle completed", { at: new Date(now).toISOString() });
     }
+    this.syncService.reconcileFoundersMissingUser().catch(() => { /* ignore errors */ });
   }
 
   async runOnce(): Promise<void> {
