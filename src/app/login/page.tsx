@@ -4,15 +4,23 @@ import { useRouter } from 'next/navigation';
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const [nextPath, setNextPath] = useState<string>('/');
+  const [customError, setCustomError] = useState<string | null>(null);
+  const router = useRouter();
+  const { login, loading, error, clearError, isAuthenticated } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push(nextPath);
+    }
+  }, [isAuthenticated, router, nextPath]);
 
   useEffect(() => {
     try {
@@ -24,19 +32,17 @@ export default function LoginPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
+    clearError();
+    setCustomError(null);
 
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
+    const result = await login({ email, password });
 
-      if (res.ok) {
-        router.push(nextPath);
-        router.refresh();
+    if (result.success) {
+      router.push(nextPath);
+      router.refresh();
+    } else if (result.error) {
+      if (result.error.requiresPasswordReset) {
+        setCustomError(result.error.message || 'Un email de création de mot de passe vous a été envoyé. Veuillez vérifier votre boîte mail.');
       } else {
         const data = await res.json().catch(() => ({}));
 
@@ -74,14 +80,14 @@ export default function LoginPage() {
         {/* Login Form */}
         <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-8 animate-card">
           <form onSubmit={submit} className="space-y-6">
-            {error && (
+            {(error || customError) && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-down">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-2 h-2 bg-red-400 rounded-full"></div>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
+                    <p className="text-sm text-red-700">{customError || error}</p>
                   </div>
                 </div>
               </div>
@@ -153,10 +159,10 @@ export default function LoginPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
             >
-              {isLoading ? (
+              {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Signing in...</span>

@@ -1,20 +1,28 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { FiUser, FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiCheck } from 'react-icons/fi';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const router = useRouter();
+  const { signup, loading, error, clearError, isAuthenticated } = useAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/');
+    }
+  }, [isAuthenticated, router]);
   const passwordRequirements = [
     { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
     { label: 'One uppercase letter', test: (pwd: string) => /[A-Z]/.test(pwd) },
@@ -27,7 +35,8 @@ export default function SignupPage() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setError(null);
+    clearError();
+    setValidationError(null);
 
     if (!isPasswordValid) {
       setError('Password does not meet all required criteria.');
@@ -39,7 +48,7 @@ export default function SignupPage() {
       return;
     }
 
-    setIsLoading(true);
+    const result = await signup({ name, email, password });
 
     try {
       const res = await fetch('/api/auth/signup', {
@@ -60,6 +69,7 @@ export default function SignupPage() {
     } finally {
       setIsLoading(false);
     }
+    // Error handling is now managed by the AuthContext
   }
 
   return (
@@ -83,14 +93,14 @@ export default function SignupPage() {
         {/* Signup Form */}
         <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-8 animate-card">
           <form onSubmit={submit} className="space-y-6">
-            {error && (
+            {(error || validationError) && (
               <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-down">
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <div className="w-2 h-2 bg-red-400 rounded-full"></div>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
+                    <p className="text-sm text-red-700">{validationError || error}</p>
                   </div>
                 </div>
               </div>
@@ -241,10 +251,10 @@ export default function SignupPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading || !isPasswordValid || !doPasswordsMatch}
+              disabled={loading || !isPasswordValid || !doPasswordsMatch}
               className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
             >
-              {isLoading ? (
+              {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   <span>Creating...</span>
