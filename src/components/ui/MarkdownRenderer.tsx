@@ -83,8 +83,9 @@ export default function MarkdownRenderer({
             {children}
           </blockquote>
         ),
-        code: ({ children, inline }) => 
-          inline ? (
+        code: ({ children, ...props }) => {
+          const inline = 'inline' in props && props.inline;
+          return inline ? (
             <code className="bg-muted px-1 py-0.5 rounded text-sm font-mono">
               {children}
             </code>
@@ -92,7 +93,8 @@ export default function MarkdownRenderer({
             <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto">
               {children}
             </code>
-          ),
+          );
+        }
         }}
       >
         {content}

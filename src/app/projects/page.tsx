@@ -31,18 +31,15 @@ import ProjectCard from '@/components/ui/ProjectCard';
   };
 
   export default function ProjectsPage() {
-    // Data
     const [startups, setStartups] = useState<Startup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Basic filters
     const [searchInput, setSearchInput] = useState('');
     const [searchTerm, setSearchTerm] = useState(''); // debounced
     const [sectorFilter, setSectorFilter] = useState('All');
     const [stageFilter, setStageFilter] = useState('All');
 
-    // Advanced filters
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [minLikes, setMinLikes] = useState(0);
     const [maxLikes, setMaxLikes] = useState<number | null>(null);
@@ -52,7 +49,6 @@ import ProjectCard from '@/components/ui/ProjectCard';
     const [locationFilter, setLocationFilter] = useState('All');
     const [sortOption, setSortOption] = useState('name-asc');
 
-    // Fetch
     useEffect(() => {
       let abort = false;
       (async () => {
@@ -82,13 +78,11 @@ import ProjectCard from '@/components/ui/ProjectCard';
       return () => { abort = true; };
     }, []);
 
-    // Debounce search
     useEffect(() => {
       const id = setTimeout(() => setSearchTerm(searchInput.trim()), 300);
       return () => clearTimeout(id);
     }, [searchInput]);
 
-    // Derived collections
     const uniqueSectors = useMemo(() => Array.from(new Set(startups.map(s => s.sector))).sort(), [startups]);
     const uniqueStages = useMemo(() => Array.from(new Set(startups.map(s => s.maturity))).sort(), [startups]);
     const uniqueStatuses = useMemo(
@@ -99,11 +93,8 @@ import ProjectCard from '@/components/ui/ProjectCard';
       const countries = startups.map(s => {
         const address = s.address?.trim();
         if (!address) return null;
-        // Take the last segment after the last comma as country
         const parts = address.split(',');
         let country = parts[parts.length - 1].trim();
-        
-        // Clean the country by keeping only letters and spaces
         country = country.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
         
         return country || null;
@@ -115,7 +106,6 @@ import ProjectCard from '@/components/ui/ProjectCard';
       return { min: likes.length ? Math.min(...likes) : 0, max: likes.length ? Math.max(...likes) : 0 };
     }, [startups]);
 
-    // Initialize maxLikes
     useEffect(() => {
       if (maxLikes == null && likeBounds.max > 0) setMaxLikes(likeBounds.max);
     }, [likeBounds, maxLikes]);
