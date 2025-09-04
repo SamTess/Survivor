@@ -26,20 +26,20 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
-    
+
     try {
-      const res = await fetch('/api/auth/login', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ email, password }) 
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
-      
+
       if (res.ok) {
         router.push(nextPath);
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        
+
         if (data.requiresPasswordReset) {
           setError(data.error || 'Un email de création de mot de passe vous a été envoyé. Veuillez vérifier votre boîte mail.');
         } else {
@@ -54,16 +54,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
+    <div className="h-screen pt-28 overflow-y-auto flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 shadow-lg overflow-hidden">
-            <Image 
-              src="/logo.png" 
-              alt="Jeb Incubator Logo" 
-              width={100} 
-              height={100} 
+            <Image
+              src="/logo.png"
+              alt="Jeb Incubator Logo"
+              width={100}
+              height={100}
               className="object-contain"
             />
           </div>
@@ -142,8 +142,8 @@ export default function LoginPage() {
 
             {/* Forgot Password Link */}
             <div className="text-right">
-              <Link 
-                href="/auth/forgot-password" 
+              <Link
+                href="/auth/forgot-password"
                 className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
               >
                 Mot de passe oublié ?
@@ -181,8 +181,8 @@ export default function LoginPage() {
           <div className="text-center">
             <p className="text-gray-600">
               Pas encore de compte ?{' '}
-              <Link 
-                href="/signup" 
+              <Link
+                href="/signup"
                 className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
               >
                 Créer un compte
