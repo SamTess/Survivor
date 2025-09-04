@@ -4,18 +4,34 @@ import { useState, useEffect } from 'react';
 import EventCard from '@/components/cards/EventCard';
 import { EventApiResponse } from '@/domain/interfaces/Event';
 
-// TODO REMOVE
-import eventsData from '@/mocks/events.json';
-
 export default function EventsPage() {
   const [events, setEvents] = useState<EventApiResponse[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<EventApiResponse[]>([]);
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setEvents(eventsData);
-    setFilteredEvents(eventsData);
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/events');
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          setEvents(result.data);
+        } else {
+          console.error('API returned invalid data structure:', result);
+          setEvents([]);
+        }
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        setEvents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
   }, []);
 
   useEffect(() => {
@@ -86,8 +102,12 @@ export default function EventsPage() {
         </div>
 
         {/* Events Grid */}
-        {filteredEvents.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in-50 duration-500">
+        {loading ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 text-lg mb-2">Loading events...</div>
+          </div>
+        ) : filteredEvents.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => (
               <EventCard
                 key={event.id}
@@ -98,6 +118,7 @@ export default function EventsPage() {
                 description={event.description}
                 event_type={event.event_type}
                 target_audience={event.target_audience}
+                imageUrl={event.image_url}
               />
             ))}
           </div>

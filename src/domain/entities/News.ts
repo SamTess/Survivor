@@ -5,6 +5,7 @@ export type News = {
     title: string;
     description?: string;
     image_data?: Uint8Array | null;
+    image_url?: string;
     startup_id: number;
     news_date?: Date;
     location?: string;
