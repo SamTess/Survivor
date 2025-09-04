@@ -8,7 +8,13 @@ export class UserRepositoryPrisma implements UserRepository {
     name: string;
     email: string;
     role: string;
+    address: string;
+    phone: string | null;
+    legal_status: string | null;
+    description: string | null;
     created_at: Date;
+    // For forward-compat if updated_at later added in DB we can map it; fallback to created_at
+    updated_at?: Date;
     founders?: Array<{ id: number }>;
     investors?: Array<{ id: number }>;
   }): User {
@@ -17,9 +23,14 @@ export class UserRepositoryPrisma implements UserRepository {
       email: prismaUser.email,
       name: prismaUser.name,
       role: prismaUser.role,
+      address: prismaUser.address,
+      phone: prismaUser.phone,
+      legal_status: prismaUser.legal_status,
+      description: prismaUser.description,
       founder_id: prismaUser.founders?.[0]?.id,
       investor_id: prismaUser.investors?.[0]?.id,
       created_at: prismaUser.created_at,
+      updated_at: prismaUser.updated_at ?? prismaUser.created_at,
     };
   }
 
@@ -30,7 +41,7 @@ export class UserRepositoryPrisma implements UserRepository {
         email: user.email,
         role: user.role,
         password_hash: '', // This should be set during user creation
-        address: user.address ?? null,
+        address: user.address,
         phone: user.phone ?? null,
         legal_status: user.legal_status ?? null,
         description: user.description ?? null,
@@ -156,6 +167,10 @@ export class UserRepositoryPrisma implements UserRepository {
           ...(user.name && { name: user.name }),
           ...(user.email && { email: user.email }),
           ...(user.role && { role: user.role }),
+          ...(user.address && { address: user.address }),
+          ...(user.phone !== undefined && { phone: user.phone }),
+          ...(user.legal_status !== undefined && { legal_status: user.legal_status }),
+          ...(user.description !== undefined && { description: user.description }),
         },
         include: {
           founders: true,
