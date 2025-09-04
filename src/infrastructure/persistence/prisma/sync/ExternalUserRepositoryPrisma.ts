@@ -4,23 +4,44 @@ import { UserApiResponse } from "../../../../domain/interfaces/User";
 
 export class ExternalUserRepositoryPrisma implements ExternalUserRepository {
   async upsert(item: UserApiResponse): Promise<void> {
-    await prisma.s_USER.upsert({
+    const user = await prisma.s_USER.upsert({
       where: { id: item.id },
       update: {
         name: item.name,
         email: item.email,
         role: item.role,
-        address: "",
       },
       create: {
         id: item.id,
         name: item.name,
         email: item.email,
         role: item.role,
-        address: "",
         password_hash: "",
       },
     });
+
+    if (item.investor_id) {
+      try {
+        await prisma.s_INVESTOR.update({
+          where: { id: item.investor_id },
+          data: { user_id: user.id },
+        });
+  } catch {
+        // ignorer si la ligne n'existe pas encore
+      }
+    }
+
+    // Link founder if founder_id present
+    if (item.founder_id) {
+      try {
+        await prisma.s_FOUNDER.update({
+          where: { id: item.founder_id },
+            data: { user_id: user.id },
+        });
+  } catch {
+        // ignorer si pas encore créé (sera lié lors d'une prochaine passe)
+      }
+    }
   }
 
   async saveImage(userId: number, data: Buffer): Promise<void> {

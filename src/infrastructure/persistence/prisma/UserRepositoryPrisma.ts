@@ -8,7 +8,7 @@ export class UserRepositoryPrisma implements UserRepository {
     name: string;
     email: string;
     role: string;
-    address: string;
+    address: string | null;
     phone: string | null;
     legal_status: string | null;
     description: string | null;
@@ -22,10 +22,10 @@ export class UserRepositoryPrisma implements UserRepository {
       email: prismaUser.email,
       name: prismaUser.name,
       role: prismaUser.role,
-      address: prismaUser.address,
-      phone: prismaUser.phone,
-      legal_status: prismaUser.legal_status,
-      description: prismaUser.description,
+  address: prismaUser.address || undefined,
+  phone: prismaUser.phone || undefined,
+  legal_status: prismaUser.legal_status || undefined,
+  description: prismaUser.description || undefined,
       founder_id: prismaUser.founders?.[0]?.id,
       investor_id: prismaUser.investors?.[0]?.id,
       created_at: prismaUser.created_at,
@@ -40,10 +40,10 @@ export class UserRepositoryPrisma implements UserRepository {
         email: user.email,
         role: user.role,
         password_hash: '',
-        address: user.address,
-        phone: user.phone ?? null,
-        legal_status: user.legal_status ?? null,
-        description: user.description ?? null,
+  address: user.address || '',
+  phone: user.phone ?? null,
+  legal_status: user.legal_status ?? null,
+  description: user.description ?? null,
       },
       include: {
         founders: true,

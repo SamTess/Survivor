@@ -1,35 +1,23 @@
 import prisma from "./client";
 import { InvestorRepository } from "../../../domain/repositories/InvestorRepository";
 import { Investor } from "../../../domain/interfaces/Investor";
+import { Prisma } from "@prisma/client";
 
 export class InvestorRepositoryPrisma implements InvestorRepository {
-  private mapPrismaToInvestor(prismaInvestor: {
-    id: number;
-    investor_type: string | null;
-    investment_focus: string | null;
-    user: {
-      id: number;
-      email: string;
-      name: string;
-      description: string | null;
-      phone: string | null;
-      address: string;
-      legal_status: string | null;
-      created_at: Date;
-    };
-  }): Investor {
+  private mapPrismaToInvestor(prismaInvestor: Prisma.S_INVESTORGetPayload<{ include: { user: true } }>): Investor {
+    const u = prismaInvestor.user; // peut être nul si non encore lié
     return {
       id: prismaInvestor.id,
-      email: prismaInvestor.user.email,
-      name: prismaInvestor.user.name,
-      description: prismaInvestor.user.description || undefined,
-      phone: prismaInvestor.user.phone || undefined,
-      address: prismaInvestor.user.address,
-      legal_status: prismaInvestor.user.legal_status || undefined,
+      email: u?.email || "",
+      name: u?.name || "",
+      description: u?.description || undefined,
+      phone: u?.phone || undefined,
+      address: u?.address || undefined,
+      legal_status: u?.legal_status || undefined,
       investor_type: prismaInvestor.investor_type || undefined,
       investment_focus: prismaInvestor.investment_focus || undefined,
-      created_at: prismaInvestor.user.created_at,
-      updated_at: prismaInvestor.user.created_at,
+      created_at: u?.created_at || new Date(0),
+      updated_at: u?.created_at || new Date(0),
     };
   }
 
@@ -49,13 +37,17 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
 
     const created = await prisma.s_INVESTOR.create({
       data: {
-        user_id: user.id,
+        name: investor.name,
+        legal_status: investor.legal_status || "",
+        address: investor.address || "",
+        email: investor.email,
+        phone: investor.phone || "",
+        description: investor.description || "",
         investor_type: investor.investor_type || null,
         investment_focus: investor.investment_focus || null,
+        user: { connect: { id: user.id } },
       },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
 
     return this.mapPrismaToInvestor(created);
@@ -154,7 +146,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
       if (!existing) return null;
 
       // Update user fields if provided
-      if (investor.email || investor.name || investor.description || investor.phone || investor.address || investor.legal_status) {
+      if (existing.user_id && (investor.email || investor.name || investor.description || investor.phone || investor.address || investor.legal_status)) {
         await prisma.s_USER.update({
           where: { id: existing.user_id },
           data: {
