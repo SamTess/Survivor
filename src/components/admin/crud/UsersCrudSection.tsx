@@ -817,14 +817,18 @@ export default function UsersCrudSection() {
                   {viewingUser.role}
                 </span>
               </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</label>
-                <p className="text-sm">{viewingUser.phone || 'N/A'}</p>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Legal Status</label>
-                <p className="text-sm">{viewingUser.legal_status || 'N/A'}</p>
-              </div>
+              {viewingUser.phone && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</label>
+                  <p className="text-sm">{viewingUser.phone}</p>
+                </div>
+              )}
+              {viewingUser.legal_status && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Legal Status</label>
+                  <p className="text-sm">{viewingUser.legal_status}</p>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{new Date(viewingUser.created_at).toLocaleDateString('en-US')}</p>
@@ -834,12 +838,14 @@ export default function UsersCrudSection() {
               <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Address</label>
               <p className="text-sm">{viewingUser.address}</p>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
-              <div className="max-h-32 overflow-y-auto">
-                <p className="text-sm leading-relaxed">{viewingUser.description || 'No description provided'}</p>
+            {viewingUser.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-32 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingUser.description}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </UniversalModal>
       )}

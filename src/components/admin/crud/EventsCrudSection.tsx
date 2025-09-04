@@ -550,24 +550,32 @@ export default function EventsCrudSection() {
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</label>
                 <p className="text-sm font-medium">{viewingEvent.name}</p>
               </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Event Type</label>
-                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                  {viewingEvent.event_type || 'No type'}
-                </span>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Target Audience</label>
-                <p className="text-sm">{viewingEvent.target_audience || 'No target audience'}</p>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
-                <p className="text-sm">{viewingEvent.dates ? new Date(viewingEvent.dates).toLocaleDateString('en-US') : 'No date'}</p>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
-                <p className="text-sm">{viewingEvent.location || 'No location'}</p>
-              </div>
+              {viewingEvent.event_type && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Event Type</label>
+                  <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                    {viewingEvent.event_type}
+                  </span>
+                </div>
+              )}
+              {viewingEvent.target_audience && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Target Audience</label>
+                  <p className="text-sm">{viewingEvent.target_audience}</p>
+                </div>
+              )}
+              {viewingEvent.dates && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
+                  <p className="text-sm">{new Date(viewingEvent.dates).toLocaleDateString('en-US')}</p>
+                </div>
+              )}
+              {viewingEvent.location && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
+                  <p className="text-sm">{viewingEvent.location}</p>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{new Date(viewingEvent.created_at).toLocaleDateString('en-US')}</p>
@@ -581,12 +589,14 @@ export default function EventsCrudSection() {
                 <p className="text-sm font-medium text-green-600">{viewingEvent.viewsCount}</p>
               </div>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
-              <div className="max-h-40 overflow-y-auto">
-                <p className="text-sm leading-relaxed">{viewingEvent.description || 'No description provided'}</p>
+            {viewingEvent.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-40 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingEvent.description}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </UniversalModal>
       )}

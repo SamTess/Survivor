@@ -529,35 +529,43 @@ export default function NewsCrudSection() {
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</label>
                 <p className="text-sm font-medium">{viewingNews.title}</p>
               </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
-                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  {viewingNews.category || 'No category'}
-                </span>
-              </div>
+              {viewingNews.category && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
+                  <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    {viewingNews.category}
+                  </span>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Startup</label>
                 <p className="text-sm">{startups.find(s => s.id === viewingNews.startup_id)?.name || 'Unknown'}</p>
               </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
-                <p className="text-sm">{viewingNews.news_date ? new Date(viewingNews.news_date).toLocaleDateString('en-US') : 'No date'}</p>
-              </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
-                <p className="text-sm">{viewingNews.location || 'No location'}</p>
-              </div>
+              {viewingNews.news_date && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
+                  <p className="text-sm">{new Date(viewingNews.news_date).toLocaleDateString('en-US')}</p>
+                </div>
+              )}
+              {viewingNews.location && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
+                  <p className="text-sm">{viewingNews.location}</p>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{new Date(viewingNews.created_at).toLocaleDateString('en-US')}</p>
               </div>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
-              <div className="max-h-40 overflow-y-auto">
-                <p className="text-sm leading-relaxed">{viewingNews.description || 'No description provided'}</p>
+            {viewingNews.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-40 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingNews.description}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </UniversalModal>
       )}

@@ -582,10 +582,12 @@ export default function ProjectsCrudSection() {
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Legal Status</label>
                 <p className="text-sm">{viewingProject.legal_status}</p>
               </div>
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</label>
-                <p className="text-sm">{viewingProject.phone || 'N/A'}</p>
-              </div>
+              {viewingProject.phone && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</label>
+                  <p className="text-sm">{viewingProject.phone}</p>
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{formatDate(viewingProject.created_at)}</p>
@@ -599,12 +601,14 @@ export default function ProjectsCrudSection() {
               <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Address</label>
               <p className="text-sm">{viewingProject.address}</p>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
-              <div className="max-h-40 overflow-y-auto">
-                <p className="text-sm leading-relaxed">{viewingProject.description}</p>
+            {viewingProject.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-40 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingProject.description}</p>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </UniversalModal>
       )}
