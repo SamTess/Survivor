@@ -1,11 +1,12 @@
 "use client";
-import React, { 
-  createContext, 
-  useContext, 
-  useEffect, 
-  useState, 
-  ReactNode, 
-  useCallback 
+
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback
 } from 'react';
 import { apiService, SessionUser, LoginCredentials, SignupData } from '../infrastructure/services/ApiService';
 
@@ -69,9 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await apiService.getCurrentUser();
-      
+
       if (response.success && response.data) {
         setUser(response.data);
       } else {
@@ -103,7 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-    
+
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
     };
@@ -123,8 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } else {
         // Handle the case where login failed due to password reset requirement
         const errorResponse = response as any; // Type assertion for special error response
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: {
             message: response.error || 'Login failed',
             requiresPasswordReset: errorResponse.requiresPasswordReset,
@@ -135,8 +136,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch (err) {
       console.error('Login error:', err);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: { message: 'Network error during login' }
       };
     } finally {
@@ -155,16 +156,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(response.data);
         return { success: true, user: response.data };
       } else {
-        return { 
-          success: false, 
-          error: response.error || 'Signup failed' 
+        return {
+          success: false,
+          error: response.error || 'Signup failed'
         };
       }
     } catch (err) {
       console.error('Signup error:', err);
-      return { 
-        success: false, 
-        error: 'Network error during signup' 
+      return {
+        success: false,
+        error: 'Network error during signup'
       };
     } finally {
       setLoading(false);
@@ -288,12 +289,12 @@ export function withAuth<P extends object>(Component: React.ComponentType<P>) {
 // Hook for role-based access
 export function useRequireAuth(requiredRole?: UserRole | UserRole[]) {
   const auth = useAuth();
-  
+
   useEffect(() => {
     if (!auth.loading && !auth.isAuthenticated) {
       window.location.href = '/login';
     }
-    
+
     if (requiredRole && auth.user && !auth.hasRole(requiredRole)) {
       // Handle unauthorized access - could redirect or show error
       console.warn('Insufficient permissions');

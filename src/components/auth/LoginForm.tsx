@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import { useAuth } from '../../context/EnhancedAuthContext';
-import { apiService } from '../../infrastructure/services/ApiService';
+import { useAuth } from '@/context/AuthContext';
+import { apiService } from '@/infrastructure/services/ApiService';
 
 interface LoginFormProps {
   onSuccess?: () => void;
