@@ -521,39 +521,41 @@ export default function NewsCrudSection() {
           isOpen={isViewModalOpen}
           onClose={() => setIsViewModalOpen(false)}
           title="News Article Details"
-          size="lg"
+          size="auto"
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Title</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</label>
                 <p className="text-sm font-medium">{viewingNews.title}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Category</label>
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
+                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                   {viewingNews.category || 'No category'}
                 </span>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Startup</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Startup</label>
                 <p className="text-sm">{startups.find(s => s.id === viewingNews.startup_id)?.name || 'Unknown'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Date</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
                 <p className="text-sm">{viewingNews.news_date ? new Date(viewingNews.news_date).toLocaleDateString('en-US') : 'No date'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Location</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
                 <p className="text-sm">{viewingNews.location || 'No location'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Created</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{new Date(viewingNews.created_at).toLocaleDateString('en-US')}</p>
               </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-muted-foreground">Description</label>
-                <p className="text-sm">{viewingNews.description || 'No description provided'}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+              <div className="max-h-40 overflow-y-auto">
+                <p className="text-sm leading-relaxed">{viewingNews.description || 'No description provided'}</p>
               </div>
             </div>
           </div>

@@ -799,43 +799,45 @@ export default function UsersCrudSection() {
           isOpen={isViewModalOpen}
           onClose={() => setIsViewModalOpen(false)}
           title="User Details"
-          size="lg"
+          size="auto"
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Name</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</label>
                 <p className="text-sm font-medium">{viewingUser.name}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Email</label>
-                <p className="text-sm">{viewingUser.email}</p>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</label>
+                <p className="text-sm break-all">{viewingUser.email}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Role</label>
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Role</label>
+                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                   {viewingUser.role}
                 </span>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Phone</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</label>
                 <p className="text-sm">{viewingUser.phone || 'N/A'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Legal Status</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Legal Status</label>
                 <p className="text-sm">{viewingUser.legal_status || 'N/A'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Created</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{new Date(viewingUser.created_at).toLocaleDateString('en-US')}</p>
               </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-muted-foreground">Address</label>
-                <p className="text-sm">{viewingUser.address}</p>
-              </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-muted-foreground">Description</label>
-                <p className="text-sm">{viewingUser.description || 'No description provided'}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Address</label>
+              <p className="text-sm">{viewingUser.address}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+              <div className="max-h-32 overflow-y-auto">
+                <p className="text-sm leading-relaxed">{viewingUser.description || 'No description provided'}</p>
               </div>
             </div>
           </div>

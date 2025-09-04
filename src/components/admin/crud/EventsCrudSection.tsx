@@ -542,47 +542,49 @@ export default function EventsCrudSection() {
           isOpen={isViewModalOpen}
           onClose={() => setIsViewModalOpen(false)}
           title="Event Details"
-          size="lg"
+          size="auto"
         >
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Name</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</label>
                 <p className="text-sm font-medium">{viewingEvent.name}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Event Type</label>
-                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Event Type</label>
+                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                   {viewingEvent.event_type || 'No type'}
                 </span>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Target Audience</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Target Audience</label>
                 <p className="text-sm">{viewingEvent.target_audience || 'No target audience'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Date</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
                 <p className="text-sm">{viewingEvent.dates ? new Date(viewingEvent.dates).toLocaleDateString('en-US') : 'No date'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Location</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
                 <p className="text-sm">{viewingEvent.location || 'No location'}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Created</label>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
                 <p className="text-sm">{new Date(viewingEvent.created_at).toLocaleDateString('en-US')}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Attendees</label>
-                <p className="text-sm">{viewingEvent.attendeesCount}</p>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Attendees</label>
+                <p className="text-sm font-medium text-blue-600">{viewingEvent.attendeesCount}</p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Views</label>
-                <p className="text-sm">{viewingEvent.viewsCount}</p>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Views</label>
+                <p className="text-sm font-medium text-green-600">{viewingEvent.viewsCount}</p>
               </div>
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-muted-foreground">Description</label>
-                <p className="text-sm">{viewingEvent.description || 'No description provided'}</p>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+              <div className="max-h-40 overflow-y-auto">
+                <p className="text-sm leading-relaxed">{viewingEvent.description || 'No description provided'}</p>
               </div>
             </div>
           </div>
