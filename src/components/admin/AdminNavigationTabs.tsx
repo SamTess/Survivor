@@ -6,11 +6,11 @@ import { Card } from '@/components/ui/card'
 
 // Import des sections
 import AdminStatsSection from './AdminStatsSection'
-import AdminBackOfficeSection from './AdminBackOfficeSection'
 import AdminDashboardSection from './AdminDashboardSection'
-import AdminContentManagementSection from './AdminContentManagementSection'
-import AdminUserManagementSection from './AdminUserManagementSection'
-import AdminRecentActivitySection from './AdminRecentActivitySection'
+import ProjectsCrudSection from './crud/ProjectsCrudSection'
+import NewsCrudSection from './crud/NewsCrudSection'
+import EventsCrudSection from './crud/EventsCrudSection'
+import UsersCrudSection from './crud/UsersCrudSection'
 
 interface AdminTab {
   id: string
@@ -21,7 +21,7 @@ interface AdminTab {
 }
 
 export default function AdminNavigationTabs() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState('projects')
 
   const tabs: AdminTab[] = [
     {
@@ -32,39 +32,39 @@ export default function AdminNavigationTabs() {
       description: 'Platform statistics and key metrics'
     },
     {
-      id: 'backoffice',
-      label: 'Back Office',
-      icon: <FaCog size={16} />,
-      component: <AdminBackOfficeSection />,
-      description: 'Quick access to management tools'
-    },
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: <FaUserShield size={16} />,
-      component: <AdminDashboardSection />,
-      description: 'Analytics and system monitoring'
-    },
-    {
-      id: 'content',
-      label: 'Content',
+      id: 'projects',
+      label: 'Projets',
       icon: <FaProjectDiagram size={16} />,
-      component: <AdminContentManagementSection />,
-      description: 'Manage projects, news and events'
+      component: <ProjectsCrudSection />,
+      description: 'Gestion des startups et projets'
+    },
+    {
+      id: 'news',
+      label: 'News',
+      icon: <FaCog size={16} />,
+      component: <NewsCrudSection />,
+      description: 'Gestion des articles et actualités'
+    },
+    {
+      id: 'events',
+      label: 'Événements',
+      icon: <FaClock size={16} />,
+      component: <EventsCrudSection />,
+      description: 'Gestion des événements'
     },
     {
       id: 'users',
-      label: 'Users',
+      label: 'Utilisateurs',
       icon: <FaUsers size={16} />,
-      component: <AdminUserManagementSection />,
-      description: 'User roles and permissions'
+      component: <UsersCrudSection />,
+      description: 'Gestion des utilisateurs et permissions'
     },
     {
-      id: 'activity',
-      label: 'Activity',
-      icon: <FaClock size={16} />,
-      component: <AdminRecentActivitySection />,
-      description: 'Recent administrative actions'
+      id: 'dashboard',
+      label: 'Tableau de bord',
+      icon: <FaUserShield size={16} />,
+      component: <AdminDashboardSection />,
+      description: 'Analytics et monitoring'
     }
   ]
 
