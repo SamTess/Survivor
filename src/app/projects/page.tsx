@@ -70,9 +70,9 @@ import ProjectCard from '@/components/ui/ProjectCard';
               setStartups([]);
             }
           }
-        } catch (e: any) {
+        } catch (e: unknown) {
           if (!abort) {
-            setError(e.message || 'Loading error');
+            setError(e instanceof Error ? e.message : 'Loading error');
             setStartups([]);
           }
         } finally {
@@ -122,7 +122,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
 
     const filteredStartups = useMemo(() => {
       const term = searchTerm.toLowerCase();
-      let list = startups.filter(s => {
+      const list = startups.filter(s => {
         const matchesSearch = !term || s.name.toLowerCase().includes(term) || s.description?.toLowerCase().includes(term);
         const matchesSector = sectorFilter === 'All' || s.sector === sectorFilter;
         const matchesStage = stageFilter === 'All' || s.maturity === stageFilter;
