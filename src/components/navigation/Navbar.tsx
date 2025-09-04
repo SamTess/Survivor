@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Menu, X, Sparkles, User } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/utils/utils"
+import DarkModeToggle from "../layout/DarkModeToggle"
 
 type NavItem = {
   href: string
@@ -69,26 +70,27 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <Button
               size="sm"
-              className="border-none group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
-              <Search className="border-none h-5 w-5 text-white group-hover:text-primary transition-colors" />
+              <Search className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
             </Button>
+            <DarkModeToggle />
             <Button
               asChild
               size="sm"
-              className="border-none group rounded-full w-10 h-10 p-0 hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
               <Link href="/profile/1">
-                <User className="border-none h-5 w-5 text-white group-hover:text-primary transition-colors" />
+                <User className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
               </Link>
             </Button>
             <Button
               asChild
               size="sm"
-              className="border-none group rounded-full p-5 hover:bg-transparent hover:scale-105 transition-all duration-200"
+              className="group rounded-full px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all duration-200 hover:scale-105"
             >
               <Link href="/admin">
-                <span className="border-none text-sm font-medium text-white group-hover:text-primary transition-colors">Admin</span>
+                <span className="text-sm font-medium text-primary group-hover:text-primary transition-colors">Admin</span>
               </Link>
             </Button>
           </div>
@@ -97,9 +99,12 @@ export function Navbar() {
             variant="ghost"
             size="sm"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="border-none md:hidden rounded-full w-10 h-10 p-0"
+            className="md:hidden rounded-full w-10 h-10 p-0 hover:bg-muted/40"
           >
-            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {isMenuOpen ? 
+              <X className="h-5 w-5 text-foreground" /> : 
+              <Menu className="h-5 w-5 text-foreground" />
+            }
           </Button>
         </div>
 
@@ -125,11 +130,14 @@ export function Navbar() {
                 )
               })}
               <div className="px-4 pt-2">
+                <div className="flex justify-center gap-2 mb-4">
+                  <DarkModeToggle />
+                </div>
                 <div className="flex gap-2 mb-2">
-                  <Button asChild className="border-none flex-1 rounded-full">
+                  <Button asChild className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Link href="/profile/1">Profile</Link>
                   </Button>
-                  <Button asChild className="border-none flex-1 rounded-full">
+                  <Button asChild className="flex-1 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                     <Link href="/admin">Admin</Link>
                   </Button>
                 </div>
