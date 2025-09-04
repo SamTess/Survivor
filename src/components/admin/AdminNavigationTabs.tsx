@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock, FaUserShield } from 'react-icons/fa'
 import { Card } from '@/components/ui/card'
 
-// Import des sections
 import AdminStatsSection from './AdminStatsSection'
 import AdminDashboardSection from './AdminDashboardSection'
 import ProjectsCrudSection from './crud/ProjectsCrudSection'
@@ -33,38 +32,38 @@ export default function AdminNavigationTabs() {
     },
     {
       id: 'projects',
-      label: 'Projets',
+      label: 'Projects',
       icon: <FaProjectDiagram size={16} />,
       component: <ProjectsCrudSection />,
-      description: 'Gestion des startups et projets'
+      description: 'Manage startups and projects'
     },
     {
       id: 'news',
       label: 'News',
       icon: <FaCog size={16} />,
       component: <NewsCrudSection />,
-      description: 'Gestion des articles et actualités'
+      description: 'Manage articles and news'
     },
     {
       id: 'events',
-      label: 'Événements',
+      label: 'Events',
       icon: <FaClock size={16} />,
       component: <EventsCrudSection />,
-      description: 'Gestion des événements'
+      description: 'Manage events'
     },
     {
       id: 'users',
-      label: 'Utilisateurs',
+      label: 'Users',
       icon: <FaUsers size={16} />,
       component: <UsersCrudSection />,
-      description: 'Gestion des utilisateurs et permissions'
+      description: 'Manage users and permissions'
     },
     {
       id: 'dashboard',
-      label: 'Tableau de bord',
+      label: 'Dashboard',
       icon: <FaUserShield size={16} />,
       component: <AdminDashboardSection />,
-      description: 'Analytics et monitoring'
+      description: 'Analytics and monitoring'
     }
   ]
 

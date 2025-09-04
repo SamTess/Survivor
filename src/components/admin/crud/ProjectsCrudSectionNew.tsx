@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   Building2,
   X,
@@ -15,7 +15,6 @@ import {
   Loader2
 } from 'lucide-react'
 
-// Types pour les projets/startups basés sur le schéma Prisma
 interface Project {
   id: number
   name: string
@@ -45,11 +44,11 @@ interface ProjectFormData {
 }
 
 const LEGAL_STATUSES = [
-  'SARL', 'SAS', 'SA', 'SNC', 'Société civile', 'Auto-entrepreneur', 'Association', 'Autre'
+  'LLC', 'SAS', 'SA', 'Partnership', 'Civil Company', 'Sole Proprietorship', 'Association', 'Other'
 ]
 
 const SECTORS = [
-  'Technology', 'Healthcare', 'Finance', 'Education', 'E-commerce', 'Gaming', 
+  'Technology', 'Healthcare', 'Finance', 'Education', 'E-commerce', 'Gaming',
   'Food & Agriculture', 'Energy', 'Transportation', 'Real Estate', 'Media', 'Other'
 ]
 
@@ -78,31 +77,29 @@ export default function ProjectsCrudSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Charger les projets au démarrage
   useEffect(() => {
     fetchProjects()
   }, [])
 
-  // Filtrer les projets
   useEffect(() => {
     let filtered = projects
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(project => 
+      filtered = filtered.filter(project =>
         project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
         project.email.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
-    
+
     if (selectedSector) {
       filtered = filtered.filter(project => project.sector === selectedSector)
     }
-    
+
     if (selectedMaturity) {
       filtered = filtered.filter(project => project.maturity === selectedMaturity)
     }
-    
+
     setFilteredProjects(filtered)
   }, [projects, searchTerm, selectedSector, selectedMaturity])
 
@@ -111,7 +108,7 @@ export default function ProjectsCrudSection() {
       setLoading(true)
       const response = await fetch('/api/startups')
       const data = await response.json()
-      
+
       if (data.success) {
         setProjects(data.data)
       } else {
@@ -155,22 +152,22 @@ export default function ProjectsCrudSection() {
   }
 
   const handleDeleteProject = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer ce projet ?')) return
+    if (!confirm('Are you sure you want to delete this project ?')) return
 
     try {
       const response = await fetch(`/api/startups/${id}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         setProjects(projects.filter(p => p.id !== id))
-        alert('Projet supprimé avec succès!')
+        alert('Project deleted successfully!')
       } else {
-        alert('Erreur lors de la suppression')
+        alert('Error during deletion')
       }
     } catch (error) {
       console.error('Error deleting project:', error)
-      alert('Erreur lors de la suppression')
+      alert('Error during deletion')
     }
   }
 
@@ -181,7 +178,7 @@ export default function ProjectsCrudSection() {
     try {
       const url = editingProject ? `/api/startups/${editingProject.id}` : '/api/startups'
       const method = editingProject ? 'PUT' : 'POST'
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -189,26 +186,26 @@ export default function ProjectsCrudSection() {
         },
         body: JSON.stringify(formData)
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
-        await fetchProjects() // Recharger la liste
+        await fetchProjects() // Reload list
         setIsModalOpen(false)
-        alert(`Projet ${editingProject ? 'modifié' : 'créé'} avec succès!`)
+        alert(`Project ${editingProject ? 'updated' : 'created'} successfully!`)
       } else {
-        alert(`Erreur: ${data.error}`)
+        alert(`Error: ${data.error}`)
       }
     } catch (error) {
       console.error('Error saving project:', error)
-      alert('Erreur lors de la sauvegarde')
+      alert('Error during save')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR')
+    return new Date(dateString).toLocaleDateString('en-US')
   }
 
   const getMaturityColor = (maturity: string) => {
@@ -228,26 +225,24 @@ export default function ProjectsCrudSection() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Chargement des projets...</span>
+        <span className="ml-2">Loading projetss...</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header avec actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Gestion des Projets</h2>
-          <p className="text-muted-foreground">Gérez les startups et projets de votre plateforme</p>
+          <h2 className="text-2xl font-bold">Project Management</h2>
+          <p className="text-muted-foreground">Manage startups and projects on your platform</p>
         </div>
         <Button onClick={handleCreateProject} className="flex items-center gap-2">
           <Plus size={16} />
-          Nouveau Projet
+            New Project
         </Button>
       </div>
 
-      {/* Filtres */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -255,7 +250,7 @@ export default function ProjectsCrudSection() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher par nom, description ou email..."
+                placeholder="Search by name, description, or email..."
                 className="w-full pl-10 pr-4 py-2 border border-input bg-background rounded-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -266,7 +261,7 @@ export default function ProjectsCrudSection() {
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
             >
-              <option value="">Tous les secteurs</option>
+              <option value="">All sectors</option>
               {SECTORS.map(sector => (
                 <option key={sector} value={sector}>{sector}</option>
               ))}
@@ -276,7 +271,7 @@ export default function ProjectsCrudSection() {
               value={selectedMaturity}
               onChange={(e) => setSelectedMaturity(e.target.value)}
             >
-              <option value="">Toutes les maturités</option>
+              <option value="">All maturities</option>
               {MATURITIES.map(maturity => (
                 <option key={maturity} value={maturity}>{maturity}</option>
               ))}
@@ -285,31 +280,30 @@ export default function ProjectsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Liste des projets */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 size={20} />
-            Projets ({filteredProjects.length})
+            Projects ({filteredProjects.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {filteredProjects.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Aucun projet trouvé
+              No projects found
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-2">Nom</th>
-                    <th className="text-left py-3 px-2">Secteur</th>
-                    <th className="text-left py-3 px-2">Maturité</th>
-                    <th className="text-left py-3 px-2">Statut légal</th>
+                    <th className="text-left py-3 px-2">Name</th>
+                    <th className="text-left py-3 px-2">Sector</th>
+                    <th className="text-left py-3 px-2">Maturities</th>
+                    <th className="text-left py-3 px-2">Legal status</th>
                     <th className="text-left py-3 px-2">Email</th>
-                    <th className="text-left py-3 px-2">Créé le</th>
-                    <th className="text-left py-3 px-2">Vues</th>
+                    <th className="text-left py-3 px-2">Created on</th>
+                    <th className="text-left py-3 px-2">Views</th>
                     <th className="text-left py-3 px-2">Actions</th>
                   </tr>
                 </thead>
@@ -332,17 +326,17 @@ export default function ProjectsCrudSection() {
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0"
                             onClick={() => handleEditProject(project)}
                           >
                             <Edit size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteProject(project.id)}
                           >
@@ -359,28 +353,27 @@ export default function ProjectsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Modal de création/édition */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-lg font-semibold">
-                {editingProject ? 'Modifier le projet' : 'Nouveau projet'}
+                {editingProject ? 'Edit project': 'New project'}
               </h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsModalOpen(false)}
                 className="h-8 w-8 p-0"
               >
                 <X size={16} />
               </Button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nom *</label>
+                  <label className="block text-sm font-medium mb-1">Name *</label>
                   <input
                     type="text"
                     required
@@ -389,7 +382,7 @@ export default function ProjectsCrudSection() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Email *</label>
                   <input
@@ -400,54 +393,54 @@ export default function ProjectsCrudSection() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Statut légal *</label>
+                  <label className="block text-sm font-medium mb-1">Legal status *</label>
                   <select
                     required
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={formData.legal_status}
                     onChange={(e) => setFormData({ ...formData, legal_status: e.target.value })}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">Select</option>
                     {LEGAL_STATUSES.map(status => (
                       <option key={status} value={status}>{status}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Secteur *</label>
+                  <label className="block text-sm font-medium mb-1">Sector *</label>
                   <select
                     required
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={formData.sector}
                     onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">Select</option>
                     {SECTORS.map(sector => (
                       <option key={sector} value={sector}>{sector}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Maturité *</label>
+                  <label className="block text-sm font-medium mb-1">Maturity *</label>
                   <select
                     required
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={formData.maturity}
                     onChange={(e) => setFormData({ ...formData, maturity: e.target.value })}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">Select</option>
                     {MATURITIES.map(maturity => (
                       <option key={maturity} value={maturity}>{maturity}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Téléphone</label>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
                   <input
                     type="tel"
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -456,9 +449,9 @@ export default function ProjectsCrudSection() {
                   />
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-1">Adresse *</label>
+                <label className="block text-sm font-medium mb-1">Adress *</label>
                 <input
                   type="text"
                   required
@@ -467,7 +460,7 @@ export default function ProjectsCrudSection() {
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Description *</label>
                 <textarea
@@ -478,15 +471,15 @@ export default function ProjectsCrudSection() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
-              
+
               <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsModalOpen(false)}
                   disabled={isSubmitting}
                 >
-                  Annuler
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                   {isSubmitting ? (
@@ -494,7 +487,7 @@ export default function ProjectsCrudSection() {
                   ) : (
                     <Save size={16} />
                   )}
-                  {editingProject ? 'Modifier' : 'Créer'}
+                  {editingProject ? 'Update' : 'Create'}
                 </Button>
               </div>
             </form>

@@ -31,8 +31,8 @@ const DarkModeToggle = () => {
   const toggleDarkMode = () => setDarkMode(d => !d);
 
   const icon = !mounted ? null : (
-    darkMode ? 
-      <FaSun className="h-5 w-5 text-yellow-500 dark:text-yellow-400" /> : 
+    darkMode ?
+      <FaSun className="h-5 w-5 text-yellow-500 dark:text-yellow-400" /> :
       <FaMoon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
   );
 

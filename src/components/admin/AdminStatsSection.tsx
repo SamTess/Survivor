@@ -55,16 +55,16 @@ export default function AdminStatsSection() {
         <h2 className="text-2xl font-bold text-foreground mb-2">Platform Statistics</h2>
         <p className="text-muted-foreground">Overview of key metrics and performance indicators</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsCards.map((stat, index) => (
-          <Card 
-            key={index} 
+          <Card
+            key={index}
             className={`${stat.colorClasses} transition-all duration-500 hover:shadow-xl hover:-translate-y-1 border-2 backdrop-blur-sm relative overflow-hidden group`}
           >
             {/* Gradient overlay effect */}
             <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-            
+
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
               <CardTitle className="text-sm font-semibold text-white">
                 {stat.title}

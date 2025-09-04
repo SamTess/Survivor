@@ -17,7 +17,7 @@ interface QuickAction {
 
 export default function AdminBackOfficeSection() {
   const { hasRole } = useAuth()
-  
+
   const quickActions: QuickAction[] = [
     {
       title: "User Management",
@@ -28,7 +28,7 @@ export default function AdminBackOfficeSection() {
       roles: ['ADMIN']
     },
     {
-      title: "Project Management", 
+      title: "Project Management",
       description: "Oversee projects and startup applications",
       href: "/admin/projects-management",
       icon: <FaProjectDiagram className="text-green-600" size={20} />,
@@ -38,7 +38,7 @@ export default function AdminBackOfficeSection() {
     {
       title: "News Management",
       description: "Create and edit news articles",
-      href: "/admin/news-management", 
+      href: "/admin/news-management",
       icon: <FaNewspaper className="text-purple-600" size={20} />,
       color: "hover:bg-purple-50 border-purple-200",
       roles: ['ADMIN', 'MODERATOR']
@@ -48,7 +48,7 @@ export default function AdminBackOfficeSection() {
       description: "Schedule and manage upcoming events",
       href: "/admin/events-management",
       icon: <FaCalendarAlt className="text-orange-600" size={20} />,
-      color: "hover:bg-orange-50 border-orange-200", 
+      color: "hover:bg-orange-50 border-orange-200",
       roles: ['ADMIN', 'MODERATOR']
     }
   ]
@@ -63,7 +63,7 @@ export default function AdminBackOfficeSection() {
         <h2 className="text-2xl font-bold text-foreground mb-2">Admin Back Office</h2>
         <p className="text-muted-foreground">Management of projects, startups, and users</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredActions.map((action, index) => (
           <Link key={index} href={action.href}>

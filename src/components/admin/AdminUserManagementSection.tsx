@@ -11,7 +11,7 @@ export default function AdminUserManagementSection() {
         <h2 className="text-2xl font-bold text-foreground mb-2">User Management</h2>
         <p className="text-muted-foreground">Role assignment (administrators, startups, privileged visitors)</p>
       </div>
-      
+
       <Card>
         <CardContent className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">

@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   Calendar,
   X,
@@ -18,7 +18,6 @@ import {
   Clock
 } from 'lucide-react'
 
-// Types pour les événements basés sur le schéma Prisma
 interface Event {
   id: number
   name: string
@@ -72,31 +71,29 @@ export default function EventsCrudSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Charger les événements au démarrage
   useEffect(() => {
     fetchEvents()
   }, [])
 
-  // Filtrer les événements
   useEffect(() => {
     let filtered = events
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(event => 
+      filtered = filtered.filter(event =>
         event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (event.description && event.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (event.location && event.location.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
-    
+
     if (selectedType) {
       filtered = filtered.filter(event => event.event_type === selectedType)
     }
-    
+
     if (selectedAudience) {
       filtered = filtered.filter(event => event.target_audience === selectedAudience)
     }
-    
+
     setFilteredEvents(filtered)
   }, [events, searchTerm, selectedType, selectedAudience])
 
@@ -105,7 +102,7 @@ export default function EventsCrudSection() {
       setLoading(true)
       const response = await fetch('/api/events')
       const data = await response.json()
-      
+
       if (data.success) {
         setEvents(data.data)
       } else {
@@ -145,22 +142,22 @@ export default function EventsCrudSection() {
   }
 
   const handleDeleteEvent = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) return
+    if (!confirm('Are you sure you want to delete this event?')) return
 
     try {
       const response = await fetch(`/api/events/${id}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         setEvents(events.filter(e => e.id !== id))
-        alert('Événement supprimé avec succès!')
+        alert('Event deleted successfully!')
       } else {
-        alert('Erreur lors de la suppression')
+        alert('Error during deletion')
       }
     } catch (error) {
       console.error('Error deleting event:', error)
-      alert('Erreur lors de la suppression')
+      alert('Error during deletion')
     }
   }
 
@@ -171,12 +168,12 @@ export default function EventsCrudSection() {
     try {
       const url = editingEvent ? `/api/events/${editingEvent.id}` : '/api/events'
       const method = editingEvent ? 'PUT' : 'POST'
-      
+
       const submitData = {
         ...formData,
         dates: formData.dates ? new Date(formData.dates).toISOString() : null
       }
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -184,26 +181,26 @@ export default function EventsCrudSection() {
         },
         body: JSON.stringify(submitData)
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
-        await fetchEvents() // Recharger la liste
+        await fetchEvents() // reload list
         setIsModalOpen(false)
-        alert(`Événement ${editingEvent ? 'modifié' : 'créé'} avec succès!`)
+        alert(`Event ${editingEvent ? 'updated' : 'created'} successfully!`)
       } else {
-        alert(`Erreur: ${data.error}`)
+        alert(`Error: ${data.error}`)
       }
     } catch (error) {
       console.error('Error saving event:', error)
-      alert('Erreur lors de la sauvegarde')
+      alert('Error during save')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -236,26 +233,26 @@ export default function EventsCrudSection() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Chargement des événements...</span>
+        <span className="ml-2">Loading events...</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header avec actions */}
+      {/* Header  */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Gestion des Événements</h2>
-          <p className="text-muted-foreground">Organisez et gérez les événements de votre écosystème</p>
+          <h2 className="text-2xl font-bold">Events Management</h2>
+          <p className="text-muted-foreground">Organize and manage your ecosystem events</p>
         </div>
         <Button onClick={handleCreateEvent} className="flex items-center gap-2">
           <Plus size={16} />
-          Nouvel Événement
+          New Event
         </Button>
       </div>
 
-      {/* Filtres */}
+      {/* Filter */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -263,7 +260,7 @@ export default function EventsCrudSection() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher par nom, description ou lieu..."
+                placeholder="Search by name, description or location..."
                 className="w-full pl-10 pr-4 py-2 border border-input bg-background rounded-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -274,7 +271,7 @@ export default function EventsCrudSection() {
               value={selectedType}
               onChange={(e) => setSelectedType(e.target.value)}
             >
-              <option value="">Tous les types</option>
+              <option value="">All types</option>
               {EVENT_TYPES.map(type => (
                 <option key={type} value={type}>{type}</option>
               ))}
@@ -284,7 +281,7 @@ export default function EventsCrudSection() {
               value={selectedAudience}
               onChange={(e) => setSelectedAudience(e.target.value)}
             >
-              <option value="">Toutes les audiences</option>
+              <option value="">All audiences</option>
               {TARGET_AUDIENCES.map(audience => (
                 <option key={audience} value={audience}>{audience}</option>
               ))}
@@ -293,31 +290,31 @@ export default function EventsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Liste des événements */}
+      {/* Events */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar size={20} />
-            Événements ({filteredEvents.length})
+            Events ({filteredEvents.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {filteredEvents.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Aucun événement trouvé
+              No events found
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-2">Nom</th>
+                    <th className="text-left py-3 px-2">Name</th>
                     <th className="text-left py-3 px-2">Type</th>
                     <th className="text-left py-3 px-2">Date</th>
-                    <th className="text-left py-3 px-2">Lieu</th>
+                    <th className="text-left py-3 px-2">Location</th>
                     <th className="text-left py-3 px-2">Audience</th>
                     <th className="text-left py-3 px-2">Participants</th>
-                    <th className="text-left py-3 px-2">Vues</th>
+                    <th className="text-left py-3 px-2">Views</th>
                     <th className="text-left py-3 px-2">Actions</th>
                   </tr>
                 </thead>
@@ -331,7 +328,7 @@ export default function EventsCrudSection() {
                               {event.name}
                               {isEventUpcoming(event.dates) && (
                                 <span className="px-1.5 py-0.5 bg-green-100 text-green-700 text-xs rounded dark:bg-green-900 dark:text-green-200">
-                                  À venir
+                                  Upcoming
                                 </span>
                               )}
                             </div>
@@ -377,17 +374,17 @@ export default function EventsCrudSection() {
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0"
                             onClick={() => handleEditEvent(event)}
                           >
                             <Edit size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteEvent(event.id)}
                           >
@@ -404,27 +401,27 @@ export default function EventsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Modal de création/édition */}
+      {/* Create/Edit */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-lg font-semibold">
-                {editingEvent ? 'Modifier l&apos;événement' : 'Nouvel événement'}
+                {editingEvent ? 'Edit Event' : 'New Event'}
               </h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsModalOpen(false)}
                 className="h-8 w-8 p-0"
               >
                 <X size={16} />
               </Button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Nom de l&apos;événement *</label>
+                <label className="block text-sm font-medium mb-1">Event Name *</label>
                 <input
                   type="text"
                   required
@@ -433,7 +430,7 @@ export default function EventsCrudSection() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
@@ -443,10 +440,10 @@ export default function EventsCrudSection() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Date et heure</label>
+                  <label className="block text-sm font-medium mb-1">Date and Time</label>
                   <input
                     type="datetime-local"
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -454,9 +451,9 @@ export default function EventsCrudSection() {
                     onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Lieu</label>
+                  <label className="block text-sm font-medium mb-1">Location</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -464,44 +461,44 @@ export default function EventsCrudSection() {
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Type d&apos;événement</label>
+                  <label className="block text-sm font-medium mb-1">Event Type</label>
                   <select
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={formData.event_type}
                     onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
                   >
-                    <option value="">Sélectionner un type</option>
+                    <option value="">Select a type</option>
                     {EVENT_TYPES.map(type => (
                       <option key={type} value={type}>{type}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Audience cible</label>
+                  <label className="block text-sm font-medium mb-1">Target Audience</label>
                   <select
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={formData.target_audience}
                     onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
                   >
-                    <option value="">Sélectionner une audience</option>
+                    <option value="">Select an audience</option>
                     {TARGET_AUDIENCES.map(audience => (
                       <option key={audience} value={audience}>{audience}</option>
                     ))}
                   </select>
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsModalOpen(false)}
                   disabled={isSubmitting}
                 >
-                  Annuler
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                   {isSubmitting ? (
@@ -509,7 +506,7 @@ export default function EventsCrudSection() {
                   ) : (
                     <Save size={16} />
                   )}
-                  {editingEvent ? 'Modifier' : 'Créer'}
+                  {editingEvent ? 'Update' : 'Create'}
                 </Button>
               </div>
             </form>

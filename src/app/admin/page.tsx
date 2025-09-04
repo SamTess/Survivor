@@ -7,7 +7,7 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // Simuler le chargement des données
+    // Simulate loading data
     const timer = setTimeout(() => setIsLoading(false), 1000)
     return () => clearTimeout(timer)
   }, [])
@@ -22,11 +22,11 @@ export default function AdminDashboard() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-background">
-      {/* Conteneur avec défilement */}
+      {/* Container with scroll */}
       <div className="flex-1 overflow-y-auto pt-20 pb-8 px-6">
         <div className="max-w-7xl mx-auto">
           <AdminNavigationTabs />
-          {/* Espacement final pour s'assurer que tout est visible */}
+          {/* Final space */}
           <div className="h-8"></div>
         </div>
       </div>

@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   Users,
   Shield,
@@ -18,7 +18,7 @@ import {
   Phone
 } from 'lucide-react'
 
-// Types pour les utilisateurs basés sur le schéma Prisma
+// Types for users based on Prisma schema
 interface User {
   id: number
   name: string
@@ -137,27 +137,27 @@ export default function UsersCrudSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Charger les utilisateurs au démarrage
+  // Load users on startup
   useEffect(() => {
     fetchUsers()
   }, [])
 
-  // Filtrer les utilisateurs
+  // Filter users
   useEffect(() => {
     let filtered = users
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(user => 
+      filtered = filtered.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (user.description && user.description.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
-    
+
     if (selectedRole) {
       filtered = filtered.filter(user => user.role === selectedRole)
     }
-    
+
     setFilteredUsers(filtered)
   }, [users, searchTerm, selectedRole])
 
@@ -166,7 +166,7 @@ export default function UsersCrudSection() {
       setLoading(true)
       const response = await fetch('/api/users')
       const data = await response.json()
-      
+
       if (data.success) {
         setUsers(data.data)
       } else {
@@ -204,7 +204,7 @@ export default function UsersCrudSection() {
       legal_status: user.legal_status || '',
       description: user.description || '',
       role: user.role,
-      password: '' // Ne pas afficher le mot de passe existant
+      password: '' // Don't display existing password
     })
     setIsUserModalOpen(true)
   }
@@ -223,22 +223,22 @@ export default function UsersCrudSection() {
   }
 
   const handleDeleteUser = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) return
+    if (!confirm('Are you sure you want to delete this user?')) return
 
     try {
       const response = await fetch(`/api/users/${id}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         setUsers(users.filter(u => u.id !== id))
-        alert('Utilisateur supprimé avec succès!')
+        alert('User deleted successfully!')
       } else {
-        alert('Erreur lors de la suppression')
+        alert('Error during deletion')
       }
     } catch (error) {
       console.error('Error deleting user:', error)
-      alert('Erreur lors de la suppression')
+      alert('Error during deletion')
     }
   }
 
@@ -249,13 +249,13 @@ export default function UsersCrudSection() {
     try {
       const url = editingUser ? `/api/users/${editingUser.id}` : '/api/users'
       const method = editingUser ? 'PUT' : 'POST'
-      
-      // Ne pas envoyer le mot de passe s'il est vide lors de l'édition
+
+      // Don't send password if empty during editing
       const submitData = { ...userFormData }
       if (editingUser && !submitData.password) {
         delete submitData.password
       }
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -263,19 +263,19 @@ export default function UsersCrudSection() {
         },
         body: JSON.stringify(submitData)
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
-        await fetchUsers() // Recharger la liste
+        await fetchUsers() // Reload the list
         setIsUserModalOpen(false)
-        alert(`Utilisateur ${editingUser ? 'modifié' : 'créé'} avec succès!`)
+        alert(`User ${editingUser ? 'updated' : 'created'} successfully!`)
       } else {
-        alert(`Erreur: ${data.error}`)
+        alert(`Error: ${data.error}`)
       }
     } catch (error) {
       console.error('Error saving user:', error)
-      alert('Erreur lors de la sauvegarde')
+      alert('Error during save')
     } finally {
       setIsSubmitting(false)
     }
@@ -284,7 +284,7 @@ export default function UsersCrudSection() {
   const handleSubmitPermission = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedUserForPermissions) return
-    
+
     setIsSubmitting(true)
 
     try {
@@ -298,20 +298,20 @@ export default function UsersCrudSection() {
           user_id: selectedUserForPermissions.id
         })
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
-        alert('Permission ajoutée avec succès!')
+        alert('Permission added successfully!')
         setIsPermissionModalOpen(false)
-        // Optionnel: recharger les utilisateurs pour avoir les permissions mises à jour
+        // Optional: reload users to have updated permissions
         await fetchUsers()
       } else {
-        alert(`Erreur: ${data.error}`)
+        alert(`Error: ${data.error}`)
       }
     } catch (error) {
       console.error('Error saving permission:', error)
-      alert('Erreur lors de la sauvegarde')
+      alert('Error during save')
     } finally {
       setIsSubmitting(false)
     }
@@ -322,7 +322,7 @@ export default function UsersCrudSection() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR')
+    return new Date(dateString).toLocaleDateString('en-US')
   }
 
   const getRoleColor = (role: string) => {
@@ -342,26 +342,24 @@ export default function UsersCrudSection() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Chargement des utilisateurs...</span>
+        <span className="ml-2">Loading users...</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header avec actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Gestion des Utilisateurs</h2>
-          <p className="text-muted-foreground">Gérez les comptes utilisateurs, leurs rôles et permissions</p>
+          <h2 className="text-2xl font-bold">Users Management</h2>
+          <p className="text-muted-foreground">Manage user accounts, their roles and permissions</p>
         </div>
         <Button onClick={handleCreateUser} className="flex items-center gap-2">
           <Plus size={16} />
-          Nouvel Utilisateur
+          New User
         </Button>
       </div>
 
-      {/* Filtres */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -369,7 +367,7 @@ export default function UsersCrudSection() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher par nom, email ou description..."
+                placeholder="Search by name, email or description..."
                 className="w-full pl-10 pr-4 py-2 border border-input bg-background rounded-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -380,7 +378,7 @@ export default function UsersCrudSection() {
               value={selectedRole}
               onChange={(e) => setSelectedRole(e.target.value)}
             >
-              <option value="">Tous les rôles</option>
+              <option value="">All roles</option>
               {USER_ROLES.map(role => (
                 <option key={role} value={role}>{role}</option>
               ))}
@@ -389,30 +387,30 @@ export default function UsersCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Liste des utilisateurs */}
+      {/* Users List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users size={20} />
-            Utilisateurs ({filteredUsers.length})
+            Users ({filteredUsers.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
           {filteredUsers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Aucun utilisateur trouvé
+              No users found
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-2">Utilisateur</th>
-                    <th className="text-left py-3 px-2">Rôle</th>
+                    <th className="text-left py-3 px-2">User</th>
+                    <th className="text-left py-3 px-2">Role</th>
                     <th className="text-left py-3 px-2">Contact</th>
-                    <th className="text-left py-3 px-2">Statut légal</th>
-                    <th className="text-left py-3 px-2">Créé le</th>
-                    <th className="text-left py-3 px-2">Abonnés</th>
+                    <th className="text-left py-3 px-2">Legal Status</th>
+                    <th className="text-left py-3 px-2">Created</th>
+                    <th className="text-left py-3 px-2">Followers</th>
                     <th className="text-left py-3 px-2">Actions</th>
                   </tr>
                 </thead>
@@ -456,26 +454,26 @@ export default function UsersCrudSection() {
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0"
                             onClick={() => handleEditUser(user)}
                           >
                             <Edit size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
                             onClick={() => handleManagePermissions(user)}
-                            title="Gérer les permissions"
+                            title="Manage Permissions"
                           >
                             <Shield size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteUser(user.id)}
                           >
@@ -492,28 +490,28 @@ export default function UsersCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Modal de création/édition d'utilisateur */}
+      {/* User creation/edit modal */}
       {isUserModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-lg font-semibold">
-                {editingUser ? 'Modifier l&apos;utilisateur' : 'Nouvel utilisateur'}
+                {editingUser ? 'Edit User' : 'New User'}
               </h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsUserModalOpen(false)}
                 className="h-8 w-8 p-0"
               >
                 <X size={16} />
               </Button>
             </div>
-            
+
             <form onSubmit={handleSubmitUser} className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nom *</label>
+                  <label className="block text-sm font-medium mb-1">Name *</label>
                   <input
                     type="text"
                     required
@@ -522,7 +520,7 @@ export default function UsersCrudSection() {
                     onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Email *</label>
                   <input
@@ -533,10 +531,10 @@ export default function UsersCrudSection() {
                     onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    Mot de passe {editingUser ? '(laisser vide pour ne pas changer)' : '*'}
+                    Password {editingUser ? '(leave empty to keep unchanged)' : '*'}
                   </label>
                   <input
                     type="password"
@@ -546,9 +544,9 @@ export default function UsersCrudSection() {
                     onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Rôle *</label>
+                  <label className="block text-sm font-medium mb-1">Role *</label>
                   <select
                     required
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -560,9 +558,9 @@ export default function UsersCrudSection() {
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Téléphone</label>
+                  <label className="block text-sm font-medium mb-1">Phone</label>
                   <input
                     type="tel"
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -570,24 +568,24 @@ export default function UsersCrudSection() {
                     onChange={(e) => setUserFormData({ ...userFormData, phone: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Statut légal</label>
+                  <label className="block text-sm font-medium mb-1">Legal Status</label>
                   <select
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={userFormData.legal_status}
                     onChange={(e) => setUserFormData({ ...userFormData, legal_status: e.target.value })}
                   >
-                    <option value="">Sélectionner</option>
+                    <option value="">Select</option>
                     {LEGAL_STATUSES.map(status => (
                       <option key={status} value={status}>{status}</option>
                     ))}
                   </select>
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-1">Adresse *</label>
+                <label className="block text-sm font-medium mb-1">Address *</label>
                 <input
                   type="text"
                   required
@@ -596,7 +594,7 @@ export default function UsersCrudSection() {
                   onChange={(e) => setUserFormData({ ...userFormData, address: e.target.value })}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
@@ -606,15 +604,15 @@ export default function UsersCrudSection() {
                   onChange={(e) => setUserFormData({ ...userFormData, description: e.target.value })}
                 />
               </div>
-              
+
               <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsUserModalOpen(false)}
                   disabled={isSubmitting}
                 >
-                  Annuler
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                   {isSubmitting ? (
@@ -622,7 +620,7 @@ export default function UsersCrudSection() {
                   ) : (
                     <Save size={16} />
                   )}
-                  {editingUser ? 'Modifier' : 'Créer'}
+                  {editingUser ? 'Update' : 'Create'}
                 </Button>
               </div>
             </form>
@@ -638,20 +636,20 @@ export default function UsersCrudSection() {
               <h3 className="text-lg font-semibold">
                 Permissions pour {selectedUserForPermissions.name}
               </h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsPermissionModalOpen(false)}
                 className="h-8 w-8 p-0"
               >
                 <X size={16} />
               </Button>
             </div>
-            
+
             <div className="p-6 space-y-6">
-              {/* Templates de permissions */}
+              {/* Permission templates */}
               <div>
-                <h4 className="text-sm font-medium mb-3">Modèles de permissions rapides</h4>
+                <h4 className="text-sm font-medium mb-3">Quick permission templates</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {PERMISSION_TEMPLATES.map((template, index) => (
                     <Button
@@ -669,11 +667,11 @@ export default function UsersCrudSection() {
                   ))}
                 </div>
               </div>
-              
-              {/* Formulaire de permission personnalisée */}
+
+              {/* Custom permission form */}
               <form onSubmit={handleSubmitPermission} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Nom de la permission *</label>
+                  <label className="block text-sm font-medium mb-1">Permission Name *</label>
                   <input
                     type="text"
                     required
@@ -682,7 +680,7 @@ export default function UsersCrudSection() {
                     onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-1">Description</label>
                   <textarea
@@ -692,9 +690,9 @@ export default function UsersCrudSection() {
                     onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-3">Droits d&apos;accès</label>
+                  <label className="block text-sm font-medium mb-3">Access Rights</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <label className="flex items-center space-x-2">
                       <input
@@ -703,7 +701,7 @@ export default function UsersCrudSection() {
                         onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm">Créer</span>
+                      <span className="text-sm">Create</span>
                     </label>
                     <label className="flex items-center space-x-2">
                       <input
@@ -721,7 +719,7 @@ export default function UsersCrudSection() {
                         onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm">Modifier</span>
+                      <span className="text-sm">Update</span>
                     </label>
                     <label className="flex items-center space-x-2">
                       <input
@@ -730,19 +728,19 @@ export default function UsersCrudSection() {
                         onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
                         className="rounded"
                       />
-                      <span className="text-sm">Supprimer</span>
+                      <span className="text-sm">Delete</span>
                     </label>
                   </div>
                 </div>
-                
+
                 <div className="flex justify-end gap-3 pt-4">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setIsPermissionModalOpen(false)}
                     disabled={isSubmitting}
                   >
-                    Fermer
+                    Close
                   </Button>
                   <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                     {isSubmitting ? (
@@ -750,7 +748,7 @@ export default function UsersCrudSection() {
                     ) : (
                       <Shield size={16} />
                     )}
-                    Ajouter Permission
+                    Add Permission
                   </Button>
                 </div>
               </form>

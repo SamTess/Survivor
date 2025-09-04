@@ -11,7 +11,7 @@ export default function AdminContentManagementSection() {
         <h2 className="text-2xl font-bold text-foreground mb-2">Content Management</h2>
         <p className="text-muted-foreground">Adding, editing, and deleting project profiles</p>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="transition-all duration-300 hover:shadow-md border-2 border-green-200 hover:bg-green-50">
           <CardHeader>
@@ -24,7 +24,7 @@ export default function AdminContentManagementSection() {
             </CardDescription>
           </CardHeader>
         </Card>
-        
+
         <Card className="transition-all duration-300 hover:shadow-md border-2 border-blue-200 hover:bg-blue-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-700">
@@ -36,7 +36,7 @@ export default function AdminContentManagementSection() {
             </CardDescription>
           </CardHeader>
         </Card>
-        
+
         <Card className="transition-all duration-300 hover:shadow-md border-2 border-orange-200 hover:bg-orange-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-700">

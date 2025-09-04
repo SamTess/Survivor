@@ -11,7 +11,7 @@ export default function AdminDashboardSection() {
         <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard</h2>
         <p className="text-muted-foreground">Statistics on project visibility and user interactions</p>
       </div>
-      
+
       <Card className="p-6">
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -28,15 +28,15 @@ export default function AdminDashboardSection() {
               <div className="text-sm text-muted-foreground">New Registrations</div>
             </div>
           </div>
-          
+
           <div className="pt-4 border-t border-border">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Last updated</span>
               <span className="text-sm font-medium text-foreground">
-                {new Date().toLocaleDateString('en-US', { 
-                  year: 'numeric', 
-                  month: 'long', 
-                  day: 'numeric' 
+                {new Date().toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
                 })}
               </span>
             </div>
@@ -55,7 +55,7 @@ export default function AdminDashboardSection() {
             Chart visualization would go here
           </div>
         </Card>
-        
+
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-4">
             <FaChartLine className="text-primary" />

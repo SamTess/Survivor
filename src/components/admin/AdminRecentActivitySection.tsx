@@ -10,7 +10,7 @@ export default function AdminRecentActivitySection() {
         <h2 className="text-2xl font-bold text-foreground mb-2">Recent Administrative Activity</h2>
         <p className="text-muted-foreground">Latest actions and changes in the system</p>
       </div>
-      
+
       <Card>
         <CardContent className="p-6">
           <div className="space-y-4">

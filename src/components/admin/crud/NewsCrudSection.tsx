@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Search,
+  Plus,
+  Edit,
+  Trash2,
   Eye,
   FileText,
   X,
@@ -16,7 +16,6 @@ import {
   Image as ImageIcon
 } from 'lucide-react'
 
-// Types pour les news basés sur le schéma Prisma
 interface News {
   id: number
   title: string
@@ -69,31 +68,29 @@ export default function NewsCrudSection() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Charger les données au démarrage
   useEffect(() => {
     fetchNews()
     fetchStartups()
   }, [])
 
-  // Filtrer les news
   useEffect(() => {
     let filtered = news
-    
+
     if (searchTerm) {
-      filtered = filtered.filter(item => 
+      filtered = filtered.filter(item =>
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
-    
+
     if (selectedCategory) {
       filtered = filtered.filter(item => item.category === selectedCategory)
     }
-    
+
     if (selectedStartup) {
       filtered = filtered.filter(item => item.startup_id === parseInt(selectedStartup))
     }
-    
+
     setFilteredNews(filtered)
   }, [news, searchTerm, selectedCategory, selectedStartup])
 
@@ -102,7 +99,7 @@ export default function NewsCrudSection() {
       setLoading(true)
       const response = await fetch('/api/news')
       const data = await response.json()
-      
+
       if (data.success) {
         setNews(data.data)
       } else {
@@ -119,7 +116,7 @@ export default function NewsCrudSection() {
     try {
       const response = await fetch('/api/startups')
       const data = await response.json()
-      
+
       if (data.success) {
         setStartups(data.data.map((s: {id: number, name: string}) => ({ id: s.id, name: s.name })))
       } else {
@@ -157,22 +154,22 @@ export default function NewsCrudSection() {
   }
 
   const handleDeleteNews = async (id: number) => {
-    if (!confirm('Êtes-vous sûr de vouloir supprimer cet article ?')) return
+    if (!confirm('Are you sure you want to delete this article?')) return
 
     try {
       const response = await fetch(`/api/news/${id}`, {
         method: 'DELETE'
       })
-      
+
       if (response.ok) {
         setNews(news.filter(n => n.id !== id))
-        alert('Article supprimé avec succès!')
+        alert('Article deleted successfully!')
       } else {
-        alert('Erreur lors de la suppression')
+        alert('Error during deletion')
       }
     } catch (error) {
       console.error('Error deleting news:', error)
-      alert('Erreur lors de la suppression')
+      alert('Error during deletion')
     }
   }
 
@@ -183,13 +180,13 @@ export default function NewsCrudSection() {
     try {
       const url = editingNews ? `/api/news/${editingNews.id}` : '/api/news'
       const method = editingNews ? 'PUT' : 'POST'
-      
+
       const submitData = {
         ...formData,
         startup_id: parseInt(formData.startup_id),
         news_date: formData.news_date ? new Date(formData.news_date).toISOString() : null
       }
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -197,26 +194,26 @@ export default function NewsCrudSection() {
         },
         body: JSON.stringify(submitData)
       })
-      
+
       const data = await response.json()
-      
+
       if (data.success) {
-        await fetchNews() // Recharger la liste
+        await fetchNews()
         setIsModalOpen(false)
-        alert(`Article ${editingNews ? 'modifié' : 'créé'} avec succès!`)
+        alert(`Article ${editingNews ? 'updated' : 'created'} successfully!`)
       } else {
-        alert(`Erreur: ${data.error}`)
+        alert(`Error: ${data.error}`)
       }
     } catch (error) {
       console.error('Error saving news:', error)
-      alert('Erreur lors de la sauvegarde')
+      alert('Error during save')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR')
+    return new Date(dateString).toLocaleDateString('en-US')
   }
 
   const getCategoryColor = (category?: string) => {
@@ -237,26 +234,24 @@ export default function NewsCrudSection() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Chargement des articles...</span>
+        <span className="ml-2">Loading articles...</span>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header avec actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Gestion des News</h2>
-          <p className="text-muted-foreground">Gérez les articles et actualités de vos startups</p>
+          <h2 className="text-2xl font-bold">News Management</h2>
+          <p className="text-muted-foreground">Manage articles and news from your startups</p>
         </div>
         <Button onClick={handleCreateNews} className="flex items-center gap-2">
           <Plus size={16} />
-          Nouvel Article
+          New Article
         </Button>
       </div>
 
-      {/* Filtres */}
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -264,7 +259,7 @@ export default function NewsCrudSection() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher par titre ou description..."
+                placeholder="Search by title or description..."
                 className="w-full pl-10 pr-4 py-2 border border-input bg-background rounded-md"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -275,7 +270,7 @@ export default function NewsCrudSection() {
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
-              <option value="">Toutes les catégories</option>
+              <option value="">All categories</option>
               {NEWS_CATEGORIES.map(category => (
                 <option key={category} value={category}>{category}</option>
               ))}
@@ -294,7 +289,6 @@ export default function NewsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Liste des news */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -305,19 +299,19 @@ export default function NewsCrudSection() {
         <CardContent>
           {filteredNews.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Aucun article trouvé
+              No articles found
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left py-3 px-2">Titre</th>
+                    <th className="text-left py-3 px-2">Title</th>
                     <th className="text-left py-3 px-2">Startup</th>
-                    <th className="text-left py-3 px-2">Catégorie</th>
+                    <th className="text-left py-3 px-2">Category</th>
                     <th className="text-left py-3 px-2">Date</th>
-                    <th className="text-left py-3 px-2">Lieu</th>
-                    <th className="text-left py-3 px-2">Vues</th>
+                    <th className="text-left py-3 px-2">Location</th>
+                    <th className="text-left py-3 px-2">Views</th>
                     <th className="text-left py-3 px-2">Likes</th>
                     <th className="text-left py-3 px-2">Actions</th>
                   </tr>
@@ -359,17 +353,17 @@ export default function NewsCrudSection() {
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <Eye size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0"
                             onClick={() => handleEditNews(newsItem)}
                           >
                             <Edit size={14} />
                           </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                             onClick={() => handleDeleteNews(newsItem.id)}
                           >
@@ -386,27 +380,26 @@ export default function NewsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Modal de création/édition */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b">
               <h3 className="text-lg font-semibold">
-                {editingNews ? 'Modifier l\'article' : 'Nouvel article'}
+                {editingNews ? 'Edit Article' : 'New Article'}
               </h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setIsModalOpen(false)}
                 className="h-8 w-8 p-0"
               >
                 <X size={16} />
               </Button>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Titre *</label>
+                <label className="block text-sm font-medium mb-1">Title *</label>
                 <input
                   type="text"
                   required
@@ -415,7 +408,7 @@ export default function NewsCrudSection() {
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
@@ -425,7 +418,7 @@ export default function NewsCrudSection() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 />
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Startup *</label>
@@ -435,29 +428,29 @@ export default function NewsCrudSection() {
                     value={formData.startup_id}
                     onChange={(e) => setFormData({ ...formData, startup_id: e.target.value })}
                   >
-                    <option value="">Sélectionner une startup</option>
+                    <option value="">Select a startup</option>
                     {startups.map(startup => (
                       <option key={startup.id} value={startup.id}>{startup.name}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Catégorie</label>
+                  <label className="block text-sm font-medium mb-1">Category</label>
                   <select
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
-                    <option value="">Sélectionner une catégorie</option>
+                    <option value="">Select a category</option>
                     {NEWS_CATEGORIES.map(category => (
                       <option key={category} value={category}>{category}</option>
                     ))}
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Date de l&apos;actualité</label>
+                  <label className="block text-sm font-medium mb-1">News Date</label>
                   <input
                     type="date"
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -465,9 +458,9 @@ export default function NewsCrudSection() {
                     onChange={(e) => setFormData({ ...formData, news_date: e.target.value })}
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-1">Lieu</label>
+                  <label className="block text-sm font-medium mb-1">Location</label>
                   <input
                     type="text"
                     className="w-full px-3 py-2 border border-input bg-background rounded-md"
@@ -476,15 +469,15 @@ export default function NewsCrudSection() {
                   />
                 </div>
               </div>
-              
+
               <div className="flex justify-end gap-3 pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
+                <Button
+                  type="button"
+                  variant="outline"
                   onClick={() => setIsModalOpen(false)}
                   disabled={isSubmitting}
                 >
-                  Annuler
+                  Cancel
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                   {isSubmitting ? (
@@ -492,7 +485,7 @@ export default function NewsCrudSection() {
                   ) : (
                     <Save size={16} />
                   )}
-                  {editingNews ? 'Modifier' : 'Créer'}
+                  {editingNews ? 'Update' : 'Create'}
                 </Button>
               </div>
             </form>
