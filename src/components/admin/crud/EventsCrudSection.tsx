@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import {
   Search,
   Plus,
@@ -151,13 +152,16 @@ export default function EventsCrudSection() {
 
       if (response.ok) {
         setEvents(events.filter(e => e.id !== id))
-        alert('Event deleted successfully!')
+        toast.success('Event deleted successfully!')
       } else {
-        alert('Error during deletion')
+        toast.error('Deletion error', {
+          description: 'Unable to delete this event'
+        })
       }
-    } catch (error) {
-      console.error('Error deleting event:', error)
-      alert('Error during deletion')
+    } catch {
+      toast.error('Deletion error', {
+        description: 'A network error occurred'
+      })
     }
   }
 
@@ -187,13 +191,18 @@ export default function EventsCrudSection() {
       if (data.success) {
         await fetchEvents() // reload list
         setIsModalOpen(false)
-        alert(`Event ${editingEvent ? 'updated' : 'created'} successfully!`)
+        toast.success(`Event ${editingEvent ? 'updated' : 'created'} successfully!`, {
+          description: `The event "${formData.name}" has been ${editingEvent ? 'updated' : 'scheduled'}`
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(`Error ${editingEvent ? 'updating' : 'creating'} event`, {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving event:', error)
-      alert('Error during save')
+    } catch {
+      toast.error(`Error ${editingEvent ? 'updating' : 'creating'} event`, {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }

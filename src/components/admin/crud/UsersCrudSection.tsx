@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import {
   Search,
   Plus,
@@ -170,10 +171,14 @@ export default function UsersCrudSection() {
       if (data.success) {
         setUsers(data.data)
       } else {
-        console.error('Error fetching users:', data.error)
+        toast.error('Error loading users', {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error fetching users:', error)
+    } catch {
+      toast.error('Error loading users', {
+        description: 'An error occurred while fetching data'
+      })
     } finally {
       setLoading(false)
     }
@@ -232,13 +237,16 @@ export default function UsersCrudSection() {
 
       if (response.ok) {
         setUsers(users.filter(u => u.id !== id))
-        alert('User deleted successfully!')
+        toast.success('User deleted successfully!')
       } else {
-        alert('Error during deletion')
+        toast.error('Deletion error', {
+          description: 'Unable to delete this user'
+        })
       }
-    } catch (error) {
-      console.error('Error deleting user:', error)
-      alert('Error during deletion')
+    } catch {
+      toast.error('Deletion error', {
+        description: 'A network error occurred'
+      })
     }
   }
 
@@ -256,6 +264,11 @@ export default function UsersCrudSection() {
         delete submitData.password
       }
 
+      // Ensure no id is sent when creating a new user
+      if (!editingUser && 'id' in submitData) {
+        delete (submitData as Record<string, unknown>).id
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -269,13 +282,18 @@ export default function UsersCrudSection() {
       if (data.success) {
         await fetchUsers() // Reload the list
         setIsUserModalOpen(false)
-        alert(`User ${editingUser ? 'updated' : 'created'} successfully!`)
+        toast.success(`User ${editingUser ? 'updated' : 'created'} successfully!`, {
+          description: `${data.data.name} has been ${editingUser ? 'updated' : 'added'} to the database`
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(`Error ${editingUser ? 'updating' : 'creating'} user`, {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving user:', error)
-      alert('Error during save')
+    } catch {
+      toast.error(`Error ${editingUser ? 'updating' : 'creating'} user`, {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -302,16 +320,21 @@ export default function UsersCrudSection() {
       const data = await response.json()
 
       if (data.success) {
-        alert('Permission added successfully!')
+        toast.success('Permission added successfully!', {
+          description: `Permission "${permissionFormData.name}" granted to ${selectedUserForPermissions.name}`
+        })
         setIsPermissionModalOpen(false)
         // Optional: reload users to have updated permissions
         await fetchUsers()
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error('Error adding permission', {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving permission:', error)
-      alert('Error during save')
+    } catch {
+      toast.error('Error adding permission', {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }

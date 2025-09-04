@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 import {
   Search,
   Plus,
@@ -163,13 +164,16 @@ export default function NewsCrudSection() {
 
       if (response.ok) {
         setNews(news.filter(n => n.id !== id))
-        alert('Article deleted successfully!')
+        toast.success('Article deleted successfully!')
       } else {
-        alert('Error during deletion')
+        toast.error('Deletion error', {
+          description: 'Unable to delete this article'
+        })
       }
-    } catch (error) {
-      console.error('Error deleting news:', error)
-      alert('Error during deletion')
+    } catch {
+      toast.error('Deletion error', {
+        description: 'A network error occurred'
+      })
     }
   }
 
@@ -200,13 +204,18 @@ export default function NewsCrudSection() {
       if (data.success) {
         await fetchNews()
         setIsModalOpen(false)
-        alert(`Article ${editingNews ? 'updated' : 'created'} successfully!`)
+        toast.success(`Article ${editingNews ? 'updated' : 'created'} successfully!`, {
+          description: `The article "${formData.title}" has been ${editingNews ? 'updated' : 'published'}`
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(`Error ${editingNews ? 'updating' : 'creating'} article`, {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving news:', error)
-      alert('Error during save')
+    } catch {
+      toast.error(`Error ${editingNews ? 'updating' : 'creating'} article`, {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }
