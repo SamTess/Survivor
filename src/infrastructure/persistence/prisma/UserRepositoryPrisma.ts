@@ -31,10 +31,10 @@ export class UserRepositoryPrisma implements UserRepository {
         email: user.email,
         role: user.role,
         password_hash: '', // This should be set during user creation
-        address: '',
-        phone: '',
-        legal_status: '',
-        description: '',
+        address: user.address ?? null,
+        phone: user.phone ?? null,
+        legal_status: user.legal_status ?? null,
+        description: user.description ?? null,
       },
       include: {
         founders: true,
