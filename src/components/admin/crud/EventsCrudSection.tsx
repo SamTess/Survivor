@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
   Plus,
@@ -61,7 +62,9 @@ export default function EventsCrudSection() {
   const [selectedType, setSelectedType] = useState<string>('')
   const [selectedAudience, setSelectedAudience] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null)
   const [formData, setFormData] = useState<EventFormData>({
     name: '',
     description: '',
@@ -140,6 +143,11 @@ export default function EventsCrudSection() {
       target_audience: event.target_audience || ''
     })
     setIsModalOpen(true)
+  }
+
+  const handleViewEvent = (event: Event) => {
+    setViewingEvent(event)
+    setIsViewModalOpen(true)
   }
 
   const handleDeleteEvent = async (id: number) => {
@@ -380,7 +388,12 @@ export default function EventsCrudSection() {
                       <td className="py-3 px-2">{event.viewsCount}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleViewEvent(event)}
+                          >
                             <Eye size={14} />
                           </Button>
                           <Button
@@ -521,6 +534,59 @@ export default function EventsCrudSection() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* View Modal */}
+      {viewingEvent && (
+        <UniversalModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="Event Details"
+          size="lg"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Name</label>
+                <p className="text-sm font-medium">{viewingEvent.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Event Type</label>
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                  {viewingEvent.event_type || 'No type'}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Target Audience</label>
+                <p className="text-sm">{viewingEvent.target_audience || 'No target audience'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Date</label>
+                <p className="text-sm">{viewingEvent.dates ? new Date(viewingEvent.dates).toLocaleDateString('en-US') : 'No date'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Location</label>
+                <p className="text-sm">{viewingEvent.location || 'No location'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Created</label>
+                <p className="text-sm">{new Date(viewingEvent.created_at).toLocaleDateString('en-US')}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Attendees</label>
+                <p className="text-sm">{viewingEvent.attendeesCount}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Views</label>
+                <p className="text-sm">{viewingEvent.viewsCount}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-muted-foreground">Description</label>
+                <p className="text-sm">{viewingEvent.description || 'No description provided'}</p>
+              </div>
+            </div>
+          </div>
+        </UniversalModal>
       )}
     </div>
   )

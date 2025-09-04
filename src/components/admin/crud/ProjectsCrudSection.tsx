@@ -20,6 +20,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { FormModal, ConfirmModal, AlertModal } from '@/components/modals/ModalVariants'
+import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
   Plus,
@@ -551,61 +552,59 @@ export default function ProjectsCrudSection() {
 
       {/* View Modal */}
       {viewingProject && (
-        <FormModal
+        <UniversalModal
           isOpen={isViewModalOpen}
           onClose={() => setIsViewModalOpen(false)}
-          onSubmit={() => {}}
           title="Project Details"
-          submitLabel="Close"
-          cancelLabel=""
+          size="lg"
         >
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600">Name</label>
+                <label className="block text-sm font-medium text-muted-foreground">Name</label>
                 <p className="text-sm font-medium">{viewingProject.name}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Email</label>
+                <label className="block text-sm font-medium text-muted-foreground">Email</label>
                 <p className="text-sm">{viewingProject.email}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Sector</label>
+                <label className="block text-sm font-medium text-muted-foreground">Sector</label>
                 <p className="text-sm">{viewingProject.sector}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Maturity</label>
+                <label className="block text-sm font-medium text-muted-foreground">Maturity</label>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMaturityColor(viewingProject.maturity)}`}>
                   {viewingProject.maturity}
                 </span>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Legal Status</label>
+                <label className="block text-sm font-medium text-muted-foreground">Legal Status</label>
                 <p className="text-sm">{viewingProject.legal_status}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Phone</label>
+                <label className="block text-sm font-medium text-muted-foreground">Phone</label>
                 <p className="text-sm">{viewingProject.phone || 'N/A'}</p>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-600">Address</label>
+                <label className="block text-sm font-medium text-muted-foreground">Address</label>
                 <p className="text-sm">{viewingProject.address}</p>
               </div>
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-600">Description</label>
+                <label className="block text-sm font-medium text-muted-foreground">Description</label>
                 <p className="text-sm">{viewingProject.description}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Created</label>
+                <label className="block text-sm font-medium text-muted-foreground">Created</label>
                 <p className="text-sm">{formatDate(viewingProject.created_at)}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600">Views</label>
+                <label className="block text-sm font-medium text-muted-foreground">Views</label>
                 <p className="text-sm">{viewingProject.viewsCount}</p>
               </div>
             </div>
           </div>
-        </FormModal>
+        </UniversalModal>
       )}
 
       {/* Delete Confirmation Modal */}

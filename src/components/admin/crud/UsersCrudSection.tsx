@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
   Plus,
@@ -116,7 +117,9 @@ export default function UsersCrudSection() {
   const [selectedRole, setSelectedRole] = useState<string>('')
   const [isUserModalOpen, setIsUserModalOpen] = useState(false)
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [viewingUser, setViewingUser] = useState<User | null>(null)
   const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<User | null>(null)
   const [userFormData, setUserFormData] = useState<UserFormData>({
     name: '',
@@ -212,6 +215,11 @@ export default function UsersCrudSection() {
       password: '' // Don't display existing password
     })
     setIsUserModalOpen(true)
+  }
+
+  const handleViewUser = (user: User) => {
+    setViewingUser(user)
+    setIsViewModalOpen(true)
   }
 
   const handleManagePermissions = (user: User) => {
@@ -474,7 +482,12 @@ export default function UsersCrudSection() {
                       <td className="py-3 px-2">{user.followersCount}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleViewUser(user)}
+                          >
                             <Eye size={14} />
                           </Button>
                           <Button
@@ -778,6 +791,55 @@ export default function UsersCrudSection() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* View Modal */}
+      {viewingUser && (
+        <UniversalModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="User Details"
+          size="lg"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Name</label>
+                <p className="text-sm font-medium">{viewingUser.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Email</label>
+                <p className="text-sm">{viewingUser.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Role</label>
+                <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  {viewingUser.role}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Phone</label>
+                <p className="text-sm">{viewingUser.phone || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Legal Status</label>
+                <p className="text-sm">{viewingUser.legal_status || 'N/A'}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground">Created</label>
+                <p className="text-sm">{new Date(viewingUser.created_at).toLocaleDateString('en-US')}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-muted-foreground">Address</label>
+                <p className="text-sm">{viewingUser.address}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-muted-foreground">Description</label>
+                <p className="text-sm">{viewingUser.description || 'No description provided'}</p>
+              </div>
+            </div>
+          </div>
+        </UniversalModal>
       )}
     </div>
   )
