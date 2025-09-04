@@ -11,6 +11,16 @@ on:
       - 'ga-ignore-*'
       - 'HEAD'
 
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release to create'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+
 env:
   MIRROR_URL:
   GITHUB_URL:
@@ -326,6 +336,50 @@ jobs:
       - name: Run unit tests (Vitest)
         run: npm test -- --run --passWithNoTests
 
+  staging-release:
+    name: Create Staging Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+    needs: [docker-integration-test, unit-tests]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate staging release version
+        id: version
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          STAGING_VERSION="staging-${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${STAGING_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Generated staging version: ${STAGING_VERSION}"
+
+      - name: Create staging release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: "Staging Release ${{ steps.version.outputs.version }}"
+          body: |
+            ## Staging Release 🚀
+
+            **Branch:** development
+            **Commit:** ${{ github.sha }}
+            **Timestamp:** ${{ steps.version.outputs.version }}
+
+            This is an automated staging release created from the development branch.
+
+            ### Changes
+            - Commit: ${{ github.event.head_commit.message }}
+            - Author: ${{ github.event.head_commit.author.name }}
+
+            ### Deployment
+            This release is ready for staging environment deployment.
+          draft: false
+          prerelease: true
 
   push_to_mirror:
     name: Pushing to good repository
@@ -343,3 +397,78 @@ jobs:
         with:
           target_repo_url: ${{ env.GITHUB_URL }}
           ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+
+  production-release:
+    name: Create Production Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Validate main branch
+        run: |
+          CURRENT_BRANCH=$(git branch --show-current)
+          if [ "$CURRENT_BRANCH" != "main" ]; then
+            echo "Error: Production releases can only be created from the main branch"
+            echo "Current branch: $CURRENT_BRANCH"
+            exit 1
+          fi
+
+      - name: Generate production release version
+        id: version
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PROD_VERSION="prod-${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${PROD_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Generated production version: ${PROD_VERSION}"
+
+      - name: Run production pre-checks
+        run: |
+          echo "Running production pre-checks..."
+          echo "Latest commits on main branch:"
+          git log --oneline -5
+
+          if [ ! -f "package.json" ]; then
+            echo "Error: package.json not found"
+            exit 1
+          fi
+
+          if [ ! -f "prisma/schema.prisma" ]; then
+            echo "Error: Prisma schema not found"
+            exit 1
+          fi
+
+          echo "Production pre-checks passed ✓"
+
+      - name: Create production release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          release_name: "Production Release ${{ steps.version.outputs.version }}"
+          body: |
+            ## Production Release 🎉
+
+            **Branch:** main
+            **Commit:** ${{ github.sha }}
+            **Timestamp:** ${{ steps.version.outputs.version }}
+
+            This is a manual production release created from the main branch.
+
+            ### Release Information
+            - Manually triggered by: ${{ github.actor }}
+            - Release version: ${{ steps.version.outputs.version }}
+            - Source commit: ${{ github.sha }}
+
+            ### Deployment
+            This release is ready for production environment deployment.
+
+            ⚠️ **Important**: Ensure all staging tests have passed before deploying to production.
+          draft: false
+          prerelease: false
