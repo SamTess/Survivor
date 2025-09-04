@@ -20,7 +20,6 @@ export class UserRepositoryPrisma implements UserRepository {
       founder_id: prismaUser.founders?.[0]?.id,
       investor_id: prismaUser.investors?.[0]?.id,
       created_at: prismaUser.created_at,
-      updated_at: prismaUser.created_at, // Prisma doesn't have updated_at for users
     };
   }
 
