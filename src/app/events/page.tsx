@@ -54,48 +54,48 @@ export default function EventsPage() {
   const eventTypes = [...new Set(events.map(event => event.event_type).filter(Boolean))];
 
   return (
-    <div className="h-screen bg-gray-50 pt-14 overflow-y-auto">
-      <div className="px-4 py-8 max-w-[70rem] mx-auto">
+    <div className="h-screen bg-background pt-14 overflow-y-auto">
+      <div className="px-6 py-8 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Events</h1>
-          <p className="text-lg text-gray-600 mb-6">
+          <h1 className="text-4xl font-bold text-foreground mb-4 transition-all duration-300">Events</h1>
+          <p className="text-lg text-muted-foreground mb-6">
             Discover upcoming events, workshops, and networking opportunities in our startup ecosystem.
           </p>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-4 items-center">
+          <div className="flex flex-wrap gap-4 items-center bg-card/50 backdrop-blur-md border border-border/20 rounded-2xl p-6 transition-all duration-300">
             {/* Time Filter */}
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Filter by time:</label>
+            <div className="flex items-center space-x-3">
+              <label className="text-sm font-medium text-foreground">Filter by time:</label>
               <select
                 value={selectedFilter}
                 onChange={(e) => setSelectedFilter(e.target.value as 'all' | 'upcoming' | 'past')}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="px-4 py-2 border border-border rounded-full text-sm text-foreground bg-background/80 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary hover:border-primary/50 transition-all duration-200"
               >
-                <option value="all" className="text-gray-900">All Events</option>
-                <option value="upcoming" className="text-gray-900">Upcoming</option>
-                <option value="past" className="text-gray-900">Past Events</option>
+                <option value="all" className="text-foreground">All Events</option>
+                <option value="upcoming" className="text-foreground">Upcoming</option>
+                <option value="past" className="text-foreground">Past Events</option>
               </select>
             </div>
 
             {/* Type Filter */}
-            <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium text-gray-700">Filter by type:</label>
+            <div className="flex items-center space-x-3">
+              <label className="text-sm font-medium text-foreground">Filter by type:</label>
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                className="px-4 py-2 border border-border rounded-full text-sm text-foreground bg-background/80 backdrop-blur-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary hover:border-primary/50 transition-all duration-200"
               >
-                <option value="all" className="text-gray-900">All Types</option>
+                <option value="all" className="text-foreground">All Types</option>
                 {eventTypes.map(type => (
-                  <option key={type} value={type} className="text-gray-900">{type}</option>
+                  <option key={type} value={type} className="text-foreground">{type}</option>
                 ))}
               </select>
             </div>
 
             {/* Results Count */}
-            <div className="text-sm text-gray-500 ml-auto">
+            <div className="text-sm text-muted-foreground ml-auto font-medium">
               Showing {filteredEvents.length} of {events.length} events
             </div>
           </div>
@@ -123,9 +123,9 @@ export default function EventsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-lg mb-2">No events found</div>
-            <p className="text-gray-500">
+          <div className="text-center py-12 bg-card/30 backdrop-blur-md border border-border/20 rounded-2xl transition-all duration-300">
+            <div className="text-muted-foreground text-lg mb-2 font-medium">No events found</div>
+            <p className="text-muted-foreground/70">
               {selectedFilter !== 'all' || selectedType !== 'all'
                 ? 'Try adjusting your filters to see more events.'
                 : 'Check back later for upcoming events.'}

@@ -7,9 +7,15 @@ yarn-error.log*
 # Ignore Next.js build output
 .next/
 out/
+dist/
+build/
 
 # Ignore environment files
 .env*
+
+# Ignore version control
+.git
+.gitignore
 
 # Ignore OS generated files
 .DS_Store
@@ -23,8 +29,38 @@ Thumbs.db
 # Ignore IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # Ignore Docker files from being copied into the container
 Dockerfile*
 docker-compose*.yml
 README.md
+
+# Ignore test files and coverage
+coverage/
+*.test.js
+*.test.ts
+*.test.tsx
+src/__tests__
+
+# Ignore CI/CD files
+.github/
+.gitlab-ci.yml
+
+# Ignore documentation
+docs/
+*.md
+
+# Ignore logs and cache
+logs/
+*.log
+.eslintcache
+.cache
+tmp/
+temp/
+
+# Ignore development files
+.nyc_output
+.env.example
+example_env

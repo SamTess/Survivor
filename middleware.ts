@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyJwtEdge } from './src/infrastructure/security/auth-edge';
 
-const PUBLIC_PATHS = ['/login','/signup','/favicon.ico'];
+const PUBLIC_PATHS = ['/login','/signup','/favicon.ico', '/'];
 
 function isPublic(path: string): boolean {
   if (PUBLIC_PATHS.includes(path)) return true;
   if (path.startsWith('/api/auth/')) return true;
+  if (path.startsWith('/api/health')) return true;
   if (path.startsWith('/_next/') || path.startsWith('/static/')) return true;
   if (path.startsWith('/public/')) return true;
   return false;
