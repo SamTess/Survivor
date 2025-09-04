@@ -4,6 +4,10 @@ export interface User {
     email: string;
     name: string;
     role: string;
+    address: string;
+    phone?: string | null;
+    legal_status?: string | null;
+    description?: string | null;
     founder_id?: number;
     investor_id?: number;
     created_at: Date;

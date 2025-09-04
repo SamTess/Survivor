@@ -41,7 +41,7 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
             {/* Header Image */}
             <div className="relative h-64 w-full">
               <Image
-                src={defaultImage}
+                src={newsItem.image_url || defaultImage}
                 alt={newsItem.title}
                 fill
                 className="object-cover"

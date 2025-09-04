@@ -129,7 +129,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   project_status: detail.project_status || undefined,
                   needs: detail.needs || undefined,
                 })),
-                founders: project.founders.map((founder: ProjectFounder) => ({
+                founders: (project.founders || []).map((founder: ProjectFounder) => ({
                   user: {
                     name: founder.user.name,
                     email: founder.user.email,
@@ -171,13 +171,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Founders</h2>
             <div className="space-y-2">
-              {project.founders.map((founder: ProjectFounder) => (
+              {(project.founders || []).map((founder: ProjectFounder) => (
                 <div key={founder.id} className="bg-gray-100 p-3 rounded">
                   <p className="font-medium">{founder.user.name}</p>
                   <p className="text-sm text-gray-600">{founder.user.email}</p>
                   {founder.user.phone && <p className="text-sm text-gray-600">{founder.user.phone}</p>}
                 </div>
               ))}
+              {(!project.founders || project.founders.length === 0) && (
+                <p className="text-gray-500">No founders information available.</p>
+              )}
             </div>
           </div>
 

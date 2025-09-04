@@ -17,7 +17,7 @@ interface Startup {
     website_url?: string;
     project_status?: string;
   }>;
-  founders: Array<{
+  founders?: Array<{
     user: {
       name: string;
     };
@@ -76,7 +76,7 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
           <div className="flex flex-col gap-0.5 flex-shrink-0">
             <div className="flex items-center gap-1">
               <span className="px-1 py-0.5 bg-white/20 rounded-full text-xs whitespace-nowrap text-center">
-                {startup.founders.length} Founder{startup.founders.length !== 1 ? 's' : ''}
+                {(startup.founders?.length || 0)} Founder{(startup.founders?.length || 0) !== 1 ? 's' : ''}
               </span>
               <LikeButton
                 contentType={ContentType.STARTUP}

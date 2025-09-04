@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 
 // Mock services with appropriate types - using vi.hoisted
@@ -57,6 +57,9 @@ const mockGlobal = global as unknown as GlobalWithPrisma;
 mockGlobal.prisma = mockPrisma;
 
 describe('Login API with Password Reset', () => {
+  let consoleSpy: ReturnType<typeof vi.spyOn>;
+  beforeAll(() => { consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {}); });
+  afterAll(() => { consoleSpy.mockRestore(); });
   beforeEach(() => {
     vi.clearAllMocks();
     // Mock des variables d'environnement pour les tests
