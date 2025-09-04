@@ -346,10 +346,25 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - name: Checkout repository
+      - name: Checkout development branch
         uses: actions/checkout@v4
         with:
+          ref: development
           fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: |
+          npm run build
+          echo "Build completed successfully"
 
       - name: Generate staging release version
         id: version
@@ -359,6 +374,52 @@ jobs:
           STAGING_VERSION="staging-${TIMESTAMP}-${SHORT_SHA}"
           echo "version=${STAGING_VERSION}" >> "$GITHUB_OUTPUT"
           echo "Generated staging version: ${STAGING_VERSION}"
+
+      - name: Create release archive
+        run: |
+          mkdir -p staging-release
+
+          cp -r .next staging-release/ 2>/dev/null || echo "No .next directory found"
+          cp -r public staging-release/ 2>/dev/null || echo "No public directory found"
+          cp -r prisma staging-release/
+          cp package.json staging-release/
+          cp package-lock.json staging-release/ 2>/dev/null || echo "No package-lock.json found"
+          cp next.config.ts staging-release/ 2>/dev/null || cp next.config.js staging-release/ 2>/dev/null || echo "No next.config found"
+          cp tsconfig.json staging-release/ 2>/dev/null || echo "No tsconfig.json found"
+
+          cp -r Docker staging-release/
+
+          cat > staging-release/DEPLOYMENT.md << EOF
+
+          ## Release Information
+          - Version: ${{ steps.version.outputs.version }}
+          - Branch: development
+          - Commit: ${{ github.sha }}
+          - Build Date: $(date)
+
+          ## Deployment Steps
+          1. Extract this archive to your staging server
+          2. Navigate to the Docker directory
+          3. Configure your .env file with staging environment variables
+          4. Run: \`docker-compose -f docker-compose.prod.yml up -d\`
+
+          ## Environment Variables Required
+          - DB_HOST
+          - DB_PORT
+          - DB_NAME
+          - DB_USER
+          - DB_PASSWORD
+          - DATABASE_URL
+          - NEXT_PUBLIC_APP_URL
+
+          ## Health Check
+          After deployment, verify the application is running:
+          - Health endpoint: http://your-staging-url/api/health
+          - Application: http://your-staging-url/
+          EOF
+
+          tar -czf staging-${{ steps.version.outputs.version }}.tar.gz staging-release/
+          echo "Release archive created: staging-${{ steps.version.outputs.version }}.tar.gz"
 
       - name: Create staging release
         env:
@@ -379,8 +440,23 @@ jobs:
           - Author: ${{ github.event.head_commit.author.name }}
 
           ### Deployment
-          This release is ready for staging environment deployment." \
-            --prerelease
+          This release includes:
+          - Built Next.js application
+          - Prisma schema and migrations
+          - Docker configuration for staging deployment
+          - Deployment instructions
+
+          Download the \`staging-${{ steps.version.outputs.version }}.tar.gz\` file and follow the DEPLOYMENT.md instructions for staging deployment.
+
+          ### Files Included
+          - Built application (.next directory)
+          - Static assets (public directory)
+          - Database schema (prisma directory)
+          - Docker configuration
+          - Package configuration
+          - Deployment instructions" \
+            --prerelease \
+            staging-${{ steps.version.outputs.version }}.tar.gz
 
   push_to_mirror:
     name: Pushing to good repository
@@ -408,7 +484,7 @@ jobs:
       issues: write
       pull-requests: write
     steps:
-      - name: Checkout repository
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -423,14 +499,14 @@ jobs:
             exit 1
           fi
 
-      - name: Generate production release version
-        id: version
-        run: |
-          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          PROD_VERSION="prod-${TIMESTAMP}-${SHORT_SHA}"
-          echo "version=${PROD_VERSION}" >> "$GITHUB_OUTPUT"
-          echo "Generated production version: ${PROD_VERSION}"
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run production pre-checks
         run: |
@@ -448,7 +524,86 @@ jobs:
             exit 1
           fi
 
+          npm run lint
+
+          npx tsc --noEmit
+
           echo "Production pre-checks passed ✓"
+
+      - name: Build production application
+        run: |
+          npm run build
+          echo "Production build completed successfully"
+
+      - name: Generate production release version
+        id: version
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PROD_VERSION="prod-${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${PROD_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Generated production version: ${PROD_VERSION}"
+
+      - name: Create production release archive
+        run: |
+          mkdir -p production-release
+
+          cp -r .next production-release/
+          cp -r public production-release/
+          cp -r prisma production-release/
+          cp package.json production-release/
+          cp package-lock.json production-release/ 2>/dev/null || echo "No package-lock.json found"
+          cp next.config.ts production-release/ 2>/dev/null || cp next.config.js production-release/ 2>/dev/null || echo "No next.config found"
+          cp tsconfig.json production-release/ 2>/dev/null || echo "No tsconfig.json found"
+
+          cp -r Docker production-release/
+
+          cat > production-release/DEPLOYMENT.md << EOF
+
+          ## Release Information
+          - Version: ${{ steps.version.outputs.version }}
+          - Branch: main
+          - Commit: ${{ github.sha }}
+          - Build Date: $(date)
+          - Released by: ${{ github.actor }}
+
+          ## Pre-deployment Checklist
+          - [ ] Staging environment tested successfully
+          - [ ] Database migrations reviewed
+          - [ ] Environment variables configured
+          - [ ] Backup created
+          - [ ] Monitoring alerts configured
+
+          ## Deployment Steps
+          1. Extract this archive to your production server
+          2. Navigate to the Docker directory
+          3. Configure your .env file with production environment variables
+          4. Run: \`docker-compose -f docker-compose.prod.yml up -d\`
+          5. Verify health endpoints
+          6. Monitor application logs
+
+          ## Environment Variables Required
+          - DB_HOST
+          - DB_PORT
+          - DB_NAME
+          - DB_USER
+          - DB_PASSWORD
+          - DATABASE_URL
+          - NEXT_PUBLIC_APP_URL
+          - NODE_ENV=production
+
+          ## Health Check
+          After deployment, verify the application is running:
+          - Health endpoint: http://your-production-url/api/health
+          - Application: http://your-production-url/
+
+          ## Rollback Plan
+          If issues occur, you can rollback using the previous production release.
+          EOF
+
+          # Create the archive
+          tar -czf production-${{ steps.version.outputs.version }}.tar.gz production-release/
+          echo "Production release archive created: production-${{ steps.version.outputs.version }}.tar.gz"
 
       - name: Create production release
         env:
@@ -468,9 +623,29 @@ jobs:
           - Manually triggered by: ${{ github.actor }}
           - Release version: ${{ steps.version.outputs.version }}
           - Source commit: ${{ github.sha }}
+          - Build status: ✅ All pre-checks passed
+          - Linting: ✅ Passed
+          - Type checking: ✅ Passed
+          - Build: ✅ Successful
 
           ### Deployment
-          This release is ready for production environment deployment.
+          This release includes:
+          - Production-optimized Next.js build
+          - Prisma schema and migrations
+          - Docker configuration for production deployment
+          - Comprehensive deployment instructions
+          - Pre-deployment checklist
+
+          Download the \`production-${{ steps.version.outputs.version }}.tar.gz\` file and follow the DEPLOYMENT.md instructions for production deployment.
+
+          ### Files Included
+          - Production-built application (.next directory)
+          - Static assets (public directory)
+          - Database schema (prisma directory)
+          - Docker configuration
+          - Package configuration
+          - Deployment instructions with rollback plan
 
           ⚠️ **Important**: Ensure all staging tests have passed before deploying to production." \
-            --latest
+            --latest \
+            production-${{ steps.version.outputs.version }}.tar.gz
