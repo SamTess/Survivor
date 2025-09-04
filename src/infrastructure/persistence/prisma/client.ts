@@ -31,7 +31,7 @@ const isEdge = typeof process !== 'undefined' && process.env.NEXT_RUNTIME === 'e
 
 let prisma: PrismaClient;
 if (isBrowser || isEdge) {
-	// Fournit un proxy inerte pour éviter l'erreur "PrismaClient is unable to run in this browser environment".
+	// Provides an inert proxy to avoid the error "PrismaClient is unable to run in this browser environment".
 	prisma = new Proxy({}, {
 		get() {
 			throw new Error('Prisma désactivé dans le runtime edge/browser');

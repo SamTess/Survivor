@@ -40,7 +40,7 @@ export function StartupCatalog({ initial }: Props) {
   <p className="text-xs text-muted-foreground">{filtered.length} / {initial.length} startups affichées</p>
       </div>
       {filtered.length === 0 && (
-        <div className="text-center text-sm text-muted-foreground py-10">Aucun résultat</div>
+        <div className="text-center text-sm text-muted-foreground py-10">No results</div>
       )}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
   {filtered.map(s => <StartupCard key={s.id} startup={s} onClick={() => router.push(`/startups/${s.id}`)} />)}

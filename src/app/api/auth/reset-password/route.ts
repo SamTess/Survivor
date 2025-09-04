@@ -47,13 +47,13 @@ export async function POST(req: NextRequest) {
     await passwordResetService.useResetToken(token);
 
     return NextResponse.json({ 
-      message: 'Mot de passe mis à jour avec succès' 
+      message: 'Password updated successfully' 
     });
 
   } catch (error) {
     console.error('Error during password reset:', error);
     return NextResponse.json({ 
-      error: 'Erreur interne du serveur' 
+      error: 'Internal server error' 
     }, { status: 500 });
   }
 }
@@ -74,9 +74,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ valid: result.valid });
 
   } catch (error) {
-    console.error('❌ Erreur lors de la validation du token:', error);
+    console.error('❌ Error during token validation:', error);
     return NextResponse.json({ 
-      error: 'Erreur interne du serveur' 
+      error: 'Internal server error' 
     }, { status: 500 });
   }
 }

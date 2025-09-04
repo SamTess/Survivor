@@ -72,7 +72,7 @@ export function FeaturedStartups() {
         }
       } catch (e: unknown) {
         if (!cancelled) {
-          const msg = e instanceof Error ? e.message : 'Erreur de chargement';
+          const msg = e instanceof Error ? e.message : 'Loading error';
           setError(msg);
         }
       } finally {

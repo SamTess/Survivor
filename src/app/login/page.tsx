@@ -43,11 +43,11 @@ export default function LoginPage() {
         if (data.requiresPasswordReset) {
           setError(data.error || 'Un email de création de mot de passe vous a été envoyé. Veuillez vérifier votre boîte mail.');
         } else {
-          setError(data.error || 'Email ou mot de passe incorrect');
+          setError(data.error || 'Incorrect email or password');
         }
       }
     } catch {
-      setError('Une erreur est survenue. Veuillez réessayer.');
+      setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

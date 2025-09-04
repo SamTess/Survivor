@@ -31,18 +31,18 @@ import ProjectCard from '@/components/ui/ProjectCard';
   };
 
   export default function ProjectsPage() {
-    // Données
+    // Data
     const [startups, setStartups] = useState<Startup[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Filtres basiques
+    // Basic filters
     const [searchInput, setSearchInput] = useState('');
     const [searchTerm, setSearchTerm] = useState(''); // debounced
     const [sectorFilter, setSectorFilter] = useState('All');
     const [stageFilter, setStageFilter] = useState('All');
 
-    // Filtres avancés
+    // Advanced filters
     const [showAdvanced, setShowAdvanced] = useState(false);
     const [minLikes, setMinLikes] = useState(0);
     const [maxLikes, setMaxLikes] = useState<number | null>(null);
@@ -66,13 +66,13 @@ import ProjectCard from '@/components/ui/ProjectCard';
             if (data.success && Array.isArray(data.data)) {
               setStartups(data.data);
             } else {
-              setError('Format de données inattendu');
+              setError('Unexpected data format');
               setStartups([]);
             }
           }
         } catch (e: any) {
           if (!abort) {
-            setError(e.message || 'Erreur de chargement');
+            setError(e.message || 'Loading error');
             setStartups([]);
           }
         } finally {
@@ -82,13 +82,13 @@ import ProjectCard from '@/components/ui/ProjectCard';
       return () => { abort = true; };
     }, []);
 
-    // Debounce recherche
+    // Debounce search
     useEffect(() => {
       const id = setTimeout(() => setSearchTerm(searchInput.trim()), 300);
       return () => clearTimeout(id);
     }, [searchInput]);
 
-    // Collections dérivées
+    // Derived collections
     const uniqueSectors = useMemo(() => Array.from(new Set(startups.map(s => s.sector))).sort(), [startups]);
     const uniqueStages = useMemo(() => Array.from(new Set(startups.map(s => s.maturity))).sort(), [startups]);
     const uniqueStatuses = useMemo(
@@ -99,11 +99,11 @@ import ProjectCard from '@/components/ui/ProjectCard';
       const countries = startups.map(s => {
         const address = s.address?.trim();
         if (!address) return null;
-        // Prendre le dernier segment après la dernière virgule comme pays
+        // Take the last segment after the last comma as country
         const parts = address.split(',');
         let country = parts[parts.length - 1].trim();
         
-        // Nettoyer le pays en gardant seulement les lettres et espaces
+        // Clean the country by keeping only letters and spaces
         country = country.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
         
         return country || null;
@@ -172,7 +172,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
           <div className="h-screen overflow-y-auto flex items-center justify-center bg-gray-50">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-              <p className="mt-4 text-gray-600 text-sm">Chargement des startups...</p>
+              <p className="mt-4 text-gray-600 text-sm">Loading startups...</p>
             </div>
           </div>
         </div>
@@ -187,14 +187,14 @@ import ProjectCard from '@/components/ui/ProjectCard';
               <div className="flex flex-col md:flex-row md:items-end gap-4 justify-between">
                 <div className="space-y-1">
                   <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Startup Projects</h1>
-                  <p className="text-sm text-gray-600 max-w-2xl">Explore, filtre et compare les startups par secteur, maturité, traction et plus.</p>
+                  <p className="text-sm text-gray-600 max-w-2xl">Explore, filter and compare startups by sector, maturity, traction and more.</p>
                 </div>
                 <div className="flex items-center gap-2 md:self-end">
                   <button onClick={() => setShowAdvanced(v => !v)} className="text-sm px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition">
-                    {showAdvanced ? 'Masquer filtres avancés' : 'Filtres avancés'}
+                    {showAdvanced ? 'Hide advanced filters' : 'Advanced filters'}
                   </button>
                   <button onClick={clearAll} className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition">
-                    ✕ Réinitialiser
+                    ✕ Reset
                   </button>
                 </div>
               </div>
@@ -202,7 +202,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
                 <div className="flex-1">
                   <input
                     type="text"
-                    placeholder="Rechercher (nom, description)..."
+                    placeholder="Search (name, description)..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -210,58 +210,58 @@ import ProjectCard from '@/components/ui/ProjectCard';
                 </div>
                 <div className="flex gap-4 flex-wrap">
                   <select value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="All">Tous secteurs</option>
+                    <option value="All">All sectors</option>
                     {uniqueSectors.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="All">Toutes maturités</option>
+                    <option value="All">All maturities</option>
                     {uniqueStages.map(st => <option key={st} value={st}>{st}</option>)}
                   </select>
                   <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="All">Tous pays</option>
+                    <option value="All">All countries</option>
                     {uniqueCountries.map(country => <option key={country} value={country}>{country}</option>)}
                   </select>
                   <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="name-asc">Nom (A-Z)</option>
-                    <option value="name-desc">Nom (Z-A)</option>
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
                     <option value="likes-desc">Likes (desc)</option>
                     <option value="likes-asc">Likes (asc)</option>
-                    <option value="stage-asc">Maturité (A-Z)</option>
-                    <option value="stage-desc">Maturité (Z-A)</option>
+                    <option value="stage-asc">Maturity (A-Z)</option>
+                    <option value="stage-desc">Maturity (Z-A)</option>
                   </select>
                 </div>
               </div>
               {showAdvanced && (
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2" aria-label="Filtres avancés">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2" aria-label="Advanced filters">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Likes min</label>
+                    <label className="text-xs font-medium text-gray-600">Min likes</label>
                     <input type="number" min={likeBounds.min} max={likeBounds.max} value={minLikes} onChange={e => setMinLikes(Number(e.target.value) || 0)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Likes max</label>
+                    <label className="text-xs font-medium text-gray-600">Max likes</label>
                     <input type="number" min={likeBounds.min} max={likeBounds.max} value={maxLikes ?? ''} onChange={e => setMaxLikes(e.target.value === '' ? null : Number(e.target.value))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Fondateurs (min)</label>
+                    <label className="text-xs font-medium text-gray-600">Founders (min)</label>
                     <input type="number" min={0} value={minFounders} onChange={e => setMinFounders(Number(e.target.value) || 0)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Statut projet</label>
+                    <label className="text-xs font-medium text-gray-600">Project status</label>
                     <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                      <option value="All">Tous</option>
+                      <option value="All">All</option>
                       {uniqueStatuses.map(st => <option key={st} value={st}>{st}</option>)}
                     </select>
                   </div>
                   <div className="flex items-end gap-2 md:col-span-2 lg:col-span-1">
                     <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer select-none">
                       <input type="checkbox" checked={hasWebsite} onChange={e => setHasWebsite(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                      Avec site web
+                      With website
                     </label>
                   </div>
                   <div className="md:col-span-3 lg:col-span-4">
                     <p className="text-[11px] text-gray-500 flex flex-wrap gap-4">
-                      <span><strong>{filteredStartups.length}</strong> résultat(s) / {startups.length} total</span>
-                      <span>Plage likes: {likeBounds.min} - {likeBounds.max}</span>
+                      <span><strong>{filteredStartups.length}</strong> result(s) / {startups.length} total</span>
+                      <span>Likes range: {likeBounds.min} - {likeBounds.max}</span>
                     </p>
                   </div>
                 </div>
@@ -269,7 +269,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
             </div>
           </div>
           <div className="flex-1 overflow-y-auto px-4 pb-20 pt-6">
-            {error && <div className="max-w-6xl mx-auto mb-4 p-3 text-sm rounded-md bg-red-50 text-red-700 border border-red-200">Erreur: {error}</div>}
+            {error && <div className="max-w-6xl mx-auto mb-4 p-3 text-sm rounded-md bg-red-50 text-red-700 border border-red-200">Error: {error}</div>}
             {projectCards.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 justify-items-center max-w-6xl mx-auto gap-6">
                 {projectCards.map(p => (
@@ -280,9 +280,9 @@ import ProjectCard from '@/components/ui/ProjectCard';
               </div>
             ) : (
               <div className="text-center py-24 max-w-6xl mx-auto">
-                <div className="text-gray-500 text-base">{error ? "Impossible d'afficher les projets." : 'Aucun projet ne correspond aux filtres.'}</div>
+                <div className="text-gray-500 text-base">{error ? "Unable to display projects." : 'No projects match the filters.'}</div>
                 <button onClick={clearAll} className="mt-6 inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
-                  Réinitialiser les filtres
+                  Reset filters
                 </button>
               </div>
             )}

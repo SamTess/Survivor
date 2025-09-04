@@ -1,60 +1,60 @@
 # README
 
-Ce projet utilise Next.js pour le routage et l'affichage côté client, ainsi qu'une architecture en oignon (onion architecture) pour organiser la logique métier et les services.
+This project uses Next.js for routing and client-side rendering, as well as an onion architecture to organize business logic and services.
 
-## Structure des dossiers
+## Folder Structure
 
-- **public/** : Contient les fichiers statiques accessibles publiquement (images, icônes, etc.).
-- **src/app/** : Dossier principal pour le routage Next.js côté front. Chaque sous-dossier représente une route ou une page (ex : `/about`, `/admin`, `/profile/[id]`, etc.).
-	- **api/** : Contient les routes API Next.js (backend léger, ex : `info.ts`).
-- **src/application/services/** : Contient la logique métier et les services (ex : gestion des utilisateurs).
-- **src/domain/** : Définit les entités et interfaces du domaine (ex : `User.ts`, `IUserRepository.ts`).
-- **src/infrastructure/** : Implémente les repositories et l'accès aux données (ex : `UserRepository.ts`).
-- **src/persistence/** : Gère la persistance et les contextes de base de données (ex : `dbContext.ts`).
-- **src/ui/** : Contient tous les composants d'interface utilisateur, la mise en page et les éléments partagés.
-	- **components/** : Composants réutilisables.
-	- **layout/** : Composants de layout.
-	- **shared/** : Composants ou utilitaires partagés.
+- **public/** : Contains publicly accessible static files (images, icons, etc.).
+- **src/app/** : Main folder for Next.js front-end routing. Each subfolder represents a route or page (e.g., `/about`, `/admin`, `/profile/[id]`, etc.).
+	- **api/** : Contains Next.js API routes (lightweight backend, e.g., `info.ts`).
+- **src/application/services/** : Contains business logic and services (e.g., user management).
+- **src/domain/** : Defines domain entities and interfaces (e.g., `User.ts`, `IUserRepository.ts`).
+- **src/infrastructure/** : Implements repositories and data access (e.g., `UserRepository.ts`).
+- **src/persistence/** : Manages persistence and database contexts (e.g., `dbContext.ts`).
+- **src/ui/** : Contains all user interface components, layout, and shared elements.
+	- **components/** : Reusable components.
+	- **layout/** : Layout components.
+	- **shared/** : Shared components or utilities.
 
-## Principes d'architecture
+## Architecture Principles
 
-- **Routing Next.js** : Les pages et API sont organisées selon la convention Next.js pour un routage automatique.
-- **Architecture oignon** : Séparation claire entre le domaine, l'application, l'infrastructure et la présentation pour une meilleure maintenabilité et évolutivité.
-- **UI centralisée** : Tous les composants visuels sont regroupés dans `src/ui/` pour faciliter la réutilisation et la cohérence de l'interface.
+- **Next.js Routing** : Pages and APIs are organized according to Next.js convention for automatic routing.
+- **Onion Architecture** : Clear separation between domain, application, infrastructure, and presentation layers for better maintainability and scalability.
+- **Centralized UI** : All visual components are grouped in `src/ui/` to facilitate reuse and interface consistency.
 
-## Démarrage
+## Getting Started
 
-1. Installer les dépendances : `npm install`
-2. Lancer le serveur de développement : `npm run dev`
+1. Install dependencies: `npm install`
+2. Start the development server: `npm run dev`
 
 ---
 
-Pour toute question sur la structure ou l'architecture, consultez ce README ou la documentation Next.js.
+For any questions about the structure or architecture, consult this README or the Next.js documentation.
 
-## Authentification
+## Authentication
 
-Une authentification basique a été ajoutée avec JWT signé (HMAC SHA-256) stocké dans un cookie httpOnly `auth`.
+Basic authentication has been added with signed JWT (HMAC SHA-256) stored in an httpOnly `auth` cookie.
 
-Pages publiques : `/login`, `/signup`, routes `/api/auth/*`.
-Toute autre page redirige vers `/login` si l'utilisateur n'est pas connecté.
+Public pages: `/login`, `/signup`, `/api/auth/*` routes.
+Any other page redirects to `/login` if the user is not connected.
 
-### Variables d'environnement
+### Environment Variables
 
-Ajouter dans `.env` :
+Add to `.env`:
 
 ```
-AUTH_SECRET="change_me_en_prod"
+AUTH_SECRET="change_me_in_prod"
 ```
 
-### Routes API
+### API Routes
 
 - POST `/api/auth/signup` `{ name, email, password }`
 - POST `/api/auth/login` `{ email, password }`
 - POST `/api/auth/logout`
 
-### Sécurité
+### Security
 
-- Hash mot de passe: scrypt (Node.js crypto).
-- Changer `AUTH_SECRET` en production pour une valeur longue et aléatoire.
-- Pour fonctionnalités avancées (OAuth, MFA, reset password), intégrer une solution dédiée.
+- Password hash: scrypt (Node.js crypto).
+- Change `AUTH_SECRET` in production to a long and random value.
+- For advanced features (OAuth, MFA, password reset), integrate a dedicated solution.
 

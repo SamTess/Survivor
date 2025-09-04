@@ -50,9 +50,9 @@ export async function POST(req: NextRequest) {
     try {
       await emailService.sendPasswordResetEmail(user.email, resetToken, user.name);
     } catch (emailError) {
-      console.error('Erreur envoi email:', emailError);
+      console.error('Email sending error:', emailError);
       return NextResponse.json({ 
-        error: 'Erreur lors de l\'envoi de l\'email' 
+        error: 'Error sending email' 
       }, { status: 500 });
     }
 
