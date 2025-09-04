@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 
 export class InvestorRepositoryPrisma implements InvestorRepository {
   private mapPrismaToInvestor(prismaInvestor: Prisma.S_INVESTORGetPayload<{ include: { user: true } }>): Investor {
-    const u = prismaInvestor.user; // peut être nul si non encore lié
+    const u = prismaInvestor.user;
     return {
       id: prismaInvestor.id,
       email: u?.email || "",
@@ -160,7 +160,6 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
         });
       }
 
-      // Update investor-specific fields
       const updated = await prisma.s_INVESTOR.update({
         where: { id },
         data: {

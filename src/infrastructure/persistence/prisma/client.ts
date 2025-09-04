@@ -5,7 +5,6 @@ const getDatabaseUrl = (): string => {
 	const isTest = !!process.env.VITEST || process.env.NODE_ENV === 'test';
 
 	if (!url) {
-		// Autoriser un placeholder silencieux en test (les tests unitaires n'accèdent souvent pas réellement à la DB)
 		if (isTest) {
 			if (!process.env.QUIET_PRISMA_TEST) {
 				console.warn('DATABASE_URL absent en test - utilisation d\'un placeholder inactif');
@@ -27,16 +26,23 @@ const getDatabaseUrl = (): string => {
 	return url;
 };
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const isBrowser = typeof window !== 'undefined';
+const isEdge = typeof process !== 'undefined' && process.env.NEXT_RUNTIME === 'edge';
 
-const prisma = globalForPrisma.prisma ?? new PrismaClient({
-	datasources: {
-		db: {
-			url: getDatabaseUrl(),
-		},
-	},
-});
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+let prisma: PrismaClient;
+if (isBrowser || isEdge) {
+	// Fournit un proxy inerte pour éviter l'erreur "PrismaClient is unable to run in this browser environment".
+	prisma = new Proxy({}, {
+		get() {
+			throw new Error('Prisma désactivé dans le runtime edge/browser');
+		}
+	}) as unknown as PrismaClient;
+} else {
+	const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+	prisma = globalForPrisma.prisma ?? new PrismaClient({
+		datasources: { db: { url: getDatabaseUrl() } },
+	});
+	if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+}
 
 export default prisma;

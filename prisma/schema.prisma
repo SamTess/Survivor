@@ -45,7 +45,6 @@ model S_USER {
   name          String
   email         String   @unique
   password_hash String
-  // Legacy / optional profile fields (re-added for backward compatibility)
   address       String?
   phone         String?
   legal_status  String?
@@ -74,7 +73,7 @@ model S_USER {
 model S_FOUNDER {
   id         Int      @id @default(autoincrement())
   startup_id Int
-  user_id    Int?      // rendu optionnel pour permettre la création avant association user
+  user_id    Int?
   startup    S_STARTUP @relation(fields: [startup_id], references: [id], onDelete: Cascade)
   user       S_USER?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
@@ -89,7 +88,7 @@ model S_INVESTOR {
   description      String
   investor_type    String?
   investment_focus String?
-  user_id          Int?     // rendu optionnel pour associer après la création du user
+  user_id          Int?
   user             S_USER?  @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([user_id])
@@ -387,7 +386,6 @@ model S_PASSWORD_RESET {
   @@index([expires_at])
 }
 
-// Pivot des rôles pour supporter les rôles multiples par utilisateur
 model S_USER_ROLE {
   user_id     Int
   role        String

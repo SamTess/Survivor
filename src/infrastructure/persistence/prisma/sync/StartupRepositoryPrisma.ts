@@ -87,7 +87,6 @@ export class StartupRepositoryPrisma implements StartupRepository {
     if (!founders?.length) return;
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       for (const f of founders) {
-        // On crée / met à jour seulement l'entrée fondateur sans lien user pour le moment
         await tx.s_FOUNDER.upsert({
           where: { id: f.id },
           update: { startup_id: startupId },

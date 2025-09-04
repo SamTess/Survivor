@@ -37,12 +37,12 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
     const created = await prisma.s_PARTNER.create({
       data: {
         user_id: user.id,
-  name: partner.name,
-  legal_status: partner.legal_status || "",
-  address: partner.address || "",
-  email: partner.email,
-  phone: partner.phone || "",
-  description: partner.description || "",
+        name: partner.name,
+        legal_status: partner.legal_status || "",
+        address: partner.address || "",
+        email: partner.email,
+        phone: partner.phone || "",
+        description: partner.description || "",
         partnership_type: partner.partnership_type || null,
       },
       include: { user: true },

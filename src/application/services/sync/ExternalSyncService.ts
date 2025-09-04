@@ -324,12 +324,6 @@ export class ExternalSyncService {
     debugLog("newsImage", "Saved", { id, bytes: data.byteLength });
   }
 
-  /**
-   * Post-sync reconciliation: associer les S_FOUNDER sans user_id à un S_USER selon les règles:
-   * - Si exactement un user porte ce nom => assigner.
-   * - Si plusieurs users portent ce nom mais le nombre de users == nombre de founders manquants de ce nom pour la startup => assignation 1-1 par ordre d’id.
-   * Sinon: laisser vide (ambigu) et log.
-   */
   async reconcileFoundersMissingUser(): Promise<void> {
   if (process.env.VITEST || process.env.NODE_ENV === 'test') {
       debugLog("founderReconcile", "Skipped in test environment", {});
@@ -337,10 +331,8 @@ export class ExternalSyncService {
     }
     let missing: Awaited<ReturnType<typeof prisma.s_FOUNDER.findMany>> = [];
     try {
-      // Utiliser une requête brute pour contourner le typage Prisma sur null si nécessaire
       missing = await prisma.s_FOUNDER.findMany({ where: { user_id: undefined } });
     } catch (e) {
-      // Probablement aucune base accessible dans l'environnement de test -> on log et on stop
       debugLog("founderReconcile", "Skipped (DB unavailable)", { error: (e as Error).message });
       return;
     }
@@ -350,7 +342,6 @@ export class ExternalSyncService {
     }
     debugLog("founderReconcile", "Start", { count: missing.length });
 
-    // Grouper par startup pour limiter les appels API
     const byStartup = new Map<number, typeof missing>();
     for (const f of missing) {
       if (!byStartup.has(f.startup_id)) byStartup.set(f.startup_id, []);
@@ -359,7 +350,6 @@ export class ExternalSyncService {
 
     let linked = 0;
     for (const [startupId, founders] of byStartup.entries()) {
-      // Récupérer la liste externe des founders pour obtenir les noms
       let externalFounders: { id: number; name: string; startup_id: number }[] = [];
       try {
         const detail = await this.api.getJson<ReconcileStartupDetail>(`/startups/${startupId}`);
@@ -372,7 +362,6 @@ export class ExternalSyncService {
       const idToName = new Map<number, string>();
       for (const ef of externalFounders) idToName.set(ef.id, ef.name);
 
-      // Regrouper les founders S_FOUNDER manquants par nom (via mapping externe)
       const byName = new Map<string, typeof founders>();
       for (const f of founders) {
         const name = idToName.get(f.id);
@@ -382,7 +371,6 @@ export class ExternalSyncService {
       }
 
       for (const [name, founderRows] of byName.entries()) {
-        // Vérifier que le nom figure bien dans le détail externe (sinon on continue quand même)
         const candidates = await prisma.s_USER.findMany({
           where: { name },
           orderBy: { id: 'asc' },
@@ -392,7 +380,6 @@ export class ExternalSyncService {
           continue;
         }
         if (candidates.length === 1) {
-          // assigner tous les founders (souvent un seul) à ce user si pas déjà pris pour un autre founder de ce startup
           const userId = candidates[0].id;
           for (const fr of founderRows) {
             try {
@@ -405,7 +392,6 @@ export class ExternalSyncService {
           }
           continue;
         }
-        // Cas multi-candidats: si cardinalité exacte => mapping 1-1
         if (candidates.length === founderRows.length) {
           for (let i = 0; i < founderRows.length; i++) {
             const fr = founderRows[i];

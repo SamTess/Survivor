@@ -22,10 +22,10 @@ export class UserRepositoryPrisma implements UserRepository {
       email: prismaUser.email,
       name: prismaUser.name,
       role: prismaUser.role,
-  address: prismaUser.address || undefined,
-  phone: prismaUser.phone || undefined,
-  legal_status: prismaUser.legal_status || undefined,
-  description: prismaUser.description || undefined,
+      address: prismaUser.address || undefined,
+      phone: prismaUser.phone || undefined,
+      legal_status: prismaUser.legal_status || undefined,
+      description: prismaUser.description || undefined,
       founder_id: prismaUser.founders?.[0]?.id,
       investor_id: prismaUser.investors?.[0]?.id,
       created_at: prismaUser.created_at,
@@ -246,7 +246,6 @@ export class UserRepositoryPrisma implements UserRepository {
     }
   }
 
-  // Legacy method for backward compatibility
   async save(user: { id: number; name: string; email: string }): Promise<void> {
     await prisma.s_USER.update({
       where: { id: user.id },

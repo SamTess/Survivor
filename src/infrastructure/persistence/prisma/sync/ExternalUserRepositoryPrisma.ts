@@ -27,11 +27,9 @@ export class ExternalUserRepositoryPrisma implements ExternalUserRepository {
           data: { user_id: user.id },
         });
   } catch {
-        // ignorer si la ligne n'existe pas encore
       }
     }
 
-    // Link founder if founder_id present
     if (item.founder_id) {
       try {
         await prisma.s_FOUNDER.update({
@@ -39,8 +37,7 @@ export class ExternalUserRepositoryPrisma implements ExternalUserRepository {
             data: { user_id: user.id },
         });
   } catch {
-        // ignorer si pas encore créé (sera lié lors d'une prochaine passe)
-      }
+        }
     }
   }
 

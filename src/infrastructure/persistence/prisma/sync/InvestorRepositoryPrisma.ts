@@ -27,7 +27,6 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
         description: item.description ?? "",
         investor_type: item.investor_type,
         investment_focus: item.investment_focus,
-    // pas de user_id au départ
       } as Prisma.S_INVESTORUncheckedCreateInput,
     });
   }

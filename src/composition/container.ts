@@ -50,7 +50,9 @@ export const externalSyncService = new ExternalSyncService(
 	newsRepo
 );
 
-if (process.env.SYNC_AUTO !== "0") {
+const isBrowser = typeof window !== 'undefined';
+const isEdge = typeof process !== 'undefined' && process.env.NEXT_RUNTIME === 'edge';
+if (!isBrowser && !isEdge && process.env.SYNC_AUTO !== "0") {
 	const g = globalThis as unknown as { __syncSchedulerStarted?: boolean };
 	if (!g.__syncSchedulerStarted) {
 		const intervalMs = parseInt(process.env.SYNC_INTERVAL_MS || "3600000", 10);
