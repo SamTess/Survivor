@@ -110,24 +110,24 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen w-screen ml-14">
+      <div className="flex items-center justify-center h-screen w-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }
 
   return (
-    <div className="h-screen w-screen ml-14 flex flex-col bg-background">
+    <div className="h-screen w-screen flex flex-col bg-background">
       <div className="flex-1 overflow-y-auto pt-20 pb-8 px-6">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="space-y-2 animate-fade-in-up">
             <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
               <FaUserShield className="text-primary" size={32} />
-              Admin Dashboard
+              Admin Area
             </h1>
             <p className="text-muted-foreground text-lg">
-              Welcome back! Here&apos;s what&apos;s happening with your platform.
+              Management of projects, startups, and users - Complete administrative control panel.
             </p>
           </div>
 
@@ -158,11 +158,12 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          {/* Quick Actions */}
+          {/* Admin Back Office - Quick Actions */}
           <div className="space-y-4 animate-fade-in-up">
             <div className="flex items-center gap-2">
               <FaCog className="text-primary" size={20} />
-              <h2 className="text-xl font-semibold text-foreground">Quick Actions</h2>
+              <h2 className="text-xl font-semibold text-foreground">Admin Back Office</h2>
+              <span className="text-sm text-muted-foreground">Management of projects, startups, and users</span>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -187,11 +188,12 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          {/* Analytics Overview */}
+          {/* Dashboard - Analytics Overview */}
           <div className="space-y-4 animate-fade-in-up">
             <div className="flex items-center gap-2">
               <FaChartLine className="text-primary" size={20} />
-              <h2 className="text-xl font-semibold text-foreground">Platform Analytics</h2>
+              <h2 className="text-xl font-semibold text-foreground">Dashboard</h2>
+              <span className="text-sm text-muted-foreground">Statistics on project visibility and user interactions</span>
             </div>
             
             <Card className="p-6">
@@ -227,18 +229,110 @@ export default function AdminDashboard() {
             </Card>
           </div>
 
+          {/* Content Management */}
+          <div className="space-y-4 animate-fade-in-up">
+            <div className="flex items-center gap-2">
+              <FaProjectDiagram className="text-primary" size={20} />
+              <h2 className="text-xl font-semibold text-foreground">Content Management</h2>
+              <span className="text-sm text-muted-foreground">Adding, editing, and deleting project profiles</span>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="transition-all duration-300 hover:shadow-md border-2 border-green-200 hover:bg-green-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-700">
+                    <FaProjectDiagram size={18} />
+                    Project Profiles
+                  </CardTitle>
+                  <CardDescription>
+                    Create, edit and manage startup project profiles with detailed information and media
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="transition-all duration-300 hover:shadow-md border-2 border-blue-200 hover:bg-blue-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <FaNewspaper size={18} />
+                    News & Articles
+                  </CardTitle>
+                  <CardDescription>
+                    Publish and manage news articles, announcements and editorial content
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+              
+              <Card className="transition-all duration-300 hover:shadow-md border-2 border-orange-200 hover:bg-orange-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <FaCalendarAlt size={18} />
+                    Events & Meetings
+                  </CardTitle>
+                  <CardDescription>
+                    Schedule events, workshops and networking opportunities for the community
+                  </CardDescription>
+                </CardHeader>
+              </Card>
+            </div>
+          </div>
+
+          {/* User Management */}
+          <div className="space-y-4 animate-fade-in-up">
+            <div className="flex items-center gap-2">
+              <FaUsers className="text-primary" size={20} />
+              <h2 className="text-xl font-semibold text-foreground">User Management</h2>
+              <span className="text-sm text-muted-foreground">Role assignment (administrators, startups, privileged visitors)</span>
+            </div>
+            
+            <Card>
+              <CardContent className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold text-red-600">12</div>
+                    <div className="text-sm text-muted-foreground">Administrators</div>
+                    <div className="w-full bg-red-100 h-2 rounded-full">
+                      <div className="bg-red-500 h-2 rounded-full" style={{width: '15%'}}></div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold text-purple-600">89</div>
+                    <div className="text-sm text-muted-foreground">Startups</div>
+                    <div className="w-full bg-purple-100 h-2 rounded-full">
+                      <div className="bg-purple-500 h-2 rounded-full" style={{width: '45%'}}></div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold text-blue-600">156</div>
+                    <div className="text-sm text-muted-foreground">Privileged Visitors</div>
+                    <div className="w-full bg-blue-100 h-2 rounded-full">
+                      <div className="bg-blue-500 h-2 rounded-full" style={{width: '65%'}}></div>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="text-2xl font-bold text-green-600">990</div>
+                    <div className="text-sm text-muted-foreground">Regular Users</div>
+                    <div className="w-full bg-green-100 h-2 rounded-full">
+                      <div className="bg-green-500 h-2 rounded-full" style={{width: '85%'}}></div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Recent Activity */}
           <div className="space-y-4 animate-fade-in-up">
-            <h2 className="text-xl font-semibold text-foreground">Recent Activity</h2>
+            <h2 className="text-xl font-semibold text-foreground">Recent Administrative Activity</h2>
             
             <Card>
               <CardContent className="p-6">
                 <div className="space-y-4">
                   {[
-                    { action: "New user registered", user: "john.doe@example.com", time: "2 minutes ago", type: "user" },
-                    { action: "Project submitted", user: "TechStart Inc.", time: "15 minutes ago", type: "project" },
+                    { action: "New startup registered", user: "TechStart Inc.", time: "2 minutes ago", type: "project" },
+                    { action: "User role updated to Admin", user: "john.doe@example.com", time: "15 minutes ago", type: "user" },
                     { action: "News article published", user: "Editor Team", time: "1 hour ago", type: "news" },
-                    { action: "Event created", user: "Event Manager", time: "2 hours ago", type: "event" }
+                    { action: "Event created: Startup Pitch Day", user: "Event Manager", time: "2 hours ago", type: "event" },
+                    { action: "Project profile approved", user: "GreenTech Solutions", time: "3 hours ago", type: "project" }
                   ].map((activity, index) => (
                     <div key={index} className="flex items-center justify-between py-2 border-b border-border last:border-b-0">
                       <div className="flex items-center gap-3">
