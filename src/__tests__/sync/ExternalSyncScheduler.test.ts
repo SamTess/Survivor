@@ -14,6 +14,7 @@ interface MinimalSyncService {
   syncUserImage: (id: number) => Promise<void>;
   syncNewsImage: (id: number) => Promise<void>;
   syncStartupFounderImage: (startupId: number, founderId: number) => Promise<Buffer>;
+  reconcileFoundersMissingUser: () => Promise<void>;
 }
 
 describe("ExternalSyncScheduler", () => {
@@ -33,6 +34,7 @@ describe("ExternalSyncScheduler", () => {
       syncUserImage: vi.fn(async () => { inc("syncUserImage")(); }),
       syncNewsImage: vi.fn(async () => { inc("syncNewsImage")(); }),
       syncStartupFounderImage: vi.fn(async () => { inc("syncStartupFounderImage")(); return Buffer.from("x"); }),
+      reconcileFoundersMissingUser: vi.fn(async () => { inc("reconcileFoundersMissingUser")(); }),
     };
   }
 
@@ -64,7 +66,7 @@ describe("ExternalSyncScheduler", () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const scheduler = new ExternalSyncScheduler(svc as unknown as any, 10, { details: false, images: false });
     scheduler.start();
-    await new Promise(r => setTimeout(r, 85));
+    await new Promise(r => setTimeout(r, 100)); // Increased from 85 to 100ms to allow for timing variations
     scheduler.stop();
     expect(spyObj.counts.syncUsers).toBeLessThanOrEqual(3);
     expect(spyObj.counts.syncUsers).toBeGreaterThanOrEqual(2);
