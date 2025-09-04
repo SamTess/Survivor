@@ -141,6 +141,7 @@ export default function NewsPage() {
                 category={newsItem.category}
                 startup_id={newsItem.startup_id}
                 description={newsItem.description}
+                imageUrl={newsItem.image_url}
                 onClick={() => handleNewsClick(newsItem)}
               />
             ))}

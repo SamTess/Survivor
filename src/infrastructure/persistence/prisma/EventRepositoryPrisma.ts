@@ -24,6 +24,8 @@ export class EventRepositoryPrisma implements EventRepository {
       target_audience: prismaEvent.target_audience || undefined,
       created_at: prismaEvent.created_at,
       updated_at: prismaEvent.created_at, // Prisma doesn't have updated_at for events
+  // Provide an URL to fetch the image instead of embedding binary
+  image_url: prismaEvent.image_data ? `/api/events/${prismaEvent.id}/image` : undefined,
     };
   }
 

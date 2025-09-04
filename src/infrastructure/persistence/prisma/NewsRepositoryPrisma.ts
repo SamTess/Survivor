@@ -32,6 +32,7 @@ export class NewsRepositoryPrisma implements NewsRepository {
       title: prismaNews.title,
       description: prismaNews.description || undefined,
       image_data: prismaNews.image_data,
+  image_url: prismaNews.image_data ? `/api/news/${prismaNews.id}/image` : undefined,
       startup_id: prismaNews.startup_id,
       news_date: prismaNews.news_date || undefined,
       location: prismaNews.location || undefined,

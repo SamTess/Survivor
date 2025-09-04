@@ -118,6 +118,7 @@ export default function EventsPage() {
                 description={event.description}
                 event_type={event.event_type}
                 target_audience={event.target_audience}
+                imageUrl={event.image_url}
               />
             ))}
           </div>

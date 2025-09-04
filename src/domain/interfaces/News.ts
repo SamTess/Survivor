@@ -17,6 +17,7 @@ export interface NewsApiResponse {
     location?: string;
     category?: string;
     startup_id?: number;
+    image_url?: string;
     created_at: string;
     updated_at: string;
 }
