@@ -3,6 +3,23 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import { FormModal, ConfirmModal, AlertModal } from '@/components/modals/ModalVariants'
 import {
   Search,
   Plus,
@@ -10,8 +27,6 @@ import {
   Trash2,
   Eye,
   Building2,
-  X,
-  Save,
   Loader2
 } from 'lucide-react'
 
@@ -64,7 +79,17 @@ export default function ProjectsCrudSection() {
   const [selectedSector, setSelectedSector] = useState<string>('')
   const [selectedMaturity, setSelectedMaturity] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [deletingProject, setDeletingProject] = useState<Project | null>(null)
+  const [viewingProject, setViewingProject] = useState<Project | null>(null)
+  const [alertModal, setAlertModal] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type: 'info' | 'success' | 'warning' | 'error'
+  }>({ isOpen: false, title: '', message: '', type: 'info' })
   const [formData, setFormData] = useState<ProjectFormData>({
     name: '',
     legal_status: '',
@@ -151,24 +176,51 @@ export default function ProjectsCrudSection() {
     setIsModalOpen(true)
   }
 
-  const handleDeleteProject = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this project?')) return
+  const handleDeleteProject = async (project: Project) => {
+    setDeletingProject(project)
+    setIsDeleteModalOpen(true)
+  }
+
+  const confirmDelete = async () => {
+    if (!deletingProject) return
 
     try {
-      const response = await fetch(`/api/startups/${id}`, {
+      const response = await fetch(`/api/startups/${deletingProject.id}`, {
         method: 'DELETE'
       })
 
       if (response.ok) {
-        setProjects(projects.filter(p => p.id !== id))
-        alert('Project deleted successfully!')
+        setProjects(projects.filter(p => p.id !== deletingProject.id))
+        setIsDeleteModalOpen(false)
+        setDeletingProject(null)
+        setAlertModal({
+          isOpen: true,
+          title: 'Success',
+          message: 'Project deleted successfully!',
+          type: 'success'
+        })
       } else {
-        alert('Error during deletion')
+        setAlertModal({
+          isOpen: true,
+          title: 'Error',
+          message: 'Error during deletion',
+          type: 'error'
+        })
       }
     } catch (error) {
       console.error('Error deleting project:', error)
-      alert('Error during deletion')
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Error during deletion',
+        type: 'error'
+      })
     }
+  }
+
+  const handleViewProject = (project: Project) => {
+    setViewingProject(project)
+    setIsViewModalOpen(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -192,13 +244,28 @@ export default function ProjectsCrudSection() {
       if (data.success) {
         await fetchProjects() // Reload list
         setIsModalOpen(false)
-        alert(`Project ${editingProject ? 'updated' : 'created'} successfully!`)
+        setAlertModal({
+          isOpen: true,
+          title: 'Success',
+          message: `Project ${editingProject ? 'updated' : 'created'} successfully!`,
+          type: 'success'
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        setAlertModal({
+          isOpen: true,
+          title: 'Error',
+          message: `Error: ${data.error}`,
+          type: 'error'
+        })
       }
     } catch (error) {
       console.error('Error saving project:', error)
-      alert('Error during save')
+      setAlertModal({
+        isOpen: true,
+        title: 'Error',
+        message: 'Error during save',
+        type: 'error'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -225,7 +292,7 @@ export default function ProjectsCrudSection() {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading projects...</span>
+        <span className="ml-2">Loading projetss...</span>
       </div>
     )
   }
@@ -234,12 +301,12 @@ export default function ProjectsCrudSection() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Projects Management</h2>
+          <h2 className="text-2xl font-bold">Project Management</h2>
           <p className="text-muted-foreground">Manage startups and projects on your platform</p>
         </div>
         <Button onClick={handleCreateProject} className="flex items-center gap-2">
           <Plus size={16} />
-          New Project
+            New Project
         </Button>
       </div>
 
@@ -248,34 +315,42 @@ export default function ProjectsCrudSection() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
-              <input
+              <Input
                 type="text"
-                placeholder="Search by name, description or email..."
-                className="w-full pl-10 pr-4 py-2 border border-input bg-background rounded-md"
+                placeholder="Search by name, description, or email..."
+                className="pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <select
-              className="px-3 py-2 border border-input bg-background rounded-md"
+            <Select
               value={selectedSector}
-              onChange={(e) => setSelectedSector(e.target.value)}
+              onValueChange={setSelectedSector}
             >
-              <option value="">All sectors</option>
-              {SECTORS.map(sector => (
-                <option key={sector} value={sector}>{sector}</option>
-              ))}
-            </select>
-            <select
-              className="px-3 py-2 border border-input bg-background rounded-md"
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All sectors" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All sectors</SelectItem>
+                {SECTORS.map(sector => (
+                  <SelectItem key={sector} value={sector}>{sector}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
               value={selectedMaturity}
-              onChange={(e) => setSelectedMaturity(e.target.value)}
+              onValueChange={setSelectedMaturity}
             >
-              <option value="">All maturities</option>
-              {MATURITIES.map(maturity => (
-                <option key={maturity} value={maturity}>{maturity}</option>
-              ))}
-            </select>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="All maturities" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All maturities</SelectItem>
+                {MATURITIES.map(maturity => (
+                  <SelectItem key={maturity} value={maturity}>{maturity}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -293,208 +368,267 @@ export default function ProjectsCrudSection() {
               No projects found
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-2">Name</th>
-                    <th className="text-left py-3 px-2">Sector</th>
-                    <th className="text-left py-3 px-2">Maturity</th>
-                    <th className="text-left py-3 px-2">Legal Status</th>
-                    <th className="text-left py-3 px-2">Email</th>
-                    <th className="text-left py-3 px-2">Created</th>
-                    <th className="text-left py-3 px-2">Views</th>
-                    <th className="text-left py-3 px-2">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProjects.map((project) => (
-                    <tr key={project.id} className="border-b hover:bg-muted/50">
-                      <td className="py-3 px-2 font-medium">{project.name}</td>
-                      <td className="py-3 px-2">{project.sector}</td>
-                      <td className="py-3 px-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMaturityColor(project.maturity)}`}>
-                          {project.maturity}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2">{project.legal_status}</td>
-                      <td className="py-3 px-2">{project.email}</td>
-                      <td className="py-3 px-2">{formatDate(project.created_at)}</td>
-                      <td className="py-3 px-2">{project.viewsCount}</td>
-                      <td className="py-3 px-2">
-                        <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Eye size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => handleEditProject(project)}
-                          >
-                            <Edit size={14} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                            onClick={() => handleDeleteProject(project.id)}
-                          >
-                            <Trash2 size={14} />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Sector</TableHead>
+                  <TableHead>Maturity</TableHead>
+                  <TableHead>Legal status</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Created on</TableHead>
+                  <TableHead>Views</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredProjects.map((project) => (
+                  <TableRow key={project.id}>
+                    <TableCell className="font-medium">{project.name}</TableCell>
+                    <TableCell>{project.sector}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMaturityColor(project.maturity)}`}>
+                        {project.maturity}
+                      </span>
+                    </TableCell>
+                    <TableCell>{project.legal_status}</TableCell>
+                    <TableCell>{project.email}</TableCell>
+                    <TableCell>{formatDate(project.created_at)}</TableCell>
+                    <TableCell>{project.viewsCount}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleViewProject(project)}
+                        >
+                          <Eye size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleEditProject(project)}
+                        >
+                          <Edit size={14} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleDeleteProject(project)}
+                        >
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </CardContent>
       </Card>
 
-      {/* Creation/Edit Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">
-                {editingProject ? 'Edit Project' : 'New Project'}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X size={16} />
-              </Button>
+      {/* Create/Edit Modal */}
+      <FormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        title={editingProject ? 'Edit Project' : 'New Project'}
+        loading={isSubmitting}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Name *</label>
+              <Input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name *</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Email *</label>
+              <Input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              />
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email *</label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  />
-                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Legal status *</label>
+              <Select
+                value={formData.legal_status}
+                onValueChange={(value) => setFormData({ ...formData, legal_status: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select legal status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEGAL_STATUSES.map(status => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Legal Status *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.legal_status}
-                    onChange={(e) => setFormData({ ...formData, legal_status: e.target.value })}
-                  >
-                    <option value="">Select</option>
-                    {LEGAL_STATUSES.map(status => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Sector *</label>
+              <Select
+                value={formData.sector}
+                onValueChange={(value) => setFormData({ ...formData, sector: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select sector" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SECTORS.map(sector => (
+                    <SelectItem key={sector} value={sector}>
+                      {sector}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Sector *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.sector}
-                    onChange={(e) => setFormData({ ...formData, sector: e.target.value })}
-                  >
-                    <option value="">Select</option>
-                    {SECTORS.map(sector => (
-                      <option key={sector} value={sector}>{sector}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Maturity *</label>
+              <Select
+                value={formData.maturity}
+                onValueChange={(value) => setFormData({ ...formData, maturity: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select maturity" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MATURITIES.map(maturity => (
+                    <SelectItem key={maturity} value={maturity}>
+                      {maturity}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Maturity *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.maturity}
-                    onChange={(e) => setFormData({ ...formData, maturity: e.target.value })}
-                  >
-                    <option value="">Select</option>
-                    {MATURITIES.map(maturity => (
-                      <option key={maturity} value={maturity}>{maturity}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone</label>
+              <Input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              />
+            </div>
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  />
-                </div>
-              </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Address *</label>
+            <Input
+              type="text"
+              required
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Address *</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Description *</label>
-                <textarea
-                  required
-                  rows={4}
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
-                  {isSubmitting ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Save size={16} />
-                  )}
-                  {editingProject ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </form>
+          <div>
+            <label className="block text-sm font-medium mb-1">Description *</label>
+            <textarea
+              required
+              rows={4}
+              className="w-full px-3 py-2 border border-input bg-background rounded-md resize-none"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
           </div>
         </div>
+      </FormModal>
+
+      {/* View Modal */}
+      {viewingProject && (
+        <FormModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          onSubmit={() => {}}
+          title="Project Details"
+          submitLabel="Close"
+          cancelLabel=""
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Name</label>
+                <p className="text-sm font-medium">{viewingProject.name}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Email</label>
+                <p className="text-sm">{viewingProject.email}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Sector</label>
+                <p className="text-sm">{viewingProject.sector}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Maturity</label>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getMaturityColor(viewingProject.maturity)}`}>
+                  {viewingProject.maturity}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Legal Status</label>
+                <p className="text-sm">{viewingProject.legal_status}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Phone</label>
+                <p className="text-sm">{viewingProject.phone || 'N/A'}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-600">Address</label>
+                <p className="text-sm">{viewingProject.address}</p>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-600">Description</label>
+                <p className="text-sm">{viewingProject.description}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Created</label>
+                <p className="text-sm">{formatDate(viewingProject.created_at)}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Views</label>
+                <p className="text-sm">{viewingProject.viewsCount}</p>
+              </div>
+            </div>
+          </div>
+        </FormModal>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Delete Project"
+        message={`Are you sure you want to delete "${deletingProject?.name}"? This action cannot be undone.`}
+        variant="destructive"
+        loading={isSubmitting}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+      />
+
+      {/* Alert Modal */}
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        onClose={() => setAlertModal({ ...alertModal, isOpen: false })}
+        title={alertModal.title}
+        message={alertModal.message}
+        type={alertModal.type}
+      />
     </div>
   )
 }
