@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { detectMime } from '@/utils/image';
-
-const prisma = new PrismaClient();
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
