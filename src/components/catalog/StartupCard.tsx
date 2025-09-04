@@ -31,8 +31,8 @@ export function StartupCard({ startup, onClick, className }: StartupCardProps) {
       </div>
       <div className="flex flex-wrap gap-3 text-xs pt-1">
         {startupCardFieldConfig.map(f => {
-          const raw = (startup as any)[f.key];
-          if (raw == null || raw === '') return null;
+          const raw = startup[f.key];
+          if (raw == null || (raw as unknown) === '') return null;
           const value = f.format ? f.format(raw, startup) : (typeof raw === 'string' ? raw : String(raw));
           if (!value) return null;
           const Icon = f.icon;

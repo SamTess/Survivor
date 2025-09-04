@@ -5,6 +5,7 @@ import { useStartupCatalog } from '@/hooks/useStartupCatalog';
 import { StartupCard } from './StartupCard';
 import { useRouter } from 'next/navigation';
 
+type SortOption = 'name' | 'created-desc' | 'created-asc';
 interface Props { initial: Startup[] }
 
 export function StartupCatalog({ initial }: Props) {
@@ -28,7 +29,7 @@ export function StartupCatalog({ initial }: Props) {
           <Select label="Statut légal" value={legalStatus} onChange={setLegalStatus} options={legalStatuses} />
           <div className="flex flex-col">
             <label className="text-xs font-medium">Tri</label>
-            <select value={sortBy} onChange={e=>setSortBy(e.target.value as any)} className="border rounded px-2 py-1 text-sm">
+            <select value={sortBy} onChange={e=>setSortBy(e.target.value as SortOption)} className="border rounded px-2 py-1 text-sm">
               <option value="name">Nom (A-Z)</option>
               <option value="created-desc">Création (récent)</option>
               <option value="created-asc">Création (ancien)</option>

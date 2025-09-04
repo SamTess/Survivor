@@ -36,11 +36,11 @@ export default async function StartupDetailPage({ params }: { params: Promise<{ 
       <section className="space-y-4">
         <h2 className="text-xl font-semibold">Informations</h2>
         <ul className="grid gap-3 sm:grid-cols-2">
-          {startupCardFieldConfig.map(f => {
-      const raw = (startup as any)[f.key];
-      if (raw == null || raw === '') return null;
-      const value = f.format ? f.format(raw, startup) : (typeof raw === 'string' ? raw : String(raw));
-      if (!value) return null;
+      {startupCardFieldConfig.map(f => {
+    const raw = startup[f.key];
+    if (raw == null || (raw as unknown) === '') return null;
+    const value = f.format ? f.format(raw, startup) : (typeof raw === 'string' ? raw : String(raw));
+    if (!value) return null;
             return (
               <li key={f.key} className="flex flex-col rounded border p-3 bg-background/50">
         <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">{f.label}</span>
