@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AdminSidebar from "@/components/navigation/AdminSidebar";
 import { Navbar } from "@/components/navigation/Navbar";
 import { AuthProvider } from "../context/AuthContext";
 
@@ -32,7 +31,6 @@ export default function RootLayout({
       >
           <AuthProvider>
           <Navbar />
-          <AdminSidebar />
           {children}
         </AuthProvider>
       </body>
