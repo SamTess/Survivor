@@ -55,7 +55,7 @@ export function Navbar() {
                     "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 group",
                     isActive
                       ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                      : "text-muted-foreground hover:text-primary hover:bg-muted/50",
                   )}
                 >
                   {item.label}
@@ -72,18 +72,18 @@ export function Navbar() {
               size="sm"
               className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
-              <Search className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </Button>
-            <DarkModeToggle />
             <Button
               asChild
               size="sm"
               className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
               <Link href="/profile/1">
-                <User className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             </Button>
+            <DarkModeToggle className="text-muted-foreground hover:text-primary" />
             <Button
               asChild
               size="sm"
@@ -101,8 +101,8 @@ export function Navbar() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden rounded-full w-10 h-10 p-0 hover:bg-muted/40"
           >
-            {isMenuOpen ? 
-              <X className="h-5 w-5 text-foreground" /> : 
+            {isMenuOpen ?
+              <X className="h-5 w-5 text-foreground" /> :
               <Menu className="h-5 w-5 text-foreground" />
             }
           </Button>
@@ -122,7 +122,7 @@ export function Navbar() {
                       "border-none px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                       isActive
                         ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                        : "text-muted-foreground hover:text-primary hover:bg-muted/50",
                     )}
                   >
                     {item.label}

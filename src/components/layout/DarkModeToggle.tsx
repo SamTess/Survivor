@@ -1,10 +1,16 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { FaSun, FaMoon } from 'react-icons/fa';
+import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const DarkModeToggle = () => {
+interface DarkModeToggleProps {
+  className?: string;
+}
+
+export default function DarkModeToggle({
+  className = ''
+}: DarkModeToggleProps) {
   const [darkMode, setDarkMode] = useState<boolean>(false);
   const [mounted, setMounted] = useState(false);
 
@@ -32,8 +38,8 @@ const DarkModeToggle = () => {
 
   const icon = !mounted ? null : (
     darkMode ?
-      <FaSun className="h-5 w-5 text-yellow-500 dark:text-yellow-400" /> :
-      <FaMoon className="h-5 w-5 text-slate-600 dark:text-slate-300" />
+      <Sun className="h-5 w-5" /> :
+      <Moon className="h-5 w-5" />
   );
 
   return (
@@ -41,11 +47,9 @@ const DarkModeToggle = () => {
       size="sm"
       onClick={toggleDarkMode}
       aria-label="Toggle dark mode"
-      className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
+      className={`${className} group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105`}
     >
       {icon}
     </Button>
   );
 };
-
-export default DarkModeToggle;
