@@ -32,6 +32,38 @@ export class ExternalSyncService {
     private readonly newsRepo: NewsRepository
   ) {}
 
+  private async updateSequences(): Promise<void> {
+    if (process.env.VITEST || process.env.NODE_ENV === 'test') {
+      debugLog("sequences", "Skipped in test environment", {});
+      return;
+    }
+
+    try {
+      const queries = [
+        "SELECT setval('s_startup_id_seq', COALESCE((SELECT MAX(id) FROM s_startup), 1), false)",
+        "SELECT setval('s_investor_id_seq', COALESCE((SELECT MAX(id) FROM s_investor), 1), false)",
+        "SELECT setval('s_partner_id_seq', COALESCE((SELECT MAX(id) FROM s_partner), 1), false)",
+        "SELECT setval('s_event_id_seq', COALESCE((SELECT MAX(id) FROM s_event), 1), false)",
+        "SELECT setval('s_user_id_seq', COALESCE((SELECT MAX(id) FROM s_user), 1), false)",
+        "SELECT setval('s_news_id_seq', COALESCE((SELECT MAX(id) FROM s_news), 1), false)",
+        "SELECT setval('s_founder_id_seq', COALESCE((SELECT MAX(id) FROM s_founder), 1), false)",
+        "SELECT setval('s_startup_detail_id_seq', COALESCE((SELECT MAX(id) FROM s_startup_detail), 1), false)"
+      ];
+
+      for (const query of queries) {
+        try {
+          await prisma.$executeRawUnsafe(query);
+          debugLog("sequences", "Updated sequence", { query: query.split('_seq')[0] + '_seq' });
+        } catch (e) {
+          debugLog("sequences", "Failed to update sequence", { query, error: (e as Error).message });
+        }
+      }
+      debugLog("sequences", "All sequences updated", {});
+    } catch (e) {
+      debugLog("sequences", "Sequence update failed", { error: (e as Error).message });
+    }
+  }
+
   private async paginate<T>(path: string, limit = 100, handler: (items: T[], ctx: { page: number; skip: number }) => Promise<void>) {
     let skip = 0;
     let page = 0;
@@ -85,6 +117,7 @@ export class ExternalSyncService {
     });
     run.finishedAt = new Date().toISOString();
     debugLog("startups", "Sync list done", { total: processed });
+    await this.updateSequences();
     return collected;
   }
 
@@ -123,6 +156,7 @@ export class ExternalSyncService {
     });
     run.finishedAt = new Date().toISOString();
     debugLog("investors", "Sync done", { total: processed });
+    await this.updateSequences();
     return collected;
   }
 
@@ -156,6 +190,7 @@ export class ExternalSyncService {
     });
     run.finishedAt = new Date().toISOString();
     debugLog("partners", "Sync done", { total: processed });
+    await this.updateSequences();
     return collected;
   }
 
@@ -189,6 +224,7 @@ export class ExternalSyncService {
     });
     run.finishedAt = new Date().toISOString();
     debugLog("events", "Sync done", { total: processed });
+    await this.updateSequences();
     return collected;
   }
 
@@ -236,6 +272,7 @@ export class ExternalSyncService {
     });
     run.finishedAt = new Date().toISOString();
     debugLog("users", "Sync done", { total: processed });
+    await this.updateSequences();
     return collected;
   }
 
@@ -279,7 +316,8 @@ export class ExternalSyncService {
     await this.syncEvents();
     await this.syncUsers();
     if (this.newsRepo) await this.syncNews();
-  await this.reconcileFoundersMissingUser();
+    await this.reconcileFoundersMissingUser();
+    await this.updateSequences();
     debugLog("all", "Global sync done", { ms: Date.now() - t0 });
   }
 
@@ -311,6 +349,7 @@ export class ExternalSyncService {
     }
     run.finishedAt = new Date().toISOString();
     debugLog("news", "Sync done", { total: processed });
+    await this.updateSequences();
     return collected;
   }
 
