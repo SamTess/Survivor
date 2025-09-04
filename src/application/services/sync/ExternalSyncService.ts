@@ -302,6 +302,13 @@ export class ExternalSyncService {
       run.pages = ctx.page + 1; run.items = processed;
       debugLog("news", "Page processed", { page: ctx.page, batch: items.length, cumulated: processed });
     });
+    for (const n of collected) {
+      try {
+        await this.syncNewsById(n.id);
+      } catch (e) {
+        debugLog("news", "Detail fetch failed", { id: n.id, error: (e as Error).message });
+      }
+    }
     run.finishedAt = new Date().toISOString();
     debugLog("news", "Sync done", { total: processed });
     return collected;

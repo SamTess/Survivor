@@ -17,6 +17,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         legal_status: nz(item.legal_status),
         sector: nz(item.sector),
         maturity: nz(item.maturity),
+            ...(item.description !== undefined ? { description: item.description } : {}),
       },
       create: {
         id: item.id,
@@ -27,7 +28,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         legal_status: nz(item.legal_status),
         sector: nz(item.sector),
         maturity: nz(item.maturity),
-        description: "",
+            description: item.description ?? "",
       },
     });
   }
@@ -44,6 +45,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
           legal_status: nz(item.legal_status),
           sector: nz(item.sector),
           maturity: nz(item.maturity),
+              ...(item.description !== undefined ? { description: item.description } : {}),
         },
         create: {
           id: item.id,
@@ -54,7 +56,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
           legal_status: nz(item.legal_status),
           sector: nz(item.sector),
           maturity: nz(item.maturity),
-          description: "",
+              description: item.description ?? "",
         },
       });
       const existingDetails = await tx.s_STARTUP_DETAIL.findMany({ where: { startup_id: item.id } });
@@ -62,7 +64,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         await tx.s_STARTUP_DETAIL.create({
           data: {
             startup_id: item.id,
-            description: "",
+            description: item.description ?? "",
             website_url: item.website_url,
             social_media_url: item.social_media_url,
             project_status: item.project_status,
@@ -73,6 +75,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         await tx.s_STARTUP_DETAIL.updateMany({
           where: { startup_id: item.id },
           data: {
+            ...(item.description !== undefined ? { description: item.description } : {}),
             website_url: item.website_url,
             social_media_url: item.social_media_url,
             project_status: item.project_status,
