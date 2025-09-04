@@ -103,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     window.addEventListener('auth:unauthorized', handleUnauthorized);
-
     return () => {
       window.removeEventListener('auth:unauthorized', handleUnauthorized);
     };
@@ -288,12 +287,10 @@ export function withAuth<P extends object>(Component: React.ComponentType<P>) {
 // Hook for role-based access
 export function useRequireAuth(requiredRole?: UserRole | UserRole[]) {
   const auth = useAuth();
-
   useEffect(() => {
     if (!auth.loading && !auth.isAuthenticated) {
       window.location.href = '/login';
     }
-
     if (requiredRole && auth.user && !auth.hasRole(requiredRole)) {
       // Handle unauthorized access - could redirect or show error
       console.warn('Insufficient permissions');
