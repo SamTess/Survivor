@@ -40,14 +40,14 @@ export default function SignupPage() {
     }
 
     setIsLoading(true);
-    
+
     try {
-      const res = await fetch('/api/auth/signup', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ name, email, password }) 
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
       });
-      
+
       if (res.ok) {
         router.push('/');
         router.refresh();
@@ -63,16 +63,16 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 px-4 py-8">
+    <div className="h-screen pt-66 flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 px-4 py-8 overflow-y-auto">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
         <div className="text-center mb-8 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 shadow-lg overflow-hidden">
-            <Image 
-              src="/logo.png" 
-              alt="Jeb Incubator Logo" 
-              width={100} 
-              height={100} 
+            <Image
+              src="/logo.png"
+              alt="Jeb Incubator Logo"
+              width={100}
+              height={100}
               className="object-contain"
             />
           </div>
@@ -168,15 +168,15 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
-              
+
               {/* Password Requirements */}
               {password && (
                 <div className="mt-3 space-y-2">
                   {passwordRequirements.map((req, index) => (
                     <div key={index} className="flex items-center text-sm">
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center mr-3 transition-colors ${
-                        req.test(password) 
-                          ? 'bg-green-100 text-green-600' 
+                        req.test(password)
+                          ? 'bg-green-100 text-green-600'
                           : 'bg-gray-100 text-gray-400'
                       }`}>
                         {req.test(password) && <FiCheck className="w-3 h-3" />}
@@ -205,8 +205,8 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className={`w-full pl-10 pr-12 py-3 border rounded-xl bg-white/50 backdrop-blur-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 ${
-                    confirmPassword && !doPasswordsMatch 
-                      ? 'border-red-300 focus:ring-red-500' 
+                    confirmPassword && !doPasswordsMatch
+                      ? 'border-red-300 focus:ring-red-500'
                       : confirmPassword && doPasswordsMatch
                       ? 'border-green-300 focus:ring-green-500'
                       : 'border-gray-300 focus:ring-purple-500'
@@ -226,7 +226,7 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
-              
+
               {confirmPassword && !doPasswordsMatch && (
                 <p className="text-sm text-red-600">Les mots de passe ne correspondent pas</p>
               )}
