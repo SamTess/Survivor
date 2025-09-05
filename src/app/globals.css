@@ -125,7 +125,28 @@ body {
 @layer components {
   .admin-stat-card {
     @apply bg-card border border-border
-           transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+           transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+           cursor-pointer;
+  }
+
+  .admin-stat-card--active {
+    @apply translate-y-0.5 shadow-inner bg-accent/10 border-accent;
+  }
+
+  .admin-stat-card--blue.admin-stat-card--active {
+    @apply bg-blue-50/80 dark:bg-blue-900/20 border-blue-400 dark:border-blue-500;
+  }
+
+  .admin-stat-card--emerald.admin-stat-card--active {
+    @apply bg-emerald-50/80 dark:bg-emerald-900/20 border-emerald-400 dark:border-emerald-500;
+  }
+
+  .admin-stat-card--violet.admin-stat-card--active {
+    @apply bg-violet-50/80 dark:bg-violet-900/20 border-violet-400 dark:border-violet-500;
+  }
+
+  .admin-stat-card--orange.admin-stat-card--active {
+    @apply bg-orange-50/80 dark:bg-orange-900/20 border-orange-400 dark:border-orange-500;
   }
 
   .admin-stat-card--blue {
