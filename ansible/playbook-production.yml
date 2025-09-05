@@ -31,7 +31,7 @@
     - name: Copy production environment file
       template:
         src: "{{ env_file }}.j2"
-        dest: "{{ repository.app_directory }}/.env"
+        dest: "{{ repository.app_directory }}/Docker/.env"
         mode: '0644'
         backup: yes
       when: env_file is defined
