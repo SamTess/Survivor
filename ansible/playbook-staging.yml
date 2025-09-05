@@ -59,7 +59,7 @@
       community.docker.docker_compose_v2:
         project_src: "{{ repository.app_directory }}/Docker"
         files:
-          - "docker-compose.yml"
+          - "{{ compose_file }}"
         build: "{{ 'always' if (git_clone_staging.changed or env_file_staging.changed) else 'policy' }}"
         state: present
         recreate: auto
