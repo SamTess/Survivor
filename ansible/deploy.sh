@@ -96,26 +96,75 @@ get_choice() {
     echo $choice
 }
 
-run_playbook() {
-    local limit=$1
-    local tags=$2
-    local description=$3
-
+run_dependencies() {
     echo
-    echo -e "${GREEN}🎯 $description${NC}"
-
-    if [ -n "$tags" ]; then
-        echo -e "${YELLOW}📋 Running: ansible-playbook playbook.yml --limit=$limit --tags=$tags${NC}"
-        ansible-playbook playbook.yml --limit="$limit" --tags="$tags -v"
-    else
-        echo -e "${YELLOW}📋 Running: ansible-playbook playbook.yml --limit=$limit${NC}"
-        ansible-playbook playbook.yml --limit="$limit"
-    fi
+    echo -e "${GREEN}🔧 Installing Dependencies on All Hosts${NC}"
+    echo -e "${YELLOW}📋 Running: ansible-playbook playbook.yml${NC}"
+    ansible-playbook playbook.yml -v
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Deployment completed successfully!${NC}"
+        echo -e "${GREEN}✅ Dependencies installed successfully!${NC}"
     else
-        echo -e "${RED}❌ Deployment failed!${NC}"
+        echo -e "${RED}❌ Dependencies installation failed!${NC}"
+        exit 1
+    fi
+}
+
+run_staging_deployment() {
+    echo
+    echo -e "${GREEN}🎯 Deploying to Staging Environment${NC}"
+    echo -e "${YELLOW}📋 Running: ansible-playbook playbook-staging.yml${NC}"
+    ansible-playbook playbook-staging.yml -v
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Staging deployment completed successfully!${NC}"
+    else
+        echo -e "${RED}❌ Staging deployment failed!${NC}"
+        exit 1
+    fi
+}
+
+run_production_deployment() {
+    echo
+    echo -e "${GREEN}🎯 Deploying to Production Environment${NC}"
+    echo -e "${YELLOW}📋 Running: ansible-playbook playbook-production.yml${NC}"
+    ansible-playbook playbook-production.yml -v
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Production deployment completed successfully!${NC}"
+    else
+        echo -e "${RED}❌ Production deployment failed!${NC}"
+        exit 1
+    fi
+}
+
+run_full_deployment() {
+    echo
+    echo -e "${GREEN}🎯 Deploying to Both Environments${NC}"
+
+    echo -e "${YELLOW}📋 Step 1/3: Installing dependencies...${NC}"
+    ansible-playbook playbook.yml -v
+
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Dependencies installation failed!${NC}"
+        exit 1
+    fi
+
+    echo -e "${YELLOW}📋 Step 2/3: Deploying to staging...${NC}"
+    ansible-playbook playbook-staging.yml -v
+
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Staging deployment failed!${NC}"
+        exit 1
+    fi
+
+    echo -e "${YELLOW}📋 Step 3/3: Deploying to production...${NC}"
+    ansible-playbook playbook-production.yml -v
+
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ Full deployment completed successfully!${NC}"
+    else
+        echo -e "${RED}❌ Production deployment failed!${NC}"
         exit 1
     fi
 }
@@ -133,7 +182,8 @@ while true; do
     case $choice in
         1)
             if [ "$staging_available" = true ]; then
-                run_playbook "survivor_staging" "" "Deploying to Staging Environment"
+                run_dependencies
+                run_staging_deployment
                 break
             else
                 echo -e "${RED}❌ Staging environment not available in hosts.ini${NC}"
@@ -142,7 +192,8 @@ while true; do
             ;;
         2)
             if [ "$prod_available" = true ]; then
-                run_playbook "survivor_prod" "" "Deploying to Production Environment"
+                run_dependencies
+                run_production_deployment
                 break
             else
                 echo -e "${RED}❌ Production environment not available in hosts.ini${NC}"
@@ -151,7 +202,7 @@ while true; do
             ;;
         3)
             if [ "$staging_available" = true ] && [ "$prod_available" = true ]; then
-                run_playbook "all" "" "Deploying to Both Environments"
+                run_full_deployment
                 break
             else
                 echo -e "${RED}❌ Both environments not available in hosts.ini${NC}"
@@ -159,7 +210,7 @@ while true; do
             fi
             ;;
         4)
-            run_playbook "all" "install" "Installing Dependencies Only"
+            run_dependencies
             break
             ;;
         5)
