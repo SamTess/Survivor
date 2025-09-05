@@ -1,3 +1,4 @@
+import { UserRole } from "./Auth";
 
 export interface User {
     id: number;
@@ -18,7 +19,7 @@ export interface UserApiResponse {
     id: number;
     email: string;
     name: string;
-    role: 'admin' | 'founder' | 'investor';
+    role: UserRole;
     founder_id?: number;
     investor_id?: number;
     created_at: string;

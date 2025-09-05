@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
 
         if (process.env.NODE_ENV === 'development' && (!process.env.EMAIL_USER || !process.env.EMAIL_PASS)) {
           const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
-          return NextResponse.json({ 
-            error: 'Aucun mot de passe défini. Le lien de reset a été généré (voir console serveur).',
+          return NextResponse.json({
+            error: 'No password set. Reset link has been generated (check server console).',
             requiresPasswordReset: true,
             devMode: true,
             resetUrl: resetUrl
@@ -55,15 +55,15 @@ export async function POST(req: NextRequest) {
         }
         await emailService.sendPasswordResetEmail(user.email, resetToken, user.name);
 
-        return NextResponse.json({ 
-          error: 'Aucun mot de passe défini. Un email de création de mot de passe a été envoyé.',
-          requiresPasswordReset: true 
+        return NextResponse.json({
+          error: 'No password set. A password creation email has been sent.',
+          requiresPasswordReset: true
         }, { status: 401 });
       } catch (emailError) {
         console.error('Password reset email sending error:', emailError);
-        return NextResponse.json({ 
-          error: 'Aucun mot de passe défini. Veuillez contacter l\'administrateur.',
-          requiresPasswordReset: true 
+        return NextResponse.json({
+          error: 'No password set. Please contact the administrator.',
+          requiresPasswordReset: true
         }, { status: 401 });
       }
     }
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signJwt({ userId: user.id }, 60 * 60 * 24 * 7, getAuthSecret());
-    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email });
+    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
     res.cookies.set('auth', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, sameSite: 'lax', path: '/' });
     return res;
   } catch (e) {
