@@ -7,7 +7,7 @@ const getDatabaseUrl = (): string => {
 	if (!url) {
 		if (isTest) {
 			if (!process.env.QUIET_PRISMA_TEST) {
-				console.warn('DATABASE_URL absent en test - utilisation d\'un placeholder inactif');
+				console.warn('DATABASE_URL not set - using placeholder for tests');
 			}
 			return 'postgresql://placeholder:placeholder@localhost:5432/placeholder';
 		}
@@ -34,7 +34,7 @@ if (isBrowser || isEdge) {
 	// Provides an inert proxy to avoid the error "PrismaClient is unable to run in this browser environment".
 	prisma = new Proxy({}, {
 		get() {
-			throw new Error('Prisma désactivé dans le runtime edge/browser');
+			throw new Error('Prisma disabled in edge/browser runtime');
 		}
 	}) as unknown as PrismaClient;
 } else {
