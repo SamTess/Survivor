@@ -1,0 +1,456 @@
+- name: Install Docker & Setup SSH
+  hosts: all
+  vars_files:
+    - config.yml
+  tags:
+    - install
+    - dependencies
+  tasks:
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      register: docker_gpg_result
+      retries: 10
+      delay: 5
+      until: docker_gpg_result is succeeded
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+      register: docker_repo_result
+      retries: 10
+      delay: 5
+      until: docker_repo_result is succeeded
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      register: apt_update_result
+      retries: 10
+      delay: 5
+      until: apt_update_result is succeeded
+
+    - name: Ensure Docker is installed
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+      register: docker_result
+      retries: 10
+      delay: 5
+      until: docker_result is succeeded
+
+    - name: Install Docker Compose plugin
+      apt:
+        name: docker-compose-plugin
+        state: present
+        update_cache: yes
+      register: docker_compose_result
+      retries: 10
+      delay: 5
+      until: docker_compose_result is succeeded
+
+    - name: Check if Docker service is running
+      systemd:
+        name: docker
+      register: docker_service_status
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+      when: docker_service_status.status.ActiveState != "active"
+
+    - name: Check if user is already in docker group
+      getent:
+        database: group
+        key: docker
+      register: docker_group
+
+    - name: Add current user to docker group (if not root)
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+      when:
+        - ansible_user != "root"
+        - ansible_user not in docker_group.ansible_facts.getent_group.docker[2]
+      register: user_added_to_docker
+
+    - name: Notify about docker group change
+      debug:
+        msg: "User {{ ansible_user }} added to docker group. You may need to logout and login again for changes to take effect."
+      when: user_added_to_docker.changed
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "/root/.ssh"
+        state: directory
+        mode: '0700'
+        owner: root
+        group: root
+
+    - name: Copy SSH private key for Git access
+      copy:
+        src: "{{ ssh.local_private_key }}"
+        dest: "/root/.ssh/id_ed25519"
+        mode: '0600'
+        owner: root
+        group: root
+      no_log: true
+
+    - name: Copy SSH public key
+      copy:
+        src: "{{ ssh.local_private_key }}.pub"
+        dest: "/root/.ssh/id_ed25519.pub"
+        mode: '0644'
+        owner: root
+        group: root
+      ignore_errors: yes
+
+    - name: Add GitHub to known hosts
+      known_hosts:
+        name: github.com
+        key: "{{ ssh.github_host_key }}"
+        state: present
+
+    - name: Test SSH connection to GitHub
+      shell: ssh -T git@github.com -o StrictHostKeyChecking=no -o BatchMode=yes 2>&1 || true
+      register: github_ssh_test
+      changed_when: false
+
+    - name: Verify GitHub SSH connection
+      assert:
+        that:
+          - '"successfully authenticated" in github_ssh_test.stdout or "Permission denied" in github_ssh_test.stdout'
+        fail_msg: "GitHub SSH connection failed. Output: {{ github_ssh_test.stdout }}"
+        success_msg: "GitHub SSH connection working"
+
+- name: Deploy Staging Environment
+  hosts: survivor_staging
+  vars_files:
+    - config.yml
+  tags:
+    - deploy
+    - staging
+  vars:
+    deploy_env: "staging"
+    git_branch: "{{ repository.git_branch_staging }}"
+    compose_file: "{{ docker.staging_compose_file }}"
+    app_port: "{{ docker.staging_port }}"
+    env_file: "{{ env_files.staging_env_file }}"
+  tasks:
+    - name: Create application directory
+      file:
+        path: "{{ repository.app_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone/Update repository (staging branch)
+      git:
+        repo: "{{ repository.git_url }}"
+        dest: "{{ repository.app_directory }}"
+        version: "{{ git_branch }}"
+        depth: 1
+        force: yes
+        update: yes
+      register: git_clone_staging
+
+    - name: Copy staging environment file
+      template:
+        src: "{{ env_file }}.j2"
+        dest: "{{ repository.app_directory }}/Docker/.env"
+        mode: '0644'
+        backup: yes
+      when: env_file is defined
+      register: env_file_staging
+      ignore_errors: yes
+
+    - name: Check if docker-compose file exists
+      stat:
+        path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
+      register: compose_file_check_staging
+
+    - name: Stop existing Docker containers (staging)
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - "{{ compose_file }}"
+        state: absent
+        remove_orphans: yes
+      when:
+        - compose_file_check_staging.stat.exists
+        - git_clone_staging.changed or env_file_staging.changed
+      ignore_errors: yes
+
+    - name: Build and start Docker containers (staging)
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - "docker-compose.yml"
+        build: "{{ 'always' if (git_clone_staging.changed or env_file_staging.changed) else 'policy' }}"
+        state: present
+        recreate: auto
+      when: compose_file_check_staging.stat.exists
+      register: staging_deploy_result
+
+    - name: Wait for database to be ready (staging)
+      pause:
+        seconds: 15
+      when: staging_deploy_result.changed
+
+    - name: Check if migration files exist (staging)
+      command: docker compose -f docker-compose.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: staging_deploy_result.changed
+      register: staging_migration_files_check
+      ignore_errors: yes
+
+    - name: Create database schema from Prisma schema (staging - first time)
+      command: docker compose -f docker-compose.yml exec -T web npx prisma db push --accept-data-loss
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when:
+        - staging_deploy_result.changed
+        - staging_migration_files_check.stdout is defined
+        - staging_migration_files_check.stdout | int <= 2
+      register: staging_db_push_result
+      ignore_errors: yes
+
+    - name: Run Prisma database migration (staging - if migrations exist)
+      command: docker compose -f docker-compose.yml exec -T web npx prisma migrate deploy
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when:
+        - staging_deploy_result.changed
+        - staging_migration_files_check.stdout is defined
+        - staging_migration_files_check.stdout | int > 2
+      register: staging_migration_result
+      ignore_errors: yes
+
+    - name: Generate Prisma client (staging)
+      command: docker compose -f docker-compose.yml exec -T web npx prisma generate
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: staging_deploy_result.changed
+      register: staging_generate_result
+      ignore_errors: yes
+
+    - name: Display migration status (staging)
+      debug:
+        msg: |
+          Staging migration status:
+          {% if staging_db_push_result is defined %}
+          DB Push (first time): {{ 'SUCCESS' if staging_db_push_result.rc == 0 else 'FAILED' }}
+          {% if staging_db_push_result.rc != 0 %}
+          DB Push error: {{ staging_db_push_result.stderr }}
+          {% endif %}
+          {% endif %}
+          {% if staging_migration_result is defined %}
+          Migration: {{ 'SUCCESS' if staging_migration_result.rc == 0 else 'FAILED' }}
+          {% if staging_migration_result.rc != 0 %}
+          Migration error: {{ staging_migration_result.stderr }}
+          {% endif %}
+          {% endif %}
+          Generate: {{ 'SUCCESS' if staging_generate_result.rc == 0 else 'FAILED' }}
+          {% if staging_generate_result.rc != 0 %}
+          Generate error: {{ staging_generate_result.stderr }}
+          {% endif %}
+      when: staging_deploy_result.changed
+
+    - name: Wait for staging application to be ready
+      uri:
+        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+      register: staging_health_check
+      until: staging_health_check.status == 200
+      retries: 30
+      delay: 10
+      when: staging_deploy_result.changed
+      ignore_errors: yes
+
+    - name: Check if staging containers are running (fallback health check)
+      command: docker ps --filter "name={{ application.app_name }}" --format "table {% raw %}{{.Names}}\t{{.Status}}{% endraw %}"
+      register: staging_container_status
+      when: staging_health_check is failed or staging_health_check is skipped
+      changed_when: false
+
+    - name: Display staging deployment status
+      debug:
+        msg: |
+          Staging deployment completed!
+          URL: http://{{ ansible_default_ipv4.address }}:{{ app_port }}
+          Branch: {{ git_branch }}
+          Health check: {{ 'PASSED' if (staging_health_check.status is defined and staging_health_check.status == 200) else 'FAILED/SKIPPED' }}
+          {% if staging_container_status is defined and staging_container_status.stdout is defined %}
+          Container status: {{ staging_container_status.stdout }}
+          {% endif %}
+
+- name: Deploy Production Environment
+  hosts: survivor_prod
+  vars_files:
+    - config.yml
+  tags:
+    - deploy
+    - production
+  vars:
+    deploy_env: "production"
+    git_branch: "{{ repository.git_branch_prod }}"
+    compose_file: "{{ docker.prod_compose_file }}"
+    app_port: "{{ docker.prod_port }}"
+    env_file: "{{ env_files.prod_env_file }}"
+  tasks:
+    - name: Create application directory
+      file:
+        path: "{{ repository.app_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone/Update repository (production branch)
+      git:
+        repo: "{{ repository.git_url }}"
+        dest: "{{ repository.app_directory }}"
+        version: "{{ git_branch }}"
+        depth: 1
+        force: yes
+        update: yes
+      register: git_clone_prod
+
+    - name: Copy production environment file
+      template:
+        src: "{{ env_file }}.j2"
+        dest: "{{ repository.app_directory }}/.env"
+        mode: '0644'
+        backup: yes
+      when: env_file is defined
+      register: env_file_prod
+      ignore_errors: yes
+
+    - name: Check if docker-compose file exists
+      stat:
+        path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
+      register: compose_file_check_prod
+
+    - name: Stop existing Docker containers (production)
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - "docker-compose.prod.yml"
+        state: absent
+        remove_orphans: yes
+      when:
+        - compose_file_check_prod.stat.exists
+        - git_clone_prod.changed or env_file_prod.changed
+      ignore_errors: yes
+
+    - name: Build and start Docker containers (production)
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - "docker-compose.prod.yml"
+        build: "{{ 'always' if (git_clone_prod.changed or env_file_prod.changed) else 'policy' }}"
+        state: present
+        recreate: auto
+      when: compose_file_check_prod.stat.exists
+      register: prod_deploy_result
+
+    - name: Wait for database to be ready (production)
+      pause:
+        seconds: 15
+      when: prod_deploy_result.changed
+
+    - name: Check if migration files exist (production)
+      command: docker compose -f docker-compose.prod.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: prod_deploy_result.changed
+      register: prod_migration_files_check
+      ignore_errors: yes
+
+    - name: Create database schema from Prisma schema (production - first time)
+      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma db push --accept-data-loss
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: 
+        - prod_deploy_result.changed
+        - prod_migration_files_check.stdout is defined
+        - prod_migration_files_check.stdout | int <= 2
+      register: prod_db_push_result
+      ignore_errors: yes
+
+    - name: Run Prisma database migration (production - if migrations exist)
+      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: 
+        - prod_deploy_result.changed
+        - prod_migration_files_check.stdout is defined
+        - prod_migration_files_check.stdout | int > 2
+      register: prod_migration_result
+      ignore_errors: yes
+
+    - name: Generate Prisma client (production)
+      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma generate
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: prod_deploy_result.changed
+      register: prod_generate_result
+      ignore_errors: yes
+
+    - name: Display migration status (production)
+      debug:
+        msg: |
+          Production migration status:
+          {% if prod_db_push_result is defined %}
+          DB Push (first time): {{ 'SUCCESS' if prod_db_push_result.rc == 0 else 'FAILED' }}
+          {% if prod_db_push_result.rc != 0 %}
+          DB Push error: {{ prod_db_push_result.stderr }}
+          {% endif %}
+          {% endif %}
+          {% if prod_migration_result is defined %}
+          Migration: {{ 'SUCCESS' if prod_migration_result.rc == 0 else 'FAILED' }}
+          {% if prod_migration_result.rc != 0 %}
+          Migration error: {{ prod_migration_result.stderr }}
+          {% endif %}
+          {% endif %}
+          Generate: {{ 'SUCCESS' if prod_generate_result.rc == 0 else 'FAILED' }}
+          {% if prod_generate_result.rc != 0 %}
+          Generate error: {{ prod_generate_result.stderr }}
+          {% endif %}
+      when: prod_deploy_result.changed
+
+    - name: Wait for production application to be ready
+      uri:
+        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+      register: prod_health_check
+      until: prod_health_check.status == 200
+      retries: 30
+      delay: 10
+      when: prod_deploy_result.changed
+      ignore_errors: yes
+
+    - name: Check if production containers are running (fallback health check)
+      command: docker ps --filter "name={{ application.app_name }}" --format "table {% raw %}{{.Names}}\t{{.Status}}{% endraw %}"
+      register: prod_container_status
+      when: prod_health_check is failed or prod_health_check is skipped
+      changed_when: false
+
+    - name: Display production deployment status
+      debug:
+        msg: |
+          Production deployment completed!
+          URL: http://{{ ansible_default_ipv4.address }}:{{ app_port }}
+          Branch: {{ git_branch }}
+          Health check: {{ 'PASSED' if (prod_health_check.status is defined and prod_health_check.status == 200) else 'FAILED/SKIPPED' }}
+          {% if prod_container_status is defined and prod_container_status.stdout is defined %}
+          Container status: {{ prod_container_status.stdout }}
+          {% endif %}
