@@ -50,94 +50,15 @@ export function useRecentActivity() {
         setLoading(true)
         setError(null)
 
-        // Simulate API call - replace with actual API endpoint when available
-        await new Promise(resolve => setTimeout(resolve, 800))
+        // Fetch from real API endpoint
+        const response = await fetch('/api/admin/recent-activities')
 
-        // Mock data - replace with actual API call
-        const mockData: ActivityData = {
-          activities: [
-            {
-              id: '1',
-              type: 'project',
-              action: 'Startup Registered',
-              description: 'New startup company registered on the platform',
-              user: 'TechStart Inc.',
-              timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-              severity: 'medium'
-            },
-            {
-              id: '2',
-              type: 'user',
-              action: 'Role Updated',
-              description: 'User role updated to Administrator',
-              user: 'john.doe@example.com',
-              timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
-              severity: 'high'
-            },
-            {
-              id: '3',
-              type: 'news',
-              action: 'Article Published',
-              description: 'New article published in startup news section',
-              user: 'Editor Team',
-              timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-              severity: 'low'
-            },
-            {
-              id: '4',
-              type: 'event',
-              action: 'Event Created',
-              description: 'New event scheduled: Startup Pitch Day',
-              user: 'Event Manager',
-              timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              severity: 'medium'
-            },
-            {
-              id: '5',
-              type: 'project',
-              action: 'Profile Approved',
-              description: 'Startup profile reviewed and approved',
-              user: 'GreenTech Solutions',
-              timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-              severity: 'medium'
-            },
-            {
-              id: '6',
-              type: 'user',
-              action: 'Account Suspended',
-              description: 'User account suspended for policy violation',
-              user: 'spam.user@example.com',
-              timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-              severity: 'high'
-            },
-            {
-              id: '7',
-              type: 'news',
-              action: 'Article Edited',
-              description: 'Existing article content updated and republished',
-              user: 'Content Team',
-              timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-              severity: 'low'
-            },
-            {
-              id: '8',
-              type: 'event',
-              action: 'Event Cancelled',
-              description: 'Workshop event cancelled due to low registration',
-              user: 'Event Manager',
-              timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-              severity: 'medium'
-            }
-          ],
-          summary: {
-            userActions: 24,
-            projectChanges: 18,
-            contentUpdates: 12,
-            eventsModified: 8
-          }
+        if (!response.ok) {
+          throw new Error('Failed to fetch recent activities')
         }
 
-        setRawData(mockData)
+        const data: ActivityData = await response.json()
+        setRawData(data)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load activity data')
       } finally {
@@ -177,7 +98,7 @@ export function useRecentActivity() {
     // Apply sorting
     filteredActivities.sort((a, b) => {
       let comparison = 0
-      
+
       switch (filters.sortBy) {
         case 'timestamp':
           comparison = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -200,11 +121,11 @@ export function useRecentActivity() {
     }
   }, [rawData, filters])
 
-  return { 
-    data: filteredData, 
-    loading, 
-    error, 
-    filters, 
+  return {
+    data: filteredData,
+    loading,
+    error,
+    filters,
     setFilters,
     updateFilter: (key: keyof ActivityFilters, value: string | boolean) => {
       setFilters(prev => ({ ...prev, [key]: value }))
