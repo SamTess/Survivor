@@ -39,23 +39,25 @@ export class ExternalSyncService {
     }
 
     try {
-      const queries = [
-        "SELECT setval('s_startup_id_seq', COALESCE((SELECT MAX(id) FROM s_startup), 1), false)",
-        "SELECT setval('s_investor_id_seq', COALESCE((SELECT MAX(id) FROM s_investor), 1), false)",
-        "SELECT setval('s_partner_id_seq', COALESCE((SELECT MAX(id) FROM s_partner), 1), false)",
-        "SELECT setval('s_event_id_seq', COALESCE((SELECT MAX(id) FROM s_event), 1), false)",
-        "SELECT setval('s_user_id_seq', COALESCE((SELECT MAX(id) FROM s_user), 1), false)",
-        "SELECT setval('s_news_id_seq', COALESCE((SELECT MAX(id) FROM s_news), 1), false)",
-        "SELECT setval('s_founder_id_seq', COALESCE((SELECT MAX(id) FROM s_founder), 1), false)",
-        "SELECT setval('s_startup_detail_id_seq', COALESCE((SELECT MAX(id) FROM s_startup_detail), 1), false)"
+       const tables = [
+        'S_STARTUP',
+        'S_INVESTOR',
+        'S_PARTNER',
+        'S_EVENT',
+        'S_USER',
+        'S_NEWS',
+        'S_FOUNDER',
+        'S_STARTUP_DETAIL'
       ];
 
-      for (const query of queries) {
+      for (const table of tables) {
+        const quoted = `"${table}"`;
+        const query = `SELECT setval(pg_get_serial_sequence('${quoted}', 'id'), COALESCE((SELECT MAX(id) FROM ${quoted}), 1), false)`;
         try {
           await prisma.$executeRawUnsafe(query);
-          debugLog("sequences", "Updated sequence", { query: query.split('_seq')[0] + '_seq' });
+          debugLog("sequences", "Updated sequence", { table, query });
         } catch (e) {
-          debugLog("sequences", "Failed to update sequence", { query, error: (e as Error).message });
+          debugLog("sequences", "Failed to update sequence", { table, query, error: (e as Error).message });
         }
       }
       debugLog("sequences", "All sequences updated", {});
