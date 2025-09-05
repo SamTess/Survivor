@@ -20,19 +20,25 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
   }
 
   async create(partner: Omit<Partner, 'id' | 'created_at' | 'updated_at'>): Promise<Partner> {
-    // First create or find the user
-    const user = await prisma.s_USER.create({
-      data: {
-        name: partner.name,
-        email: partner.email,
-        role: 'partner',
-        password_hash: '',
-        legal_status: partner.legal_status || null,
-        address: partner.address || '',
-        phone: partner.phone || null,
-        description: partner.description || null,
-      },
+    // Check if user already exists
+    let user = await prisma.s_USER.findFirst({
+      where: { email: partner.email }
     });
+
+    if (!user) {
+      user = await prisma.s_USER.create({
+        data: {
+          name: partner.name,
+          email: partner.email,
+          role: 'partner',
+          password_hash: '',
+          legal_status: partner.legal_status || null,
+          address: partner.address || '',
+          phone: partner.phone || null,
+          description: partner.description || null,
+        },
+      });
+    }
 
     const created = await prisma.s_PARTNER.create({
       data: {

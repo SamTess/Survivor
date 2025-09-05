@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
   Plus,
@@ -115,7 +117,9 @@ export default function UsersCrudSection() {
   const [selectedRole, setSelectedRole] = useState<string>('')
   const [isUserModalOpen, setIsUserModalOpen] = useState(false)
   const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | null>(null)
+  const [viewingUser, setViewingUser] = useState<User | null>(null)
   const [selectedUserForPermissions, setSelectedUserForPermissions] = useState<User | null>(null)
   const [userFormData, setUserFormData] = useState<UserFormData>({
     name: '',
@@ -170,10 +174,14 @@ export default function UsersCrudSection() {
       if (data.success) {
         setUsers(data.data)
       } else {
-        console.error('Error fetching users:', data.error)
+        toast.error('Error loading users', {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error fetching users:', error)
+    } catch {
+      toast.error('Error loading users', {
+        description: 'An error occurred while fetching data'
+      })
     } finally {
       setLoading(false)
     }
@@ -209,6 +217,11 @@ export default function UsersCrudSection() {
     setIsUserModalOpen(true)
   }
 
+  const handleViewUser = (user: User) => {
+    setViewingUser(user)
+    setIsViewModalOpen(true)
+  }
+
   const handleManagePermissions = (user: User) => {
     setSelectedUserForPermissions(user)
     setPermissionFormData({
@@ -232,13 +245,16 @@ export default function UsersCrudSection() {
 
       if (response.ok) {
         setUsers(users.filter(u => u.id !== id))
-        alert('User deleted successfully!')
+        toast.success('User deleted successfully!')
       } else {
-        alert('Error during deletion')
+        toast.error('Deletion error', {
+          description: 'Unable to delete this user'
+        })
       }
-    } catch (error) {
-      console.error('Error deleting user:', error)
-      alert('Error during deletion')
+    } catch {
+      toast.error('Deletion error', {
+        description: 'A network error occurred'
+      })
     }
   }
 
@@ -256,6 +272,11 @@ export default function UsersCrudSection() {
         delete submitData.password
       }
 
+      // Ensure no id is sent when creating a new user
+      if (!editingUser && 'id' in submitData) {
+        delete (submitData as Record<string, unknown>).id
+      }
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -269,13 +290,18 @@ export default function UsersCrudSection() {
       if (data.success) {
         await fetchUsers() // Reload the list
         setIsUserModalOpen(false)
-        alert(`User ${editingUser ? 'updated' : 'created'} successfully!`)
+        toast.success(`User ${editingUser ? 'updated' : 'created'} successfully!`, {
+          description: `${data.data.name} has been ${editingUser ? 'updated' : 'added'} to the database`
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(`Error ${editingUser ? 'updating' : 'creating'} user`, {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving user:', error)
-      alert('Error during save')
+    } catch {
+      toast.error(`Error ${editingUser ? 'updating' : 'creating'} user`, {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -302,16 +328,21 @@ export default function UsersCrudSection() {
       const data = await response.json()
 
       if (data.success) {
-        alert('Permission added successfully!')
+        toast.success('Permission added successfully!', {
+          description: `Permission "${permissionFormData.name}" granted to ${selectedUserForPermissions.name}`
+        })
         setIsPermissionModalOpen(false)
         // Optional: reload users to have updated permissions
         await fetchUsers()
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error('Error adding permission', {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving permission:', error)
-      alert('Error during save')
+    } catch {
+      toast.error('Error adding permission', {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -451,7 +482,12 @@ export default function UsersCrudSection() {
                       <td className="py-3 px-2">{user.followersCount}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleViewUser(user)}
+                          >
                             <Eye size={14} />
                           </Button>
                           <Button
@@ -755,6 +791,63 @@ export default function UsersCrudSection() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* View Modal */}
+      {viewingUser && (
+        <UniversalModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="User Details"
+          size="auto"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</label>
+                <p className="text-sm font-medium">{viewingUser.name}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Email</label>
+                <p className="text-sm break-all">{viewingUser.email}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Role</label>
+                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                  {viewingUser.role}
+                </span>
+              </div>
+              {viewingUser.phone && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Phone</label>
+                  <p className="text-sm">{viewingUser.phone}</p>
+                </div>
+              )}
+              {viewingUser.legal_status && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Legal Status</label>
+                  <p className="text-sm">{viewingUser.legal_status}</p>
+                </div>
+              )}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
+                <p className="text-sm">{new Date(viewingUser.created_at).toLocaleDateString('en-US')}</p>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Address</label>
+              <p className="text-sm">{viewingUser.address}</p>
+            </div>
+            {viewingUser.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-32 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingUser.description}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </UniversalModal>
       )}
     </div>
   )

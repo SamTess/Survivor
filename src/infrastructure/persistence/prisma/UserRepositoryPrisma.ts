@@ -34,6 +34,15 @@ export class UserRepositoryPrisma implements UserRepository {
   }
 
   async create(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
+    // Check if user already exists
+    const existingUser = await prisma.s_USER.findFirst({
+      where: { email: user.email }
+    });
+
+    if (existingUser) {
+      throw new Error(`User with email ${user.email} already exists`);
+    }
+
     const created = await prisma.s_USER.create({
       data: {
         name: user.name,

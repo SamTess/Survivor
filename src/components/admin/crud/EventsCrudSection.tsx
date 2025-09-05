@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
   Plus,
@@ -60,7 +62,9 @@ export default function EventsCrudSection() {
   const [selectedType, setSelectedType] = useState<string>('')
   const [selectedAudience, setSelectedAudience] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [editingEvent, setEditingEvent] = useState<Event | null>(null)
+  const [viewingEvent, setViewingEvent] = useState<Event | null>(null)
   const [formData, setFormData] = useState<EventFormData>({
     name: '',
     description: '',
@@ -141,6 +145,11 @@ export default function EventsCrudSection() {
     setIsModalOpen(true)
   }
 
+  const handleViewEvent = (event: Event) => {
+    setViewingEvent(event)
+    setIsViewModalOpen(true)
+  }
+
   const handleDeleteEvent = async (id: number) => {
     if (!confirm('Are you sure you want to delete this event?')) return
 
@@ -151,13 +160,16 @@ export default function EventsCrudSection() {
 
       if (response.ok) {
         setEvents(events.filter(e => e.id !== id))
-        alert('Event deleted successfully!')
+        toast.success('Event deleted successfully!')
       } else {
-        alert('Error during deletion')
+        toast.error('Deletion error', {
+          description: 'Unable to delete this event'
+        })
       }
-    } catch (error) {
-      console.error('Error deleting event:', error)
-      alert('Error during deletion')
+    } catch {
+      toast.error('Deletion error', {
+        description: 'A network error occurred'
+      })
     }
   }
 
@@ -187,13 +199,18 @@ export default function EventsCrudSection() {
       if (data.success) {
         await fetchEvents() // reload list
         setIsModalOpen(false)
-        alert(`Event ${editingEvent ? 'updated' : 'created'} successfully!`)
+        toast.success(`Event ${editingEvent ? 'updated' : 'created'} successfully!`, {
+          description: `The event "${formData.name}" has been ${editingEvent ? 'updated' : 'scheduled'}`
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(`Error ${editingEvent ? 'updating' : 'creating'} event`, {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving event:', error)
-      alert('Error during save')
+    } catch {
+      toast.error(`Error ${editingEvent ? 'updating' : 'creating'} event`, {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -371,7 +388,12 @@ export default function EventsCrudSection() {
                       <td className="py-3 px-2">{event.viewsCount}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleViewEvent(event)}
+                          >
                             <Eye size={14} />
                           </Button>
                           <Button
@@ -512,6 +534,71 @@ export default function EventsCrudSection() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* View Modal */}
+      {viewingEvent && (
+        <UniversalModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="Event Details"
+          size="auto"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Name</label>
+                <p className="text-sm font-medium">{viewingEvent.name}</p>
+              </div>
+              {viewingEvent.event_type && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Event Type</label>
+                  <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                    {viewingEvent.event_type}
+                  </span>
+                </div>
+              )}
+              {viewingEvent.target_audience && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Target Audience</label>
+                  <p className="text-sm">{viewingEvent.target_audience}</p>
+                </div>
+              )}
+              {viewingEvent.dates && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
+                  <p className="text-sm">{new Date(viewingEvent.dates).toLocaleDateString('en-US')}</p>
+                </div>
+              )}
+              {viewingEvent.location && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
+                  <p className="text-sm">{viewingEvent.location}</p>
+                </div>
+              )}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
+                <p className="text-sm">{new Date(viewingEvent.created_at).toLocaleDateString('en-US')}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Attendees</label>
+                <p className="text-sm font-medium text-blue-600">{viewingEvent.attendeesCount}</p>
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Views</label>
+                <p className="text-sm font-medium text-green-600">{viewingEvent.viewsCount}</p>
+              </div>
+            </div>
+            {viewingEvent.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-40 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingEvent.description}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </UniversalModal>
       )}
     </div>
   )
