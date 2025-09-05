@@ -14,20 +14,36 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [nextPath, setNextPath] = useState<string>('/');
   const router = useRouter();
   const { signup, loading, error, clearError, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push(nextPath);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, nextPath]);
+
+  // Handle callback parameter from URL
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      const callback = url.searchParams.get('callback');
+      const next = url.searchParams.get('next');
+
+      if (callback) {
+        setNextPath(callback);
+      } else if (next) {
+        setNextPath(next);
+      }
+    } catch { }
+  }, []);
   const passwordRequirements = [
-    { label: 'Au moins 8 caractères', test: (pwd: string) => pwd.length >= 8 },
-    { label: 'Une lettre majuscule', test: (pwd: string) => /[A-Z]/.test(pwd) },
-    { label: 'Une lettre minuscule', test: (pwd: string) => /[a-z]/.test(pwd) },
-    { label: 'Un chiffre', test: (pwd: string) => /\d/.test(pwd) }
+    { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
+    { label: 'One uppercase letter', test: (pwd: string) => /[A-Z]/.test(pwd) },
+    { label: 'One lowercase letter', test: (pwd: string) => /[a-z]/.test(pwd) },
+    { label: 'One number', test: (pwd: string) => /\d/.test(pwd) }
   ];
 
   const isPasswordValid = passwordRequirements.every(req => req.test(password));
@@ -51,7 +67,7 @@ export default function SignupPage() {
     const result = await signup({ name, email, password });
 
     if (result.success) {
-      router.push('/');
+      router.push(nextPath);
       router.refresh();
     }
     // Error handling is now managed by the AuthContext
@@ -265,7 +281,7 @@ export default function SignupPage() {
             <p className="text-gray-600">
               Already have an account ?{' '}
               <Link
-                href="/login"
+                href={`/login${nextPath !== '/' ? `?callback=${encodeURIComponent(nextPath)}` : ''}`}
                 className="font-semibold text-purple-600 hover:text-purple-500 transition-colors duration-200"
               >
                 Connect

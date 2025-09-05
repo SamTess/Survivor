@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { UserApiResponse } from '@/domain/interfaces/User';
 import { formatDate } from '@/utils/dateUtils';
 import { ProtectedRoute, useAuth } from '@/context/auth';
@@ -13,14 +14,23 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ params }: ProfilePageProps) {
+  const router = useRouter();
   const { id } = React.use(params);
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, isAuthenticated } = useAuth();
   const [user, setUser] = useState<UserApiResponse | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      const currentPath = `/profile/${id}`;
+      router.push(`/login?callback=${encodeURIComponent(currentPath)}`);
+    }
+  }, [isAuthenticated, router, id]);
 
   const isOwnProfile = user?.id === currentUser?.id;
 
@@ -111,6 +121,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -135,7 +149,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   }
 
   return (
-    <ProtectedRoute requireAuth={true} fallback={<div className="min-h-screen flex items-center justify-center">Please login to proceed</div>}>
+    <ProtectedRoute requireAuth={true}>
       <div className="min-h-screen bg-background py-5 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 sm:px-6 lg:px-8 pt-20">
           {/* Error Display */}
