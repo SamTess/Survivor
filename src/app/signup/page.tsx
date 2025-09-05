@@ -239,7 +239,7 @@ export default function SignupPage() {
               </div>
 
               {confirmPassword && !doPasswordsMatch && (
-                <p className="text-sm text-red-600">The passwords don't match</p>
+                <p className="text-sm text-red-600">The passwords don&apos;t match</p>
               )}
               {confirmPassword && doPasswordsMatch && (
                 <p className="text-sm text-green-600 flex items-center">

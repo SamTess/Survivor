@@ -8,7 +8,7 @@ import React, {
   ReactNode,
   useCallback
 } from 'react';
-import { apiService } from '../infrastructure/services/ApiService';
+import { apiService, ApiResponse } from '../infrastructure/services/ApiService';
 import { SessionUser, LoginCredentials, SignupData, UserRole } from '@/domain/interfaces';
 
 
@@ -122,7 +122,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: true, user: response.data };
       } else {
         // Handle the case where login failed due to password reset requirement
-        const errorResponse = response as any; // Type assertion for special error response
+        const errorResponse = response as ApiResponse<SessionUser> & {
+          requiresPasswordReset?: boolean;
+          devMode?: boolean;
+          resetUrl?: string;
+        }; // Type assertion for special error response properties
         return {
           success: false,
           error: {

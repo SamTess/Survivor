@@ -1,4 +1,5 @@
 import { useAuth } from '@/context/AuthContext';
+import { UserRole } from '@/domain/interfaces';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -22,7 +23,7 @@ export function useAuthRedirect(redirectTo: string = '/login') {
  * Hook that checks if user has required roles and redirects if not
  */
 export function useRoleGuard(
-  requiredRoles: string | string[],
+  requiredRoles: UserRole | UserRole[],
   fallbackRoute: string = '/dashboard'
 ) {
   const { user, hasRole, loading } = useAuth();
@@ -30,14 +31,13 @@ export function useRoleGuard(
 
   useEffect(() => {
     if (!loading && user) {
-      const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
-      if (!hasRole(roles as any)) {
+      if (!hasRole(requiredRoles)) {
         router.push(fallbackRoute);
       }
     }
   }, [user, hasRole, loading, requiredRoles, router, fallbackRoute]);
 
-  return { user, loading, hasAccess: user ? hasRole(requiredRoles as any) : false };
+  return { user, loading, hasAccess: user ? hasRole(requiredRoles) : false };
 }
 
 /**
@@ -65,12 +65,12 @@ export function usePermissionGuard(
  * Hook for admin-only access
  */
 export function useAdminGuard(fallbackRoute: string = '/dashboard') {
-  return useRoleGuard('ADMIN', fallbackRoute);
+  return useRoleGuard('admin', fallbackRoute);
 }
 
 /**
- * Hook for moderator+ access (ADMIN or MODERATOR)
+ * Hook for moderator+ access (admin only, since moderator is not in UserRole type)
  */
 export function useModeratorGuard(fallbackRoute: string = '/dashboard') {
-  return useRoleGuard(['ADMIN', 'MODERATOR'], fallbackRoute);
+  return useRoleGuard('admin', fallbackRoute);
 }
