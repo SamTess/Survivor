@@ -16,10 +16,10 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const passwordRequirements = [
-    { label: 'Au moins 8 caractères', test: (pwd: string) => pwd.length >= 8 },
-    { label: 'Une lettre majuscule', test: (pwd: string) => /[A-Z]/.test(pwd) },
-    { label: 'Une lettre minuscule', test: (pwd: string) => /[a-z]/.test(pwd) },
-    { label: 'Un chiffre', test: (pwd: string) => /\d/.test(pwd) }
+    { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
+    { label: 'One uppercase letter', test: (pwd: string) => /[A-Z]/.test(pwd) },
+    { label: 'One lowercase letter', test: (pwd: string) => /[a-z]/.test(pwd) },
+    { label: 'One digit', test: (pwd: string) => /\d/.test(pwd) }
   ];
 
   const isPasswordValid = passwordRequirements.every(req => req.test(password));
@@ -30,12 +30,12 @@ export default function SignupPage() {
     setError(null);
 
     if (!isPasswordValid) {
-      setError('Le mot de passe ne respecte pas tous les critères requis.');
+      setError('Password does not meet all required criteria.');
       return;
     }
 
     if (!doPasswordsMatch) {
-      setError('Les mots de passe ne correspondent pas.');
+      setError('Passwords do not match.');
       return;
     }
 
@@ -77,7 +77,7 @@ export default function SignupPage() {
             />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Rejoignez Jeb</h1>
-          <p className="text-gray-600">Créez votre compte et commencez votre aventure</p>
+          <p className="text-gray-600">Create your account and start your adventure</p>
         </div>
 
         {/* Signup Form */}
@@ -99,7 +99,7 @@ export default function SignupPage() {
             {/* Name Field */}
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Nom complet
+                Full Name
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -247,11 +247,11 @@ export default function SignupPage() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Création...</span>
+                  <span>Creating...</span>
                 </>
               ) : (
                 <>
-                  <span>Créer mon compte</span>
+                  <span>Create my account</span>
                   <FiArrowRight className="h-5 w-5" />
                 </>
               )}
@@ -261,19 +261,19 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="my-8 flex items-center">
             <div className="flex-1 border-t border-gray-200"></div>
-            <span className="px-4 text-sm text-gray-500 bg-white">ou</span>
+            <span className="px-4 text-sm text-gray-500 bg-white">or</span>
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
           {/* Login link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Déjà un compte ?{' '}
+              Already have an account?{' '}
               <Link 
                 href="/login" 
                 className="font-semibold text-purple-600 hover:text-purple-500 transition-colors duration-200"
               >
-                Se connecter
+                Sign in
               </Link>
             </p>
           </div>
@@ -281,7 +281,7 @@ export default function SignupPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500 animate-fade-in-up">
-          <p>&copy; 2025 Jeb Incubator. Tous droits réservés.</p>
+          <p>&copy; 2025 Jeb Incubator. All rights reserved.</p>
         </div>
       </div>
     </div>
