@@ -120,3 +120,90 @@ body {
 .animate-card { animation: card-in .35s ease-out both; }
 .animate-draw { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw-line 1s ease-out forwards; }
 .animate-bar { transform-origin: bottom; animation: bar-raise 1s ease-out both; }
+
+/* Admin Stats Card Components */
+@layer components {
+  .admin-stat-card {
+    @apply bg-card border border-border
+           transition-all duration-300 hover:-translate-y-1 hover:shadow-lg;
+  }
+
+  .admin-stat-card--blue {
+    @apply hover:border-blue-300 dark:hover:border-blue-600
+           hover:shadow-blue-500/10 dark:hover:shadow-blue-400/10
+           hover:bg-blue-50/30 dark:hover:bg-blue-900/10;
+  }
+
+  .admin-stat-card--emerald {
+    @apply hover:border-emerald-300 dark:hover:border-emerald-600
+           hover:shadow-emerald-500/10 dark:hover:shadow-emerald-400/10
+           hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10;
+  }
+
+  .admin-stat-card--violet {
+    @apply hover:border-violet-300 dark:hover:border-violet-600
+           hover:shadow-violet-500/10 dark:hover:shadow-violet-400/10
+           hover:bg-violet-50/30 dark:hover:bg-violet-900/10;
+  }
+
+  .admin-stat-card--orange {
+    @apply hover:border-orange-300 dark:hover:border-orange-600
+           hover:shadow-orange-500/10 dark:hover:shadow-orange-400/10
+           hover:bg-orange-50/30 dark:hover:bg-orange-900/10;
+  }
+
+  .admin-stat-icon-container {
+    @apply p-2 rounded-lg bg-muted
+           border border-border;
+  }
+
+  .admin-stat-title {
+    @apply text-sm font-medium text-card-foreground;
+  }
+
+  .admin-stat-value {
+    @apply text-2xl font-bold text-foreground;
+  }
+
+  .admin-stat-description {
+    @apply text-xs text-muted-foreground;
+  }
+
+  .admin-trend-badge {
+    @apply text-xs font-medium px-2 py-1 rounded-full border;
+  }
+
+  .admin-trend-badge--positive {
+    @apply text-emerald-800 dark:text-emerald-200
+           bg-emerald-100 dark:bg-emerald-800/60
+           border-emerald-300 dark:border-emerald-600;
+  }
+
+  .admin-trend-badge--negative {
+    @apply text-red-800 dark:text-red-200
+           bg-red-100 dark:bg-red-800/60
+           border-red-300 dark:border-red-600;
+  }
+
+  .admin-trend-badge--neutral {
+    @apply text-slate-700 dark:text-slate-200
+           bg-slate-100 dark:bg-slate-700
+           border-slate-300 dark:border-slate-500;
+  }
+
+  .admin-loading-card {
+    @apply bg-card border border-border animate-pulse;
+  }
+
+  .admin-loading-skeleton {
+    @apply bg-muted rounded;
+  }
+
+  .admin-error-card {
+    @apply bg-card border border-destructive;
+  }
+
+  .admin-error-text {
+    @apply text-destructive;
+  }
+}

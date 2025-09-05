@@ -26,16 +26,17 @@ export default function AdminStatsSection() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((index) => (
-            <Card key={index} className="animate-pulse">
-              <CardHeader className="pb-3">
+            <Card key={index} className="admin-loading-card">
+              <CardHeader className="pb-2">
                 <div className="flex justify-between items-center">
-                  <div className="h-4 bg-gray-300 rounded w-20"></div>
-                  <div className="h-8 w-8 bg-gray-300 rounded"></div>
+                  <div className="h-4 admin-loading-skeleton w-20"></div>
+                  <div className="h-8 w-8 admin-loading-skeleton rounded-lg"></div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="h-8 bg-gray-300 rounded w-16 mb-2"></div>
-                <div className="h-4 bg-gray-300 rounded w-24"></div>
+                <div className="h-8 admin-loading-skeleton w-16 mb-2"></div>
+                <div className="h-3 admin-loading-skeleton w-32 mb-2"></div>
+                <div className="h-5 admin-loading-skeleton w-12"></div>
               </CardContent>
             </Card>
           ))}
@@ -51,9 +52,9 @@ export default function AdminStatsSection() {
           <h2 className="text-2xl font-bold text-foreground mb-2">Platform Statistics</h2>
           <p className="text-muted-foreground">Overview of key metrics and performance indicators</p>
         </div>
-        <Card className="border-red-200 bg-red-50">
+        <Card className="admin-error-card">
           <CardContent className="pt-6">
-            <div className="flex items-center space-x-2 text-red-600">
+            <div className="flex items-center space-x-2 admin-error-text">
               <span className="font-medium">Error loading statistics:</span>
               <span>{error}</span>
             </div>
@@ -70,9 +71,9 @@ export default function AdminStatsSection() {
           <h2 className="text-2xl font-bold text-foreground mb-2">Platform Statistics</h2>
           <p className="text-muted-foreground">Overview of key metrics and performance indicators</p>
         </div>
-        <Card>
+        <Card className="admin-stat-card">
           <CardContent className="pt-6">
-            <p className="text-muted-foreground">No statistics available</p>
+            <p className="admin-stat-description">No statistics available</p>
           </CardContent>
         </Card>
       </div>
@@ -84,32 +85,32 @@ export default function AdminStatsSection() {
       title: "Total Users",
       value: stats.totalUsers.value,
       description: stats.totalUsers.description,
-      icon: <FaUsers className="text-white" size={24} />,
-      colorClasses: "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-slate-800 dark:to-slate-900 border-2 border-blue-300 dark:border-blue-500 hover:from-blue-500 hover:to-blue-600 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-blue-500/25 dark:hover:shadow-blue-400/20 transition-all duration-300 hover:-translate-y-1",
+      icon: <FaUsers className="text-blue-500" size={20} />,
+      colorClasses: "admin-stat-card admin-stat-card--blue",
       trend: stats.totalUsers.trend
     },
     {
       title: "Active Projects",
       value: stats.activeProjects.value,
       description: stats.activeProjects.description,
-      icon: <FaProjectDiagram className="text-white" size={24} />,
-      colorClasses: "bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-slate-800 dark:to-slate-900 border-2 border-emerald-300 dark:border-emerald-500 hover:from-emerald-500 hover:to-emerald-600 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-emerald-500/25 dark:hover:shadow-emerald-400/20 transition-all duration-300 hover:-translate-y-1",
+      icon: <FaProjectDiagram className="text-emerald-500" size={20} />,
+      colorClasses: "admin-stat-card admin-stat-card--emerald",
       trend: stats.activeProjects.trend
     },
     {
       title: "News Articles",
       value: stats.newsArticles.value,
       description: stats.newsArticles.description,
-      icon: <FaNewspaper className="text-white" size={24} />,
-      colorClasses: "bg-gradient-to-br from-purple-600 to-purple-700 dark:from-slate-800 dark:to-slate-900 border-2 border-purple-300 dark:border-purple-500 hover:from-purple-500 hover:to-purple-600 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-purple-500/25 dark:hover:shadow-purple-400/20 transition-all duration-300 hover:-translate-y-1",
+      icon: <FaNewspaper className="text-violet-500" size={20} />,
+      colorClasses: "admin-stat-card admin-stat-card--violet",
       trend: stats.newsArticles.trend
     },
     {
       title: "Upcoming Events",
       value: stats.upcomingEvents.value,
       description: stats.upcomingEvents.description,
-      icon: <FaCalendarAlt className="text-white" size={24} />,
-      colorClasses: "bg-gradient-to-br from-amber-600 to-orange-600 dark:from-slate-800 dark:to-slate-900 border-2 border-amber-300 dark:border-amber-500 hover:from-amber-500 hover:to-orange-500 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-amber-500/25 dark:hover:shadow-amber-400/20 transition-all duration-300 hover:-translate-y-1",
+      icon: <FaCalendarAlt className="text-orange-500" size={20} />,
+      colorClasses: "admin-stat-card admin-stat-card--orange",
       trend: stats.upcomingEvents.trend
     }
   ]
@@ -125,27 +126,32 @@ export default function AdminStatsSection() {
         {statsCards.map((stat, index) => (
           <Card
             key={index}
-            className={`${stat.colorClasses} transition-all duration-500 hover:shadow-xl hover:-translate-y-1 border-2 backdrop-blur-sm relative overflow-hidden group`}
+            className={stat.colorClasses}
           >
-            {/* Gradient overlay effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-10">
-              <CardTitle className="text-sm font-semibold text-white">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="admin-stat-title text-sm font-medium">
                 {stat.title}
               </CardTitle>
-              <div className="p-3 rounded-xl bg-white/20 backdrop-blur-md shadow-lg border border-white/30">
+              <div className="admin-stat-icon-container">
                 {stat.icon}
               </div>
             </CardHeader>
-            <CardContent className="relative z-10">
-              <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-              <p className="text-sm text-white/80 mb-3">
+            <CardContent>
+              <div className="admin-stat-value mb-1 text-2xl font-bold">
+                {stat.value}
+              </div>
+              <p className="admin-stat-description mb-2 text-xs">
                 {stat.description}
               </p>
               {stat.trend && (
                 <div className="flex items-center">
-                  <span className="text-xs font-semibold text-white bg-white/20 px-3 py-1.5 rounded-full border border-white/30 backdrop-blur-sm">
+                  <span className={`admin-trend-badge ${
+                    stat.trend.startsWith('+')
+                      ? 'admin-trend-badge--positive'
+                      : stat.trend.startsWith('-')
+                      ? 'admin-trend-badge--negative'
+                      : 'admin-trend-badge--neutral'
+                  }`}>
                     {stat.trend}
                   </span>
                 </div>
