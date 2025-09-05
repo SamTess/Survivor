@@ -11,6 +11,7 @@ export interface UserRepository {
   getByRole(role: string): Promise<User[]>;
   getFounders(): Promise<User[]>;
   getInvestors(): Promise<User[]>;
+  getByDateRange(startDate: Date, endDate: Date): Promise<User[]>;
   search(query: string): Promise<User[]>;
   
   // Update

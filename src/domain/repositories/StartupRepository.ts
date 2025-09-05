@@ -10,6 +10,7 @@ export interface StartupRepository {
   getByEmail(email: string): Promise<Startup | null>;
   getBySector(sector: string): Promise<Startup[]>;
   getByMaturity(maturity: string): Promise<Startup[]>;
+  getByDateRange(startDate: Date, endDate: Date): Promise<Startup[]>;
   search(query: string): Promise<Startup[]>;
   
   // Update
