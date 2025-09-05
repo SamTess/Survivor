@@ -3,6 +3,7 @@
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FaUsers, FaProjectDiagram, FaNewspaper, FaCalendarAlt } from 'react-icons/fa'
+import { useAdminStats } from '@/hooks/useAdminStats'
 
 interface StatCard {
   title: string
@@ -14,38 +15,102 @@ interface StatCard {
 }
 
 export default function AdminStatsSection() {
+  const { stats, loading, error } = useAdminStats()
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Platform Statistics</h2>
+          <p className="text-muted-foreground">Overview of key metrics and performance indicators</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map((index) => (
+            <Card key={index} className="animate-pulse">
+              <CardHeader className="pb-3">
+                <div className="flex justify-between items-center">
+                  <div className="h-4 bg-gray-300 rounded w-20"></div>
+                  <div className="h-8 w-8 bg-gray-300 rounded"></div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-gray-300 rounded w-16 mb-2"></div>
+                <div className="h-4 bg-gray-300 rounded w-24"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Platform Statistics</h2>
+          <p className="text-muted-foreground">Overview of key metrics and performance indicators</p>
+        </div>
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-2 text-red-600">
+              <span className="font-medium">Error loading statistics:</span>
+              <span>{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!stats) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Platform Statistics</h2>
+          <p className="text-muted-foreground">Overview of key metrics and performance indicators</p>
+        </div>
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-muted-foreground">No statistics available</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   const statsCards: StatCard[] = [
     {
       title: "Total Users",
-      value: 1247,
-      description: "+12% from last month",
+      value: stats.totalUsers.value,
+      description: stats.totalUsers.description,
       icon: <FaUsers className="text-white" size={24} />,
       colorClasses: "bg-gradient-to-br from-blue-600 to-blue-700 dark:from-slate-800 dark:to-slate-900 border-2 border-blue-300 dark:border-blue-500 hover:from-blue-500 hover:to-blue-600 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-blue-500/25 dark:hover:shadow-blue-400/20 transition-all duration-300 hover:-translate-y-1",
-      trend: "+12%"
+      trend: stats.totalUsers.trend
     },
     {
       title: "Active Projects",
-      value: 89,
-      description: "Currently running",
+      value: stats.activeProjects.value,
+      description: stats.activeProjects.description,
       icon: <FaProjectDiagram className="text-white" size={24} />,
       colorClasses: "bg-gradient-to-br from-emerald-600 to-emerald-700 dark:from-slate-800 dark:to-slate-900 border-2 border-emerald-300 dark:border-emerald-500 hover:from-emerald-500 hover:to-emerald-600 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-emerald-500/25 dark:hover:shadow-emerald-400/20 transition-all duration-300 hover:-translate-y-1",
-      trend: "+5%"
+      trend: stats.activeProjects.trend
     },
     {
       title: "News Articles",
-      value: 156,
-      description: "Published this month",
+      value: stats.newsArticles.value,
+      description: stats.newsArticles.description,
       icon: <FaNewspaper className="text-white" size={24} />,
       colorClasses: "bg-gradient-to-br from-purple-600 to-purple-700 dark:from-slate-800 dark:to-slate-900 border-2 border-purple-300 dark:border-purple-500 hover:from-purple-500 hover:to-purple-600 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-purple-500/25 dark:hover:shadow-purple-400/20 transition-all duration-300 hover:-translate-y-1",
-      trend: "+8%"
+      trend: stats.newsArticles.trend
     },
     {
       title: "Upcoming Events",
-      value: 23,
-      description: "Next 30 days",
+      value: stats.upcomingEvents.value,
+      description: stats.upcomingEvents.description,
       icon: <FaCalendarAlt className="text-white" size={24} />,
       colorClasses: "bg-gradient-to-br from-amber-600 to-orange-600 dark:from-slate-800 dark:to-slate-900 border-2 border-amber-300 dark:border-amber-500 hover:from-amber-500 hover:to-orange-500 dark:hover:from-slate-700 dark:hover:to-slate-800 hover:shadow-xl hover:shadow-amber-500/25 dark:hover:shadow-amber-400/20 transition-all duration-300 hover:-translate-y-1",
-      trend: "+15%"
+      trend: stats.upcomingEvents.trend
     }
   ]
 
