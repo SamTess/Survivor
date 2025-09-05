@@ -43,7 +43,7 @@ export default function SignupPage() {
     { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
     { label: 'One uppercase letter', test: (pwd: string) => /[A-Z]/.test(pwd) },
     { label: 'One lowercase letter', test: (pwd: string) => /[a-z]/.test(pwd) },
-    { label: 'One number', test: (pwd: string) => /\d/.test(pwd) }
+    { label: 'One digit', test: (pwd: string) => /\d/.test(pwd) }
   ];
 
   const isPasswordValid = passwordRequirements.every(req => req.test(password));
@@ -55,7 +55,7 @@ export default function SignupPage() {
     setValidationError(null);
 
     if (!isPasswordValid) {
-      setValidationError('The password do not check all requierments.');
+      setValidationError('Password does not meet all requierments.');
       return;
     }
 
@@ -110,7 +110,7 @@ export default function SignupPage() {
             {/* Name Field */}
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full name
+                Full Name
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -258,7 +258,7 @@ export default function SignupPage() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Creation...</span>
+                  <span>Creating...</span>
                 </>
               ) : (
                 <>
@@ -272,7 +272,7 @@ export default function SignupPage() {
           {/* Divider */}
           <div className="my-8 flex items-center">
             <div className="flex-1 border-t border-gray-200"></div>
-            <span className="px-4 text-sm text-gray-500 bg-white">ou</span>
+            <span className="px-4 text-sm text-gray-500 bg-white">or</span>
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
