@@ -43,14 +43,15 @@ model S_STARTUP_DETAIL {
 model S_USER {
   id            Int      @id @default(autoincrement())
   name          String
-  email         String
+  email         String   @unique
   password_hash String
-  address       String
+  address       String?
   phone         String?
   legal_status  String?
   description   String?
   image_data    Bytes?
   created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
   role          String
   founders      S_FOUNDER[]
   investors     S_INVESTOR[]
@@ -66,29 +67,53 @@ model S_USER {
   pageViews     S_PAGE_VIEW[]
   passwordResets S_PASSWORD_RESET[]
   followersCount Int      @default(0)
+  roles         S_USER_ROLE[]
 }
 
 model S_FOUNDER {
   id         Int      @id @default(autoincrement())
   startup_id Int
-  user_id    Int
+  user_id    Int?
   startup    S_STARTUP @relation(fields: [startup_id], references: [id], onDelete: Cascade)
-  user       S_USER    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user       S_USER?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model S_INVESTOR {
   id               Int      @id @default(autoincrement())
+  name             String
+  legal_status     String
+  address          String
+  email            String   @unique
+  phone            String
+  description      String
   investor_type    String?
   investment_focus String?
-  user_id          Int
-  user             S_USER @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id          Int?
+  user             S_USER?  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id])
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  @@index([investor_type])
+  @@index([investment_focus])
 }
 
 model S_PARTNER {
   id               Int      @id @default(autoincrement())
+  name             String
+  legal_status     String
+  address          String
+  email            String   @unique
+  phone            String
+  description      String
   partnership_type String?
   user_id          Int
   user             S_USER @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id])
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  @@index([partnership_type])
 }
 
 model S_NEWS {
@@ -359,4 +384,14 @@ model S_PASSWORD_RESET {
 
   @@index([token])
   @@index([expires_at])
+}
+
+model S_USER_ROLE {
+  user_id     Int
+  role        String
+  assigned_at DateTime @default(now())
+  user        S_USER   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, role])
+  @@index([role])
 }

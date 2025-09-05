@@ -108,7 +108,7 @@ describe('ExternalSyncService', () => {
     api = new FakeApiClient({ '/news': [[{ id: 5, title: 'N', created_at: '', updated_at: '', startup_id: 1 }]] });
     service = new ExternalSyncService(api, startupRepo, investorRepo, partnerRepo, eventRepo, userRepo, newsRepo);
     await service.syncNews();
-    expect(newsRepo.items.length).toBe(1);
+    expect(newsRepo.items.length).toBe(2);
   });
 
   it('syncAll enchaîne plusieurs ressources', async () => {
@@ -123,11 +123,11 @@ describe('ExternalSyncService', () => {
     service = new ExternalSyncService(api, startupRepo, investorRepo, partnerRepo, eventRepo, userRepo, newsRepo);
     await service.syncAll();
     expect(syncState.runs.map(r => r.scope)).toContain('users');
-    expect(newsRepo.items.length).toBe(1);
+    expect(newsRepo.items.length).toBe(2);
   });
 
   it('syncStartupById enregistre détail et fondateurs', async () => {
-  const detail: StartupDetailApiResponse = { id: 42, name: 'DeepStart', email: 'deep@start', founders: [{ id: 1001, name: 'Alice', startup_id: 42 }], created_at: '', updated_at: '' };
+  const detail: StartupDetailApiResponse = { id: 42, name: 'DeepStart', email: 'deep@start', description: 'Deep description', founders: [{ id: 1001, name: 'Alice', startup_id: 42 }], created_at: '', updated_at: '' };
     api = new FakeApiClient({ '/startups/42': detail });
     service = new ExternalSyncService(api, startupRepo, investorRepo, partnerRepo, eventRepo, userRepo, newsRepo);
     const res = await service.syncStartupById(42);

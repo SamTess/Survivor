@@ -30,10 +30,10 @@ export default function ForgotPasswordPage() {
         setIsSuccess(true);
         setMessage(data.message || 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.');
       } else {
-        setError(data.error || 'Une erreur est survenue. Veuillez réessayer.');
+        setError(data.error || 'An error occurred. Please try again.');
       }
     } catch {
-      setError('Une erreur est survenue. Veuillez réessayer.');
+      setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

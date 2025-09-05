@@ -1,35 +1,35 @@
-# Configuration de sécurité pour EmailService
+# Security Configuration for EmailService
 
-## Résumé des modifications
+## Summary of Changes
 
-La vulnérabilité de sécurité liée à `rejectUnauthorized: false` a été corrigée en rendant ce paramètre configurable via la variable d'environnement `EMAIL_REJECT_UNAUTHORIZED`.
+The security vulnerability related to `rejectUnauthorized: false` has been fixed by making this parameter configurable via the `EMAIL_REJECT_UNAUTHORIZED` environment variable.
 
-### Changements apportés
+### Changes Made
 
-1. **Interface EmailConfig mise à jour** : Ajout de la propriété optionnelle `rejectUnauthorized`
-2. **Logique de sécurité améliorée** : La validation TLS est activée par défaut
-3. **Configuration via environnement** : Nouvelle variable `EMAIL_REJECT_UNAUTHORIZED`
-4. **Documentation mise à jour** : Guide de configuration sécurisée
+1. **Updated EmailConfig Interface**: Added optional `rejectUnauthorized` property
+2. **Enhanced Security Logic**: TLS validation is enabled by default
+3. **Environment Configuration**: New `EMAIL_REJECT_UNAUTHORIZED` variable
+4. **Updated Documentation**: Secure configuration guide
 
-### Configuration recommandée
+### Recommended Configuration
 
-**Production (sécurisé) :**
+**Production (secure):**
 ```env
-EMAIL_REJECT_UNAUTHORIZED=true  # ou simplement omettre cette ligne
+EMAIL_REJECT_UNAUTHORIZED=true  # or simply omit this line
 ```
 
-**Développement local avec certificats auto-signés :**
+**Local development with self-signed certificates:**
 ```env
-EMAIL_REJECT_UNAUTHORIZED=false  # uniquement si nécessaire
+EMAIL_REJECT_UNAUTHORIZED=false  # only if necessary
 ```
 
-### Comportement
+### Behavior
 
-- **Si non défini ou `true`** : Validation TLS activée (sécurisé)
-- **Si `false`** : Validation TLS désactivée (vulnérable, pour dev uniquement)
+- **If undefined or `true`**: TLS validation enabled (secure)
+- **If `false`**: TLS validation disabled (vulnerable, for dev only)
 
-### Sécurité
+### Security
 
-⚠️ **Important** : Ne jamais utiliser `EMAIL_REJECT_UNAUTHORIZED=false` en production car cela expose l'application aux attaques man-in-the-middle et à l'interception des communications email.
+⚠️ **Important**: Never use `EMAIL_REJECT_UNAUTHORIZED=false` in production as it exposes the application to man-in-the-middle attacks and email communication interception.
 
-La nouvelle implémentation suit les meilleures pratiques de sécurité en activant la validation TLS par défaut.
+The new implementation follows security best practices by enabling TLS validation by default.

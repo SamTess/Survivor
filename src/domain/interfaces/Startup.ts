@@ -26,6 +26,7 @@ export interface StartupDetailApiResponse {
     id: number;
     name: string;
     email: string;
+    description?: string;
     legal_status?: string;
     address?: string;
     phone?: string;
@@ -57,6 +58,7 @@ export interface StartupListApiResponse {
     id: number;
     name: string;
     email: string;
+    description?: string;
     phone?: string;
     address?: string;
     legal_status?: string;
