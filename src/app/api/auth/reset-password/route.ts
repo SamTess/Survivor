@@ -18,22 +18,22 @@ export async function POST(req: NextRequest) {
     const { token, password } = body || {};
 
     if (!token || !password) {
-      return NextResponse.json({ 
-        error: 'Token et mot de passe requis' 
+      return NextResponse.json({
+        error: 'Token and password are required'
       }, { status: 400 });
     }
 
     if (password.length < 8) {
-      return NextResponse.json({ 
-        error: 'Le mot de passe doit contenir au moins 8 caractères' 
+      return NextResponse.json({
+        error: 'Password must contain at least 8 characters'
       }, { status: 400 });
     }
 
     const { userId, valid } = await passwordResetService.validateResetToken(token);
 
     if (!valid) {
-      return NextResponse.json({ 
-        error: 'Token invalide ou expiré' 
+      return NextResponse.json({
+        error: 'Invalid or expired token'
       }, { status: 400 });
     }
 
@@ -46,14 +46,14 @@ export async function POST(req: NextRequest) {
 
     await passwordResetService.useResetToken(token);
 
-    return NextResponse.json({ 
-      message: 'Mot de passe mis à jour avec succès' 
+    return NextResponse.json({
+      message: 'Password updated successfully'
     });
 
   } catch (error) {
     console.error('Error during password reset:', error);
-    return NextResponse.json({ 
-      error: 'Erreur interne du serveur' 
+    return NextResponse.json({
+      error: 'Internal server error'
     }, { status: 500 });
   }
 }
@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
     const token = url.searchParams.get('token');
 
     if (!token) {
-      return NextResponse.json({ 
-        error: 'Token requis' 
+      return NextResponse.json({
+        error: 'Token is required'
       }, { status: 400 });
     }
 
@@ -74,9 +74,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ valid: result.valid });
 
   } catch (error) {
-    console.error('❌ Erreur lors de la validation du token:', error);
-    return NextResponse.json({ 
-      error: 'Erreur interne du serveur' 
+    console.error('❌ Error during token validation:', error);
+    return NextResponse.json({
+      error: 'Internal server error'
     }, { status: 500 });
   }
 }

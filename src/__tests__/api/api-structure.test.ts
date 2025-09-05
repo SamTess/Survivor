@@ -74,7 +74,7 @@ describe('API Routes Structure', () => {
     expect(successResponse).toHaveProperty('data');
     expect(successResponse.success).toBe(true);
 
-    // Vérifier la structure des réponses d'erreur
+    // Check error response structure
     expect(errorResponse).toHaveProperty('success');
     expect(errorResponse).toHaveProperty('error');
     expect(errorResponse.success).toBe(false);

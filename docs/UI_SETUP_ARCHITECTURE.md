@@ -1,31 +1,31 @@
 # Design System - Setup & Architecture
 
-> Architecture technique et configuration du design system
+> Technical architecture and design system configuration
 
-## 🏗️ Architecture Technique
+## 🏗️ Technical Architecture
 
-### Structure des fichiers
+### File Structure
 
 ```text
 src/
 ├── app/
-│   └── globals.css          ← Variables CSS + @theme inline
+│   └── globals.css          ← CSS Variables + @theme inline
 ├── components/
 │   └── ui/
-│       └── button.tsx        ← Composant exemple
-└── tailwind.config.ts       ← Configuration Tailwind
+│       └── button.tsx        ← Example component
+└── tailwind.config.ts       ← Tailwind configuration
 ```
 
-### Flow de génération CSS
+### CSS Generation Flow
 
 ```text
-Variables CSS (:root + .dark)
+CSS Variables (:root + .dark)
     ↓
-@theme inline (exposition à Tailwind)
+@theme inline (exposure to Tailwind)
     ↓
-Classes Tailwind générées automatiquement
+Automatically generated Tailwind classes
     ↓
-Utilisation dans composants
+Usage in components
 ```
 
 ## ⚙️ Configuration Tailwind
@@ -99,7 +99,7 @@ export default config;
 
 ```css
 :root {
-  /* Couleurs principales */
+  /* Main colors */
   --background: oklch(1 0 0);
   --foreground: oklch(0.205 0 0);
   --card: oklch(0.985 0 0);
@@ -115,7 +115,7 @@ export default config;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
   
-  /* Couleurs système */
+  /* System colors */
   --border: oklch(0.922 0 0);
   --input: oklch(0.985 0 0);
   --ring: oklch(0.646 0.222 280.116 / 0.5);
@@ -125,7 +125,7 @@ export default config;
 }
 ```
 
-### Variables mode sombre (.dark)
+### Dark mode variables (.dark)
 
 ```css
 .dark {
@@ -247,15 +247,15 @@ npm run build
 
 ### Inspecteur navigateur
 
-1. **Elements** → Rechercher la classe (ex: `bg-primary`)
-2. **Computed** → Vérifier la valeur finale CSS
-3. **Sources** → Vérifier que la variable CSS existe
+1. **Elements** → Search for the class (e.g., `bg-primary`)
+2. **Computed** → Check the final CSS value
+3. **Sources** → Check that the CSS variable exists
 
-## 🚀 Ajout de Nouvelles Couleurs
+## 🚀 Adding New Colors
 
-### Process complet
+### Complete process
 
-1. **Ajouter variable dans `:root` et `.dark`**
+1. **Add variable in `:root` and `.dark`**
 
    ```css
    :root {
@@ -269,7 +269,7 @@ npm run build
    }
    ```
 
-2. **Exposer dans `@theme inline`**
+2. **Expose in `@theme inline`**
 
    ```css
    @theme inline {
@@ -278,16 +278,16 @@ npm run build
    }
    ```
 
-3. **Utiliser dans composants**
+3. **Use in components**
 
    ```tsx
    <div className="bg-success text-success-foreground">
-     Message de succès
+     Success message
    </div>
    ```
 
 ---
 
-Cette documentation technique couvre tous les aspects de configuration et d'architecture du design system.
+This technical documentation covers all aspects of design system configuration and architecture.
 
-Dernière mise à jour : 4 septembre 2025
+Last updated: September 4, 2025

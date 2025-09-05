@@ -39,7 +39,7 @@ function ResetPasswordForm() {
         setError('Token invalide ou expiré');
       }
     } catch {
-      setError('Erreur lors de la validation du token');
+      setError('Error validating token');
     } finally {
       setCheckingToken(false);
     }
@@ -82,10 +82,10 @@ function ResetPasswordForm() {
           router.push('/login');
         }, 2000);
       } else {
-        setError(data.error || 'Une erreur est survenue');
+        setError(data.error || 'An error occurred');
       }
     } catch {
-      setError('Erreur de connexion au serveur');
+      setError('Server connection error');
     } finally {
       setLoading(false);
     }

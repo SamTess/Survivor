@@ -1,28 +1,16 @@
 import prisma from "./client";
 import { PartnerRepository } from "../../../domain/repositories/PartnerRepository";
 import { Partner } from "../../../domain/interfaces/Partner";
+import { Prisma } from "@prisma/client";
 
 export class PartnerRepositoryPrisma implements PartnerRepository {
-  private mapPrismaToPartner(prismaPartner: {
-    id: number;
-    partnership_type: string | null;
-    user: {
-      id: number;
-      name: string;
-      email: string;
-      legal_status: string | null;
-      address: string;
-      phone: string | null;
-      description: string | null;
-      created_at: Date;
-    };
-  }): Partner {
+  private mapPrismaToPartner(prismaPartner: Prisma.S_PARTNERGetPayload<{ include: { user: true } }>): Partner {
     return {
       id: prismaPartner.id,
       name: prismaPartner.user.name,
       email: prismaPartner.user.email,
       legal_status: prismaPartner.user.legal_status || undefined,
-      address: prismaPartner.user.address,
+      address: prismaPartner.user.address || undefined,
       phone: prismaPartner.user.phone || undefined,
       partnership_type: prismaPartner.partnership_type || undefined,
       description: prismaPartner.user.description || undefined,
@@ -32,28 +20,38 @@ export class PartnerRepositoryPrisma implements PartnerRepository {
   }
 
   async create(partner: Omit<Partner, 'id' | 'created_at' | 'updated_at'>): Promise<Partner> {
-    // First create or find the user
-    const user = await prisma.s_USER.create({
-      data: {
-        name: partner.name,
-        email: partner.email,
-        role: 'partner',
-        password_hash: '',
-        legal_status: partner.legal_status || null,
-        address: partner.address || '',
-        phone: partner.phone || null,
-        description: partner.description || null,
-      },
+    // Check if user already exists
+    let user = await prisma.s_USER.findFirst({
+      where: { email: partner.email }
     });
+
+    if (!user) {
+      user = await prisma.s_USER.create({
+        data: {
+          name: partner.name,
+          email: partner.email,
+          role: 'partner',
+          password_hash: '',
+          legal_status: partner.legal_status || null,
+          address: partner.address || '',
+          phone: partner.phone || null,
+          description: partner.description || null,
+        },
+      });
+    }
 
     const created = await prisma.s_PARTNER.create({
       data: {
         user_id: user.id,
+        name: partner.name,
+        legal_status: partner.legal_status || "",
+        address: partner.address || "",
+        email: partner.email,
+        phone: partner.phone || "",
+        description: partner.description || "",
         partnership_type: partner.partnership_type || null,
       },
-      include: {
-        user: true,
-      },
+      include: { user: true },
     });
 
     return this.mapPrismaToPartner(created);

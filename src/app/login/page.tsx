@@ -42,18 +42,18 @@ export default function LoginPage() {
       router.refresh();
     } else if (result.error) {
       if (result.error.requiresPasswordReset) {
-        setCustomError(result.error.message || 'Un email de création de mot de passe vous a été envoyé. Veuillez vérifier votre boîte mail.');
+        setCustomError(result.error.message || 'A password reset has just been sent to you. Please check your inbox.');
       } else {
-        setCustomError(result.error.message || 'Email ou mot de passe incorrect');
+        setCustomError(result.error.message || 'Incorrect email or password.');
       }
     }
   }
 
   return (
-    <div className="h-screen pt-28 overflow-y-auto flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
+    <div className="h-screen pt-44 overflow-y-auto flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8 animate-fade-in-up">
+        <div className="text-center mb-4 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 shadow-lg overflow-hidden">
             <Image
               src="/logo.png"
@@ -63,8 +63,8 @@ export default function LoginPage() {
               className="object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Bon retour !</h1>
-          <p className="text-gray-600">Connectez-vous à votre compte Jeb</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h1>
+          <p className="text-gray-600">Sign in to your Jeb account</p>
         </div>
 
         {/* Login Form */}
@@ -98,7 +98,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 transition-all duration-200"
-                  placeholder="votre@email.com"
+                  placeholder="your@email.com"
                   required
                 />
               </div>
@@ -107,7 +107,7 @@ export default function LoginPage() {
             {/* Password Field */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
+                Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -142,7 +142,7 @@ export default function LoginPage() {
                 href="/auth/forgot-password"
                 className="text-sm text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
               >
-                Mot de passe oublié ?
+                Forgot password?
               </Link>
             </div>
 
@@ -155,11 +155,11 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Connexion...</span>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
-                  <span>Se connecter</span>
+                  <span>Sign in</span>
                   <FiArrowRight className="h-5 w-5" />
                 </>
               )}
@@ -169,19 +169,19 @@ export default function LoginPage() {
           {/* Divider */}
           <div className="my-8 flex items-center">
             <div className="flex-1 border-t border-gray-200"></div>
-            <span className="px-4 text-sm text-gray-500 bg-white">ou</span>
+            <span className="px-4 text-sm text-gray-500 bg-white">or</span>
             <div className="flex-1 border-t border-gray-200"></div>
           </div>
 
           {/* Sign up link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Pas encore de compte ?{' '}
+              Not registered yet ?{' '}
               <Link
                 href="/signup"
                 className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
               >
-                Créer un compte
+                Create an account
               </Link>
             </p>
           </div>
@@ -189,7 +189,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500 animate-fade-in-up">
-          <p>&copy; 2025 Jeb Incubator. Tous droits réservés.</p>
+          <p>&copy; 2025 Jeb Incubator. All rights reserved.</p>
         </div>
       </div>
     </div>

@@ -39,12 +39,12 @@ export default function SignupPage() {
     setValidationError(null);
 
     if (!isPasswordValid) {
-      setValidationError('Le mot de passe ne respecte pas tous les critères requis.');
+      setValidationError('The password do not check all requierments.');
       return;
     }
 
     if (!doPasswordsMatch) {
-      setValidationError('Les mots de passe ne correspondent pas.');
+      setValidationError('The passwords don\'t match.');
       return;
     }
 
@@ -58,10 +58,10 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="h-screen pt-66 flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 px-4 py-8 overflow-y-auto">
+    <div className="h-screen pt-82 flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 px-4 py-8 overflow-y-auto">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8 animate-fade-in-up">
+        <div className="text-center mb-4 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 shadow-lg overflow-hidden">
             <Image
               src="/logo.png"
@@ -71,8 +71,8 @@ export default function SignupPage() {
               className="object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Rejoignez Jeb</h1>
-          <p className="text-gray-600">Créez votre compte et commencez votre aventure</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Jeb</h1>
+          <p className="text-gray-600">Create your account and start your journey</p>
         </div>
 
         {/* Signup Form */}
@@ -94,7 +94,7 @@ export default function SignupPage() {
             {/* Name Field */}
             <div className="space-y-2">
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Nom complet
+                Full name
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -127,7 +127,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200"
-                  placeholder="votre@email.com"
+                  placeholder="your@email.com"
                   required
                 />
               </div>
@@ -136,7 +136,7 @@ export default function SignupPage() {
             {/* Password Field */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
+                Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -188,7 +188,7 @@ export default function SignupPage() {
             {/* Confirm Password Field */}
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirmer le mot de passe
+                Confirm password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -223,12 +223,12 @@ export default function SignupPage() {
               </div>
 
               {confirmPassword && !doPasswordsMatch && (
-                <p className="text-sm text-red-600">Les mots de passe ne correspondent pas</p>
+                <p className="text-sm text-red-600">The passwords don't match</p>
               )}
               {confirmPassword && doPasswordsMatch && (
                 <p className="text-sm text-green-600 flex items-center">
                   <FiCheck className="w-4 h-4 mr-1" />
-                  Les mots de passe correspondent
+                  Passwords are matching
                 </p>
               )}
             </div>
@@ -242,11 +242,11 @@ export default function SignupPage() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Création...</span>
+                  <span>Creation...</span>
                 </>
               ) : (
                 <>
-                  <span>Créer mon compte</span>
+                  <span>Create my account</span>
                   <FiArrowRight className="h-5 w-5" />
                 </>
               )}
@@ -263,12 +263,12 @@ export default function SignupPage() {
           {/* Login link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Déjà un compte ?{' '}
+              Already have an account ?{' '}
               <Link
                 href="/login"
                 className="font-semibold text-purple-600 hover:text-purple-500 transition-colors duration-200"
               >
-                Se connecter
+                Connect
               </Link>
             </p>
           </div>
@@ -276,7 +276,7 @@ export default function SignupPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-sm text-gray-500 animate-fade-in-up">
-          <p>&copy; 2025 Jeb Incubator. Tous droits réservés.</p>
+          <p>&copy; 2025 Jeb Incubator. All rights reserved.</p>
         </div>
       </div>
     </div>

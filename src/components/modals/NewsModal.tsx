@@ -5,6 +5,7 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaTimes, FaTag } from 'react-icons/fa';
 import { formatDate } from '@/utils/dateUtils';
 import { getNewsCategoryColor } from '@/utils/styleUtils';
 import { NewsDetailApiResponse } from '@/domain/interfaces/News';
+import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 interface NewsModalProps {
   isOpen: boolean;
@@ -82,9 +83,16 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
 
               {/* Article Content */}
               <div className="prose prose-lg max-w-none">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                  {newsItem.description || 'No detailed description available for this news item.'}
-                </p>
+                {newsItem.description ? (
+                  <MarkdownRenderer 
+                    content={newsItem.description}
+                    compact={false}
+                  />
+                ) : (
+                  <p className="text-gray-700 leading-relaxed">
+                    No detailed description available for this news item.
+                  </p>
+                )}
               </div>
 
               {/* Footer */}

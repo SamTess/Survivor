@@ -25,13 +25,13 @@ type ProjectDetail = {
 type ProjectFounder = {
   id: number;
   startup_id: number;
-  user_id: number;
+  user_id: number | null;
   user: {
     id: number;
     name: string;
     email: string;
     password_hash: string;
-    address: string;
+    address: string | null;
     phone: string | null;
     legal_status: string | null;
     description: string | null;
@@ -39,7 +39,7 @@ type ProjectFounder = {
     created_at: Date;
     role: string;
     followersCount: number;
-  };
+  } | null;
 };
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
@@ -129,13 +129,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   project_status: detail.project_status || undefined,
                   needs: detail.needs || undefined,
                 })),
-                founders: (project.founders || []).map((founder: ProjectFounder) => ({
-                  user: {
-                    name: founder.user.name,
-                    email: founder.user.email,
-                    phone: founder.user.phone || undefined,
-                  },
-                })),
+                founders: (project.founders || [])
+                  .filter((founder: ProjectFounder) => founder.user !== null)
+                  .map((founder: ProjectFounder) => ({
+                    user: {
+                      name: founder.user!.name,
+                      email: founder.user!.email,
+                      phone: founder.user!.phone || undefined,
+                    },
+                  })),
               }}
               className="text-lg px-6 py-3"
             />
@@ -171,13 +173,15 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-gray-800 mb-2">Founders</h2>
             <div className="space-y-2">
-              {(project.founders || []).map((founder: ProjectFounder) => (
-                <div key={founder.id} className="bg-gray-100 p-3 rounded">
-                  <p className="font-medium">{founder.user.name}</p>
-                  <p className="text-sm text-gray-600">{founder.user.email}</p>
-                  {founder.user.phone && <p className="text-sm text-gray-600">{founder.user.phone}</p>}
-                </div>
-              ))}
+              {(project.founders || [])
+                .filter((founder: ProjectFounder) => founder.user)
+                .map((founder: ProjectFounder) => (
+                  <div key={founder.id} className="bg-gray-100 p-3 rounded">
+                    <p className="font-medium">{founder.user!.name}</p>
+                    <p className="text-sm text-gray-600">{founder.user!.email}</p>
+                    {founder.user!.phone && <p className="text-sm text-gray-600">{founder.user!.phone}</p>}
+                  </div>
+                ))}
               {(!project.founders || project.founders.length === 0) && (
                 <p className="text-gray-500">No founders information available.</p>
               )}

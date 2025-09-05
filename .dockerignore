@@ -64,3 +64,5 @@ temp/
 .nyc_output
 .env.example
 example_env
+terraform/
+ansible/

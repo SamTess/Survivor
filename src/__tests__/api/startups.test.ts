@@ -82,7 +82,7 @@ describe('Startups API Endpoints', () => {
       expect(mockStartupService.getStartupsPaginated).toHaveBeenCalledWith(2,5);
     });
 
-    it('erreur service', async () => {
+    it('service error', async () => {
       mockStartupService.getAllStartups.mockRejectedValue(new Error('db fail'));
   const { GET } = await import('../../app/api/startups/route');
       const req = new NextRequest('http://localhost:3000/api/startups');

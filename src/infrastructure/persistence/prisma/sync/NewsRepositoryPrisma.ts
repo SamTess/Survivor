@@ -7,11 +7,12 @@ export class NewsRepositoryPrisma implements NewsRepository {
     if (item.startup_id == null) {
       return;
     }
+  const incomingDescription = (item as NewsDetailApiResponse).description;
     await prisma.s_NEWS.upsert({
       where: { id: item.id },
       update: {
         title: item.title,
-        description: (item as NewsDetailApiResponse).description,
+    ...(incomingDescription !== undefined ? { description: incomingDescription } : {}),
         news_date: item.news_date ? new Date(item.news_date) : null,
         location: item.location,
         category: item.category,
@@ -20,7 +21,7 @@ export class NewsRepositoryPrisma implements NewsRepository {
       create: {
         id: item.id,
         title: item.title,
-        description: (item as NewsDetailApiResponse).description,
+        description: incomingDescription ?? null,
         news_date: item.news_date ? new Date(item.news_date) : null,
         location: item.location,
         category: item.category,

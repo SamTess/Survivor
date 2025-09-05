@@ -27,10 +27,11 @@ export async function POST(req: NextRequest) {
       else if (r === "investors") { await externalSyncService.syncInvestors(limit); executed.push("investors"); }
       else if (r === "partners") { await externalSyncService.syncPartners(limit); executed.push("partners"); }
       else if (r === "events") { await externalSyncService.syncEvents(limit); executed.push("events"); }
-  else if (r === "users") { await externalSyncService.syncUsers(limit); executed.push("users"); }
-  else if (r === "news") { await externalSyncService.syncNews(limit); executed.push("news"); }
+      else if (r === "users") { await externalSyncService.syncUsers(limit); executed.push("users"); }
+      else if (r === "news") { await externalSyncService.syncNews(limit); executed.push("news"); }
     }
 
+    externalSyncService.reconcileFoundersMissingUser().catch(() => { /* ignore errors */ });
     const ms = Date.now() - startedAt;
     return NextResponse.json({ ok: true, resources: executed, durationMs: ms });
   } catch (e: unknown) {
