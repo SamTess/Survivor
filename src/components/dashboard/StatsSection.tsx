@@ -59,7 +59,7 @@ export default function StatsSection() {
   const totalFunding = stats.fundingHistory.reduce((s, f) => s + f.amount, 0);
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-6 overflow-y-auto">
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm animate-card transition-all duration-300">
         <h2 className="text-lg font-semibold text-foreground">Statistics</h2>
         <p className="text-sm text-muted-foreground">All the stats you need to know about your project.</p>

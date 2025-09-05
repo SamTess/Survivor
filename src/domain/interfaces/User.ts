@@ -18,7 +18,7 @@ export interface UserApiResponse {
     id: number;
     email: string;
     name: string;
-    role: string;
+    role: 'admin' | 'founder' | 'investor';
     founder_id?: number;
     investor_id?: number;
     created_at: string;
