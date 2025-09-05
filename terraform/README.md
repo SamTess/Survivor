@@ -13,7 +13,7 @@ The main Terraform configuration file that defines:
 - **Project**: DigitalOcean project named "Survivor"
 - **Droplets**: Conditional creation of staging and production VMs
   - Ubuntu 22.04 LTS
-  - 1 vCPU, 1GB RAM (s-1vcpu-1gb)
+  - 2 vCPU, 4GB RAM (s-2vcpu-4gb)
   - Frankfurt region (fra1)
 - **Firewall Rules**: Security groups allowing HTTP(80), HTTPS(443), SSH(22), and custom ports (3000, 5432, 8080, 19999)
 - **Ansible Integration**: Auto-generates `../ansible/hosts.ini` inventory file
