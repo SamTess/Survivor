@@ -6,18 +6,18 @@ export class FounderRepositoryPrisma implements FounderRepository {
   private mapPrismaToFounder(prismaFounder: {
     id: number;
     startup_id: number;
-    user_id: number;
+    user_id: number | null;
     user: {
       name: string;
       created_at: Date;
-    };
+    } | null;
   }): Founder {
     return {
       id: prismaFounder.id,
-      name: prismaFounder.user.name,
+      name: prismaFounder.user?.name || '',
       startup_id: prismaFounder.startup_id,
-      created_at: prismaFounder.user.created_at,
-      updated_at: prismaFounder.user.created_at,
+      created_at: prismaFounder.user?.created_at || new Date(0),
+      updated_at: prismaFounder.user?.created_at || new Date(0),
     };
   }
 
@@ -44,7 +44,7 @@ export class FounderRepositoryPrisma implements FounderRepository {
   }
 
   async getById(id: number): Promise<Founder | null> {
-    const founder = await prisma.s_FOUNDER.findUnique({
+  const founder = await prisma.s_FOUNDER.findUnique({
       where: { id },
       include: {
         user: true,
@@ -56,7 +56,7 @@ export class FounderRepositoryPrisma implements FounderRepository {
   }
 
   async getAll(): Promise<Founder[]> {
-    const founders = await prisma.s_FOUNDER.findMany({
+  const founders = await prisma.s_FOUNDER.findMany({
       include: {
         user: true,
       },
@@ -67,7 +67,7 @@ export class FounderRepositoryPrisma implements FounderRepository {
   }
 
   async getByStartupId(startupId: number): Promise<Founder[]> {
-    const founders = await prisma.s_FOUNDER.findMany({
+  const founders = await prisma.s_FOUNDER.findMany({
       where: { startup_id: startupId },
       include: {
         user: true,
@@ -79,7 +79,7 @@ export class FounderRepositoryPrisma implements FounderRepository {
   }
 
   async getByUserId(userId: number): Promise<Founder[]> {
-    const founders = await prisma.s_FOUNDER.findMany({
+  const founders = await prisma.s_FOUNDER.findMany({
       where: { user_id: userId },
       include: {
         user: true,

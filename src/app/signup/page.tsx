@@ -53,10 +53,10 @@ export default function SignupPage() {
         router.refresh();
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data.error || 'Une erreur est survenue lors de la création du compte');
+        setError(data.error || 'An error occurred while creating the account');
       }
     } catch {
-      setError('Une erreur est survenue. Veuillez réessayer.');
+      setError('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }

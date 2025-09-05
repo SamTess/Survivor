@@ -17,6 +17,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         legal_status: nz(item.legal_status),
         sector: nz(item.sector),
         maturity: nz(item.maturity),
+            ...(item.description !== undefined ? { description: item.description } : {}),
       },
       create: {
         id: item.id,
@@ -27,7 +28,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         legal_status: nz(item.legal_status),
         sector: nz(item.sector),
         maturity: nz(item.maturity),
-        description: "",
+            description: item.description ?? "",
       },
     });
   }
@@ -44,6 +45,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
           legal_status: nz(item.legal_status),
           sector: nz(item.sector),
           maturity: nz(item.maturity),
+              ...(item.description !== undefined ? { description: item.description } : {}),
         },
         create: {
           id: item.id,
@@ -54,7 +56,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
           legal_status: nz(item.legal_status),
           sector: nz(item.sector),
           maturity: nz(item.maturity),
-          description: "",
+              description: item.description ?? "",
         },
       });
       const existingDetails = await tx.s_STARTUP_DETAIL.findMany({ where: { startup_id: item.id } });
@@ -62,7 +64,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         await tx.s_STARTUP_DETAIL.create({
           data: {
             startup_id: item.id,
-            description: "",
+            description: item.description ?? "",
             website_url: item.website_url,
             social_media_url: item.social_media_url,
             project_status: item.project_status,
@@ -73,6 +75,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
         await tx.s_STARTUP_DETAIL.updateMany({
           where: { startup_id: item.id },
           data: {
+            ...(item.description !== undefined ? { description: item.description } : {}),
             website_url: item.website_url,
             social_media_url: item.social_media_url,
             project_status: item.project_status,
@@ -87,16 +90,10 @@ export class StartupRepositoryPrisma implements StartupRepository {
     if (!founders?.length) return;
   await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       for (const f of founders) {
-        const syntheticEmail = `founder-${f.id}@external.local`;
-        const user = await tx.s_USER.upsert({
-          where: { id: f.id },
-            update: { name: f.name, email: syntheticEmail, role: "FOUNDER", address: "", password_hash: "", },
-            create: { id: f.id, name: f.name, email: syntheticEmail, role: "FOUNDER", address: "", password_hash: "" },
-        });
         await tx.s_FOUNDER.upsert({
           where: { id: f.id },
-          update: { startup_id: startupId, user_id: user.id },
-          create: { id: f.id, startup_id: startupId, user_id: user.id },
+          update: { startup_id: startupId },
+          create: { id: f.id, startup_id: startupId, user_id: null },
         });
       }
     });

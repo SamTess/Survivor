@@ -140,14 +140,14 @@ jobs:
         run: |
           cd Docker
           if ! grep -q '^DB_USER=postgres' .env; then
-            echo "Avertissement: DB_USER n'est pas 'postgres'. Vérifiez que l'utilisateur existe dans l'image Postgres de test."
+            echo "Warning: DB_USER is not 'postgres'. Check that the user exists in the test Postgres image."
           fi
           if grep -q '^DB_USER=root' .env; then
-            echo "Erreur: DB_USER=root provoquera l'échec (role root inexistant)." >&2
+            echo "Error: DB_USER=root will cause failure (root role does not exist)." >&2
             exit 1
           fi
           if ! grep -q '^DATABASE_URL=postgresql://' .env; then
-            echo "DATABASE_URL incorrect ou manquant" >&2
+            echo "DATABASE_URL incorrect or missing" >&2
             exit 1
           fi
           echo "Validation variables: OK"
@@ -225,13 +225,13 @@ jobs:
           set -e
           HAS_MIGRATIONS=$(docker-compose -f docker-compose.ci.yml exec -T web sh -c 'ls -1 prisma/migrations 2>/dev/null | grep -v "^$" || true' | wc -l | tr -d '[:space:]')
           if [ "$HAS_MIGRATIONS" -gt 0 ]; then
-            echo "Migrations détectées ($HAS_MIGRATIONS dossiers) -> prisma migrate deploy"
+            echo "Migrations detected ($HAS_MIGRATIONS folders) -> prisma migrate deploy"
             docker-compose -f docker-compose.ci.yml exec -T web npx prisma migrate deploy
           else
-            echo "Aucune migration versionnée détectée -> prisma db push"
+            echo "No versioned migrations detected -> prisma db push"
             docker-compose -f docker-compose.ci.yml exec -T web npx prisma db push
           fi
-          echo "Etat des tables après synchronisation:" \
+          echo "Table status after synchronization:" \
             && docker-compose -f docker-compose.ci.yml exec -T db psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"
 
       - name: Test database connection and schema

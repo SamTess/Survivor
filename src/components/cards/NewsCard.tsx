@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { FaCalendarAlt } from 'react-icons/fa';
 import { formatDate } from '@/utils/dateUtils';
+import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
 
 interface NewsCardProps {
   id: number;
@@ -50,9 +51,19 @@ export default function NewsCard({
               {title}
             </h3>
 
-            <p className="text-muted-foreground text-sm line-clamp-2">
-              {description || 'No description available'}
-            </p>
+            <div className="text-muted-foreground text-sm overflow-hidden">
+              {description ? (
+                <div className="line-clamp-2">
+                  <MarkdownRenderer 
+                    content={description} 
+                    compact={true} 
+                    className="[&>*]:my-0 [&_p]:my-0 [&_p]:leading-tight" 
+                  />
+                </div>
+              ) : (
+                'No description available'
+              )}
+            </div>
           </div>
 
           {/* Date - Discrete */}

@@ -1,53 +1,53 @@
-# Design System - Guide Complet
+# Design System - Complete Guide
 
-> Documentation complète du design system Survivor pour l'équipe de développement
+> Complete documentation of the Survivor design system for the development team
 
-## 🎯 Vue d'Ensemble
+## 🎯 Overview
 
-Notre design system utilise **Tailwind CSS v4** avec des variables CSS pour une gestion centralisée des couleurs et du thème sombre automatique.
+Our design system uses **Tailwind CSS v4** with CSS variables for centralized color management and automatic dark theme.
 
 ### Architecture
 
 ```text
 src/
-├── app/globals.css        ← Source unique des couleurs
-└── tailwind.config.ts     ← Configuration radius
+├── app/globals.css        ← Single source of colors
+└── tailwind.config.ts     ← Radius configuration
 ```
 
-## 🎨 Système de Couleurs
+## 🎨 Color System
 
-### Comment ça fonctionne
+### How it works
 
-1. **Variables CSS brutes**
+1. **Raw CSS variables**
 
    ```css
    /* src/app/globals.css */
    :root {
-     --primary: oklch(0.646 0.222 280.116);     /* Couleur brute */
+     --primary: oklch(0.646 0.222 280.116);     /* Raw color */
    }
 
    .dark {
-     --primary: oklch(0.985 0 0);               /* Version sombre */
+     --primary: oklch(0.985 0 0);               /* Dark version */
    }
    ```
 
-2. **Exposition à Tailwind**
+2. **Exposure to Tailwind**
 
    ```css
    /* src/app/globals.css */
    @theme inline {
-     --color-primary: var(--primary);          /* Tailwind lit cette ligne */
+     --color-primary: var(--primary);          /* Tailwind reads this line */
    }
    ```
 
-3. **Classes générées automatiquement**
+3. **Automatically generated classes**
 
-   Tailwind génère automatiquement :
+   Tailwind automatically generates:
    - `bg-primary` → `background-color: var(--color-primary)`
    - `text-primary` → `color: var(--color-primary)`
    - `border-primary` → `border-color: var(--color-primary)`
 
-### Couleurs disponibles
+### Available colors
 
 | Variable CSS | Classes Générées | Usage |
 |-------------|------------------|-------|
@@ -57,37 +57,37 @@ src/
 | `--secondary` | `bg-secondary`, `text-secondary` | Actions secondaires |
 | `--card` | `bg-card` | Arrière-plan des cartes |
 | `--card-foreground` | `text-card-foreground` | Texte sur cartes |
-| `--muted` | `bg-muted` | Éléments discrets |
-| `--muted-foreground` | `text-muted-foreground` | Texte secondaire |
-| `--accent` | `bg-accent` | Éléments d'accentuation |
-| `--destructive` | `bg-destructive` | Actions destructives, erreurs |
-| `--border` | `border-border` | Bordures par défaut |
-| `--input` | `bg-input` | Fond des champs |
-| `--ring` | `ring-ring` | Indicateur de focus |
+| `--muted` | `bg-muted` | Discrete elements |
+| `--muted-foreground` | `text-muted-foreground` | Secondary text |
+| `--accent` | `bg-accent` | Accent elements |
+| `--destructive` | `bg-destructive` | Destructive actions, errors |
+| `--border` | `border-border` | Default borders |
+| `--input` | `bg-input` | Input backgrounds |
+| `--ring` | `ring-ring` | Focus indicator |
 
-## 💻 Utilisation dans le Code
+## 💻 Code Usage
 
-### ✅ Utilisation correcte
+### ✅ Correct usage
 
 ```tsx
-// Bouton principal
+// Primary button
 <button className="bg-primary text-primary-foreground px-4 py-2 rounded-lg">
-  Action Principale
+  Primary Action
 </button>
 
-// Carte
+// Card
 <div className="bg-card text-card-foreground border border-border rounded-lg p-4">
-  <h3 className="text-foreground">Titre</h3>
+  <h3 className="text-foreground">Title</h3>
   <p className="text-muted-foreground">Description</p>
 </div>
 
-// État destructif
+// Destructive state
 <div className="bg-destructive/10 text-destructive border border-destructive/20 p-3">
-  Message d'erreur
+  Error message
 </div>
 ```
 
-### ❌ À éviter
+### ❌ To avoid
 
 ```tsx
 // Couleurs hardcodées
@@ -100,53 +100,53 @@ src/
 <div style={{backgroundColor: 'var(--primary)'}}>
 ```
 
-## 🌙 Thème Sombre
+## 🌙 Dark Theme
 
 ### Activation
 
-Le thème sombre s'active automatiquement avec la classe `dark` sur `<html>` ou `<body>`.
+Dark theme is automatically activated with the `dark` class on `<html>` or `<body>`.
 
 ```tsx
-// Dans layout.tsx ou un composant parent
+// In layout.tsx or a parent component
 <html className={isDark ? 'dark' : ''}>
 ```
 
-### Fonctionnement
+### How it works
 
-1. **Mode clair** → Variables de `:root`
-2. **Mode sombre** → Variables de `.dark` (remplacent automatiquement)
-3. **Aucun code supplémentaire** dans les composants !
+1. **Light mode** → `:root` variables
+2. **Dark mode** → `.dark` variables (automatically replace)
+3. **No additional code** in components!
 
-## 🔧 Modifier une Couleur
+## 🔧 Modifying a Color
 
-### Workflow simple
+### Simple workflow
 
-1. **Modifier `src/app/globals.css` UNIQUEMENT**
+1. **Modify `src/app/globals.css` ONLY**
 
    ```css
    :root {
-     --primary: oklch(0.700 0.200 250);  /* Nouvelle couleur claire */
+     --primary: oklch(0.700 0.200 250);  /* New light color */
    }
 
    .dark {
-     --primary: oklch(0.800 0.150 250);  /* Nouvelle couleur sombre */
+     --primary: oklch(0.800 0.150 250);  /* New dark color */
    }
    ```
 
-2. **C'est tout !**
-   - Toutes les classes `bg-primary`, `text-primary` etc. sont mises à jour automatiquement
-   - Le thème sombre fonctionne automatiquement
-   - Aucun autre fichier à modifier
+2. **That's it!**
+   - All `bg-primary`, `text-primary` etc. classes are automatically updated
+   - Dark theme works automatically
+   - No other files to modify
 
-## 🎯 Cas d'Usage Fréquents
+## 🎯 Common Use Cases
 
-### Boutons
+### Buttons
 
 ```tsx
-// Bouton principal
+// Primary button
 <button className="bg-primary text-primary-foreground hover:bg-primary/90">
 
-// Bouton secondaire  
+// Secondary button  
 <button className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
 
 // Bouton destructif
@@ -169,55 +169,55 @@ Le thème sombre s'active automatiquement avec la classe `dark` sur `<html>` ou 
 <div className="bg-muted/50 text-muted-foreground">
 ```
 
-### États et Feedback
+### States and Feedback
 
 ```tsx
-// Erreur
+// Error
 <div className="bg-destructive/10 text-destructive border border-destructive/20">
 
-// Success (à définir si besoin)
+// Success (to define if needed)
 <div className="bg-green-50 text-green-800 border border-green-200">
 
-// Warning (à définir si besoin)
+// Warning (to define if needed)
 <div className="bg-yellow-50 text-yellow-800 border border-yellow-200">
 ```
 
-## 🎨 Animations Disponibles
+## 🎨 Available Animations
 
-### Classes d'animation
+### Animation classes
 
 ```tsx
-// Apparition depuis le bas
+// Fade in from bottom
 <div className="animate-fade-in-up">
 
-// Apparition depuis le haut
+// Fade in from top
 <div className="animate-fade-down">
 
-// Apparition avec scale
+// Fade in with scale
 <div className="animate-card">
 
-// Pour graphiques SVG
+// For SVG graphics
 <path className="animate-draw">
 
-// Pour barres de graphique
+// For chart bars
 <div className="animate-bar">
 ```
 
-## 🔧 Utilitaires CSS
+## 🔧 CSS Utilities
 
-### Masquer la Scrollbar
+### Hide Scrollbar
 
 ```tsx
 <div className="scrollbar-none overflow-auto">
-  Contenu avec scroll invisible
+  Content with invisible scroll
 </div>
 ```
 
-## 🚨 Dépannage
+## 🚨 Troubleshooting
 
-### Couleur qui ne s'affiche pas ?
+### Color not displaying?
 
-1. **Vérifier** que la variable existe dans `:root` et `.dark`
+1. **Check** that the variable exists in `:root` and `.dark`
 2. **Vérifier** que la variable est exposée dans `@theme inline`
 3. **Redémarrer** le serveur de dev (`npm run dev`)
 
@@ -228,25 +228,25 @@ Le thème sombre s'active automatiquement avec la classe `dark` sur `<html>` ou 
 
 ### Thème sombre ne fonctionne pas ?
 
-1. **Vérifier** que la classe `dark` est bien appliquée sur `<html>`
-2. **Vérifier** que les variables sont définies dans `.dark {}`
+1. **Check** that the `dark` class is properly applied on `<html>`
+2. **Check** that variables are defined in `.dark {}`
 
-## 📝 Checklist pour Nouveaux Composants
+## 📝 Checklist for New Components
 
-- [ ] Utiliser `bg-background` et `text-foreground` comme base
-- [ ] Utiliser `bg-card` et `text-card-foreground` pour les cartes
-- [ ] Utiliser `border-border` pour les bordures
-- [ ] Tester en mode clair ET sombre
-- [ ] Éviter les couleurs hardcodées
-- [ ] Utiliser les animations appropriées (`animate-*`)
+- [ ] Use `bg-background` and `text-foreground` as base
+- [ ] Use `bg-card` and `text-card-foreground` for cards
+- [ ] Use `border-border` for borders
+- [ ] Test in light AND dark mode
+- [ ] Avoid hardcoded colors
+- [ ] Use appropriate animations (`animate-*`)
 
-## 🔗 Liens Utiles
+## 🔗 Useful Links
 
-- [OKLCH Color Picker](https://oklch.com/) - Pour créer de nouvelles couleurs
-- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) - Vérifier l'accessibilité
+- [OKLCH Color Picker](https://oklch.com/) - To create new colors
+- [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/) - Check accessibility
 
 ---
 
-**Principe fondamental** : Une couleur = une variable CSS = multiples classes Tailwind générées automatiquement !
+**Core principle**: One color = one CSS variable = multiple automatically generated Tailwind classes!
 
-Dernière mise à jour : 4 septembre 2025
+Last updated: September 4, 2025

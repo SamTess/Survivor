@@ -8,7 +8,7 @@ export class UserRepositoryPrisma implements UserRepository {
     name: string;
     email: string;
     role: string;
-    address: string;
+    address: string | null;
     phone: string | null;
     legal_status: string | null;
     description: string | null;
@@ -22,10 +22,10 @@ export class UserRepositoryPrisma implements UserRepository {
       email: prismaUser.email,
       name: prismaUser.name,
       role: prismaUser.role,
-      address: prismaUser.address,
-      phone: prismaUser.phone,
-      legal_status: prismaUser.legal_status,
-      description: prismaUser.description,
+      address: prismaUser.address || undefined,
+      phone: prismaUser.phone || undefined,
+      legal_status: prismaUser.legal_status || undefined,
+      description: prismaUser.description || undefined,
       founder_id: prismaUser.founders?.[0]?.id,
       investor_id: prismaUser.investors?.[0]?.id,
       created_at: prismaUser.created_at,
@@ -34,16 +34,25 @@ export class UserRepositoryPrisma implements UserRepository {
   }
 
   async create(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
+    // Check if user already exists
+    const existingUser = await prisma.s_USER.findFirst({
+      where: { email: user.email }
+    });
+
+    if (existingUser) {
+      throw new Error(`User with email ${user.email} already exists`);
+    }
+
     const created = await prisma.s_USER.create({
       data: {
         name: user.name,
         email: user.email,
         role: user.role,
         password_hash: '',
-        address: user.address,
-        phone: user.phone ?? null,
-        legal_status: user.legal_status ?? null,
-        description: user.description ?? null,
+  address: user.address || '',
+  phone: user.phone ?? null,
+  legal_status: user.legal_status ?? null,
+  description: user.description ?? null,
       },
       include: {
         founders: true,
@@ -246,7 +255,6 @@ export class UserRepositoryPrisma implements UserRepository {
     }
   }
 
-  // Legacy method for backward compatibility
   async save(user: { id: number; name: string; email: string }): Promise<void> {
     await prisma.s_USER.update({
       where: { id: user.id },

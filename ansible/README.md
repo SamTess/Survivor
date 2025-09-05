@@ -26,7 +26,7 @@ Main Ansible playbook with three plays:
    - Runs on port 8080
    - Tags: `deploy`, `production`
 
-#### `config.conf`
+#### `config.yml`
 Configuration file containing:
 - Repository settings (URL, branches)
 - Application settings (Node.js version, directories)
