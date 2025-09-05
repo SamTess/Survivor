@@ -1,12 +1,13 @@
 "use client";
 import React from 'react';
 import { useAuth } from "@/context/AuthContext";
+import { UserRole } from "@/domain/interfaces";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
   requireAuth?: boolean;
-  requiredRoles?: string[];
+  requiredRoles?: UserRole[];
   requiredPermissions?: string[];
 }
 
@@ -33,7 +34,7 @@ export function ProtectedRoute({
   }
 
   // Check role requirements
-  if (requiredRoles.length > 0 && (!user || !hasRole(requiredRoles as any))) {
+  if (requiredRoles.length > 0 && (!user || !hasRole(requiredRoles))) {
     return <>{fallback}</>;
   }
 
@@ -47,7 +48,7 @@ export function ProtectedRoute({
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  roles: string | string[];
+  roles: UserRole | UserRole[];
   fallback?: React.ReactNode;
 }
 
@@ -57,7 +58,7 @@ interface RoleGuardProps {
 export function RoleGuard({ children, roles, fallback = null }: RoleGuardProps) {
   const { hasRole } = useAuth();
 
-  if (!hasRole(roles as any)) {
+  if (!hasRole(roles)) {
     return <>{fallback}</>;
   }
 
@@ -87,14 +88,14 @@ export function PermissionGuard({ children, permissions, fallback = null }: Perm
  * Component that renders content only for admins
  */
 export function AdminOnly({ children, fallback = null }: { children: React.ReactNode, fallback?: React.ReactNode }) {
-  return <RoleGuard roles="ADMIN" fallback={fallback}>{children}</RoleGuard>;
+  return <RoleGuard roles="admin" fallback={fallback}>{children}</RoleGuard>;
 }
 
 /**
  * Component that renders content only for moderators and admins
  */
 export function ModeratorOnly({ children, fallback = null }: { children: React.ReactNode, fallback?: React.ReactNode }) {
-  return <RoleGuard roles={['ADMIN', 'MODERATOR']} fallback={fallback}>{children}</RoleGuard>;
+  return <RoleGuard roles="admin" fallback={fallback}>{children}</RoleGuard>;
 }
 
 /**

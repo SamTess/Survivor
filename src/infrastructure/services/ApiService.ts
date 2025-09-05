@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { SessionUser, LoginCredentials, SignupData, RequestResetData, ResetPasswordData, LoginErrorResponse } from '@/domain/interfaces';
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
@@ -98,15 +98,15 @@ export class ApiService {
     return this.request<T>({ ...config, method: 'GET', url });
   }
 
-  async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async post<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>({ ...config, method: 'POST', url, data });
   }
 
-  async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async put<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>({ ...config, method: 'PUT', url, data });
   }
 
-  async patch<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async patch<T>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<ApiResponse<T>> {
     return this.request<T>({ ...config, method: 'PATCH', url, data });
   }
 
@@ -132,7 +132,11 @@ export class ApiService {
           ...(errorData.requiresPasswordReset && { requiresPasswordReset: errorData.requiresPasswordReset }),
           ...(errorData.devMode && { devMode: errorData.devMode }),
           ...(errorData.resetUrl && { resetUrl: errorData.resetUrl }),
-        } as any; // Type assertion to allow extra properties
+        } as ApiResponse<SessionUser> & {
+          requiresPasswordReset?: boolean;
+          devMode?: boolean;
+          resetUrl?: string;
+        }; // Type assertion to allow extra properties
       }
       return {
         success: false,
