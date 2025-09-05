@@ -1,9 +1,10 @@
 "use client"
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FaUsers, FaProjectDiagram, FaNewspaper, FaCalendarAlt } from 'react-icons/fa'
 import { useAdminStats } from '@/hooks/useAdminStats'
+import StatsDetailModal from './StatsDetailModal'
 
 interface StatCard {
   title: string
@@ -16,6 +17,18 @@ interface StatCard {
 
 export default function AdminStatsSection() {
   const { stats, loading, error } = useAdminStats()
+  const [modalType, setModalType] = useState<'users' | 'projects' | 'news' | 'events' | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleCardClick = (type: 'users' | 'projects' | 'news' | 'events') => {
+    setModalType(type)
+    setIsModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false)
+    setModalType(null)
+  }
 
   if (loading) {
     return (
@@ -80,38 +93,42 @@ export default function AdminStatsSection() {
     )
   }
 
-  const statsCards: StatCard[] = [
+  const statsCards: (StatCard & { type: 'users' | 'projects' | 'news' | 'events' })[] = [
     {
       title: "Total Users",
       value: stats.totalUsers.value,
       description: stats.totalUsers.description,
       icon: <FaUsers className="text-blue-500" size={20} />,
-      colorClasses: "admin-stat-card admin-stat-card--blue",
-      trend: stats.totalUsers.trend
+      colorClasses: "admin-stat-card admin-stat-card--blue cursor-pointer hover:scale-105 transition-transform",
+      trend: stats.totalUsers.trend,
+      type: 'users'
     },
     {
       title: "Active Projects",
       value: stats.activeProjects.value,
       description: stats.activeProjects.description,
       icon: <FaProjectDiagram className="text-emerald-500" size={20} />,
-      colorClasses: "admin-stat-card admin-stat-card--emerald",
-      trend: stats.activeProjects.trend
+      colorClasses: "admin-stat-card admin-stat-card--emerald cursor-pointer hover:scale-105 transition-transform",
+      trend: stats.activeProjects.trend,
+      type: 'projects'
     },
     {
       title: "News Articles",
       value: stats.newsArticles.value,
       description: stats.newsArticles.description,
       icon: <FaNewspaper className="text-violet-500" size={20} />,
-      colorClasses: "admin-stat-card admin-stat-card--violet",
-      trend: stats.newsArticles.trend
+      colorClasses: "admin-stat-card admin-stat-card--violet cursor-pointer hover:scale-105 transition-transform",
+      trend: stats.newsArticles.trend,
+      type: 'news'
     },
     {
       title: "Upcoming Events",
       value: stats.upcomingEvents.value,
       description: stats.upcomingEvents.description,
       icon: <FaCalendarAlt className="text-orange-500" size={20} />,
-      colorClasses: "admin-stat-card admin-stat-card--orange",
-      trend: stats.upcomingEvents.trend
+      colorClasses: "admin-stat-card admin-stat-card--orange cursor-pointer hover:scale-105 transition-transform",
+      trend: stats.upcomingEvents.trend,
+      type: 'events'
     }
   ]
 
@@ -127,6 +144,7 @@ export default function AdminStatsSection() {
           <Card
             key={index}
             className={stat.colorClasses}
+            onClick={() => handleCardClick(stat.type)}
           >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="admin-stat-title text-sm font-medium">
@@ -160,6 +178,13 @@ export default function AdminStatsSection() {
           </Card>
         ))}
       </div>
+
+      {/* Stats Detail Modal */}
+      <StatsDetailModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        type={modalType}
+      />
     </div>
   )
 }
