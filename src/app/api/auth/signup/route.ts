@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const password_hash = hashPassword(password);
     const user = await prisma.s_USER.create({ data: { name, email, password_hash, address: '', role: 'USER' } });
     const token = signJwt({ userId: user.id }, 60 * 60 * 24 * 7, getAuthSecret());
-    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email });
+    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
     res.cookies.set('auth', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, sameSite: 'lax', path: '/' });
     return res;
   } catch (e) {

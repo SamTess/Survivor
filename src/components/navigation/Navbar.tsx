@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react"
+import React, { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ type NavItem = {
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, isAdmin, user } = useAuth()
 
   const navItems: NavItem[] = [
     { href: '/', label: 'Home' },
@@ -87,7 +87,7 @@ export function Navbar() {
               </Link>
             </Button>
             <DarkModeToggle className="text-muted-foreground hover:text-primary" />
-            {isAuthenticated && user?.role === 'admin' &&
+            {isAdmin &&
               <Button
                 asChild
                 size="sm"

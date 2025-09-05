@@ -1,3 +1,4 @@
+export type UserRole = 'user' | 'admin' | 'investor' | 'founder';
 
 export interface LoginCredentials {
   email: string;
@@ -23,7 +24,7 @@ export interface SessionUser {
   id: number;
   name: string;
   email: string;
-  role: 'user' | 'admin' | 'investor';
+  role: UserRole;
   permissions?: string[];
 }
 

@@ -8,9 +8,10 @@ import React, {
   ReactNode,
   useCallback
 } from 'react';
-import { apiService, SessionUser, LoginCredentials, SignupData } from '../infrastructure/services/ApiService';
+import { apiService } from '../infrastructure/services/ApiService';
+import { SessionUser, LoginCredentials, SignupData, UserRole } from '@/domain/interfaces';
 
-export type UserRole = 'USER' | 'ADMIN' | 'MODERATOR' | 'GUEST';
+
 
 export interface AuthError {
   message: string;
@@ -53,9 +54,7 @@ interface AuthContextValue {
   // Utility getters
   isAuthenticated: boolean;
   isAdmin: boolean;
-  isModerator: boolean;
   isUser: boolean;
-  isGuest: boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -220,10 +219,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Utility getters
   const isAuthenticated = !!user;
-  const isAdmin = user?.role === 'ADMIN';
-  const isModerator = user?.role === 'MODERATOR';
-  const isUser = user?.role === 'USER';
-  const isGuest = !user;
+  const isAdmin = user?.role === 'admin';
+  const isUser = user?.role === 'user';
 
   const value: AuthContextValue = {
     // State
@@ -247,9 +244,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Utility getters
     isAuthenticated,
     isAdmin,
-    isModerator,
     isUser,
-    isGuest,
   };
 
   return (
