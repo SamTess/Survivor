@@ -1,0 +1,24 @@
+---
+repository:
+  git_url: "git@github.com:SamTess/Survivor.git"
+  git_branch_staging: "development"
+  git_branch_prod: "main"
+  app_directory: "/opt/survivor"
+
+application:
+  app_name: "survivor"
+  node_version: "22"
+
+docker:
+  staging_compose_file: "docker-compose.prod.yml"
+  prod_compose_file: "docker-compose.prod.yml"
+  staging_port: "3000"
+  prod_port: "3000"
+
+env_files:
+  staging_env_file: ".env.staging"
+  prod_env_file: ".env.production"
+
+ssh:
+  local_private_key: ""
+  github_host_key: ""
