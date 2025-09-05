@@ -25,8 +25,13 @@ export default function LoginPage() {
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
-      const n = url.searchParams.get('next');
-      if (n) setNextPath(n);
+      const callback = url.searchParams.get('callback');
+      const next = url.searchParams.get('next');
+      if (callback) {
+        setNextPath(callback);
+      } else if (next) {
+        setNextPath(next);
+      }
     } catch { }
   }, []);
 
@@ -188,7 +193,7 @@ export default function LoginPage() {
             <p className="text-gray-600">
               Pas encore de compte ?{' '}
               <Link
-                href="/signup"
+                href={`/signup${nextPath !== '/' ? `?callback=${encodeURIComponent(nextPath)}` : ''}`}
                 className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
               >
                 Créer un compte

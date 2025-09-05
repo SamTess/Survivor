@@ -82,20 +82,22 @@ export function Navbar() {
               size="sm"
               className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
-              <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login'}>
+              <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login?callback=%2Fprofile'}>
                 <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             </Button>
             <DarkModeToggle className="text-muted-foreground hover:text-primary" />
-            <Button
-              asChild
-              size="sm"
-              className="group rounded-full px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all duration-200 hover:scale-105"
-            >
-              <Link href="/admin">
-                <span className="text-sm font-medium text-primary group-hover:text-primary transition-colors">Admin</span>
-              </Link>
-            </Button>
+            {isAuthenticated && user?.role === 'admin' &&
+              <Button
+                asChild
+                size="sm"
+                className="group rounded-full px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all duration-200 hover:scale-105"
+              >
+                <Link href="/admin">
+                  <span className="text-sm font-medium text-primary group-hover:text-primary transition-colors">Admin</span>
+                </Link>
+              </Button>
+            }
           </div>
 
           <Button

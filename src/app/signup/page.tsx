@@ -14,15 +14,31 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [nextPath, setNextPath] = useState<string>('/');
   const router = useRouter();
   const { signup, loading, error, clearError, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push('/');
+      router.push(nextPath);
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, router, nextPath]);
+
+  // Handle callback parameter from URL
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      const callback = url.searchParams.get('callback');
+      const next = url.searchParams.get('next');
+
+      if (callback) {
+        setNextPath(callback);
+      } else if (next) {
+        setNextPath(next);
+      }
+    } catch { }
+  }, []);
   const passwordRequirements = [
     { label: 'At least 8 characters', test: (pwd: string) => pwd.length >= 8 },
     { label: 'One uppercase letter', test: (pwd: string) => /[A-Z]/.test(pwd) },
