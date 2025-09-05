@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock, FaUserShield } from 'react-icons/fa'
 import { Card } from '@/components/ui/card'
 
@@ -21,7 +21,26 @@ interface AdminTab {
 }
 
 export default function AdminNavigationTabs() {
-  const [activeTab, setActiveTab] = useState('projects')
+  const ADMIN_TAB_KEY = 'survivor-admin-active-tab'
+
+  const getStoredTab = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(ADMIN_TAB_KEY) || 'overview'
+    }
+    return 'overview'
+  }
+
+  const [activeTab, setActiveTab] = useState(getStoredTab)
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(ADMIN_TAB_KEY, activeTab)
+    }
+  }, [activeTab])
+
+  const handleTabChange = (tabId: string) => {
+    setActiveTab(tabId)
+  }
 
   const tabs: AdminTab[] = [
     {
@@ -94,7 +113,7 @@ export default function AdminNavigationTabs() {
           {tabs.map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabChange(tab.id)}
               className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
                 activeTab === tab.id
                   ? 'bg-primary text-primary-foreground shadow-sm'
