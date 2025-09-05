@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
+import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
   Plus,
@@ -57,7 +59,9 @@ export default function NewsCrudSection() {
   const [selectedCategory, setSelectedCategory] = useState<string>('')
   const [selectedStartup, setSelectedStartup] = useState<string>('')
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
   const [editingNews, setEditingNews] = useState<News | null>(null)
+  const [viewingNews, setViewingNews] = useState<News | null>(null)
   const [formData, setFormData] = useState<NewsFormData>({
     title: '',
     description: '',
@@ -153,6 +157,11 @@ export default function NewsCrudSection() {
     setIsModalOpen(true)
   }
 
+  const handleViewNews = (newsItem: News) => {
+    setViewingNews(newsItem)
+    setIsViewModalOpen(true)
+  }
+
   const handleDeleteNews = async (id: number) => {
     if (!confirm('Are you sure you want to delete this article?')) return
 
@@ -163,13 +172,16 @@ export default function NewsCrudSection() {
 
       if (response.ok) {
         setNews(news.filter(n => n.id !== id))
-        alert('Article deleted successfully!')
+        toast.success('Article deleted successfully!')
       } else {
-        alert('Error during deletion')
+        toast.error('Deletion error', {
+          description: 'Unable to delete this article'
+        })
       }
-    } catch (error) {
-      console.error('Error deleting news:', error)
-      alert('Error during deletion')
+    } catch {
+      toast.error('Deletion error', {
+        description: 'A network error occurred'
+      })
     }
   }
 
@@ -200,13 +212,18 @@ export default function NewsCrudSection() {
       if (data.success) {
         await fetchNews()
         setIsModalOpen(false)
-        alert(`Article ${editingNews ? 'updated' : 'created'} successfully!`)
+        toast.success(`Article ${editingNews ? 'updated' : 'created'} successfully!`, {
+          description: `The article "${formData.title}" has been ${editingNews ? 'updated' : 'published'}`
+        })
       } else {
-        alert(`Error: ${data.error}`)
+        toast.error(`Error ${editingNews ? 'updating' : 'creating'} article`, {
+          description: data.error
+        })
       }
-    } catch (error) {
-      console.error('Error saving news:', error)
-      alert('Error during save')
+    } catch {
+      toast.error(`Error ${editingNews ? 'updating' : 'creating'} article`, {
+        description: 'A network error occurred'
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -350,7 +367,12 @@ export default function NewsCrudSection() {
                       <td className="py-3 px-2">{newsItem.likesCount}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-8 w-8 p-0"
+                            onClick={() => handleViewNews(newsItem)}
+                          >
                             <Eye size={14} />
                           </Button>
                           <Button
@@ -491,6 +513,61 @@ export default function NewsCrudSection() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* View Modal */}
+      {viewingNews && (
+        <UniversalModal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title="News Article Details"
+          size="auto"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Title</label>
+                <p className="text-sm font-medium">{viewingNews.title}</p>
+              </div>
+              {viewingNews.category && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Category</label>
+                  <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    {viewingNews.category}
+                  </span>
+                </div>
+              )}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Startup</label>
+                <p className="text-sm">{startups.find(s => s.id === viewingNews.startup_id)?.name || 'Unknown'}</p>
+              </div>
+              {viewingNews.news_date && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Date</label>
+                  <p className="text-sm">{new Date(viewingNews.news_date).toLocaleDateString('en-US')}</p>
+                </div>
+              )}
+              {viewingNews.location && (
+                <div className="space-y-1">
+                  <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Location</label>
+                  <p className="text-sm">{viewingNews.location}</p>
+                </div>
+              )}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Created</label>
+                <p className="text-sm">{new Date(viewingNews.created_at).toLocaleDateString('en-US')}</p>
+              </div>
+            </div>
+            {viewingNews.description && (
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
+                <div className="max-h-40 overflow-y-auto">
+                  <p className="text-sm leading-relaxed">{viewingNews.description}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </UniversalModal>
       )}
     </div>
   )

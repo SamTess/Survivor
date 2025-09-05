@@ -5,6 +5,7 @@ import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock, FaUserShield } 
 import { Card } from '@/components/ui/card'
 
 import AdminStatsSection from './AdminStatsSection'
+import AdminRecentActivitySection from './AdminRecentActivitySection'
 import AdminDashboardSection from './AdminDashboardSection'
 import ProjectsCrudSection from './crud/ProjectsCrudSection'
 import NewsCrudSection from './crud/NewsCrudSection'
@@ -27,7 +28,12 @@ export default function AdminNavigationTabs() {
       id: 'overview',
       label: 'Overview',
       icon: <FaChartLine size={16} />,
-      component: <AdminStatsSection />,
+      component: (
+        <div className="space-y-8">
+          <AdminStatsSection />
+          <AdminRecentActivitySection />
+        </div>
+      ),
       description: 'Platform statistics and key metrics'
     },
     {

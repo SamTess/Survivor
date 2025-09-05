@@ -34,18 +34,25 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
   }
 
   async create(investor: Omit<Investor, 'id' | 'created_at' | 'updated_at'>): Promise<Investor> {
-    const user = await prisma.s_USER.create({
-      data: {
-        email: investor.email,
-        name: investor.name,
-        role: 'investor',
-        password_hash: '',
-        address: investor.address || '',
-        phone: investor.phone || null,
-        legal_status: investor.legal_status || null,
-        description: investor.description || null,
-      },
+    // Check if user already exists
+    let user = await prisma.s_USER.findFirst({
+      where: { email: investor.email }
     });
+
+    if (!user) {
+      user = await prisma.s_USER.create({
+        data: {
+          email: investor.email,
+          name: investor.name,
+          role: 'investor',
+          password_hash: '',
+          address: investor.address || '',
+          phone: investor.phone || null,
+          legal_status: investor.legal_status || null,
+          description: investor.description || null,
+        },
+      });
+    }
 
     const created = await prisma.s_INVESTOR.create({
       data: {
