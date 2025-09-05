@@ -15,7 +15,7 @@ The main Terraform configuration file that defines:
   - Ubuntu 22.04 LTS
   - 2 vCPU, 4GB RAM (s-2vcpu-4gb)
   - Frankfurt region (fra1)
-- **Firewall Rules**: Security groups allowing HTTP(80), HTTPS(443), SSH(22), and custom ports (3000, 5432, 8080, 19999)
+- **Firewall Rules**: Security groups allowing HTTP(80), HTTPS(443), SSH(22), and custom ports (3000, 5432, 8080)
 - **Ansible Integration**: Auto-generates `../ansible/hosts.ini` inventory file
 - **SSH Setup**: Automatically adds droplet IPs to known_hosts
 - **Outputs**: Public IP addresses of created droplets
