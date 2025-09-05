@@ -1,5 +1,3 @@
-"use server";
-
 export default async function AboutPage() {
   return (
     <div className="h-screen bg-white overflow-y-auto snap-y snap-mandatory">

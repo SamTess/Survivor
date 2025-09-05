@@ -2,15 +2,23 @@
 
 import React, { useEffect, useState } from 'react'
 import AdminNavigationTabs from '@/components/admin/AdminNavigationTabs'
+import { useAuth } from '@/context'
+import { useRouter } from 'next/navigation'
 
 export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
+  const {isAdmin} = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
-    // Simulate loading data
     const timer = setTimeout(() => setIsLoading(false), 1000)
     return () => clearTimeout(timer)
   }, [])
+
+  if (!isAdmin) {
+    router.push(`/login`)
+    return null
+  }
 
   if (isLoading) {
     return (

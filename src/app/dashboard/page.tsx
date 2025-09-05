@@ -49,23 +49,23 @@ export default function Dashboard() {
 
   return (
     <>
-        <div className="flex h-full w-screen relative flex-col mx-auto">
+        <div className="flex h-full w-screen fixed flex-col mx-auto">
             <div
               ref={scrollRef}
               className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth gap-4 rounded-2xl scrollbar-none"
               aria-label="Dashboard sections"
             >
-              <section className="snap-start pt-24 shrink-0 w-full h-full overflow-y-auto pr-1 justify-center flex">
-                <div className="space-y-6 max-w-6xl p-2">
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
+                <div className="space-y-6 max-w-6xl px-4">
                   <StatsSection />
                 </div>
               </section>
-              <section className="snap-start pt-24 shrink-0 w-full h-full overflow-y-auto pr-1 justify-center flex">
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
                 <div className="space-y-6 max-w-6xl px-4 ">
                   <StartupForm />
                 </div>
               </section>
-              <section className="snap-start pt-24 shrink-0 w-full h-full overflow-y-auto pr-1 justify-center flex">
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
                 <div className="space-y-6 max-w-6xl px-4 ">
                   <EventsNewsManager />
                 </div>
@@ -119,6 +119,7 @@ export default function Dashboard() {
               </div>
             </nav>
           </div>
+
       {/* Hide Dock on mobile devices */}
       {isDesktop && (
         <Dock className="fixed bottom-15 right-4 z-10 border-none"  items={[

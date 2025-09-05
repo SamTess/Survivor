@@ -95,7 +95,7 @@ describe('Login API with Password Reset', () => {
     // Assert
     expect(response.status).toBe(401);
     expect(data.requiresPasswordReset).toBe(true);
-    expect(data.error).toContain('Un email de création de mot de passe a été envoyé');
+    expect(data.error).toContain('A password creation email has been sent');
     expect(mockPasswordResetService.createResetToken).toHaveBeenCalledWith(1);
     expect(mockEmailService.sendPasswordResetEmail).toHaveBeenCalledWith(
       'john@example.com',
@@ -131,7 +131,7 @@ describe('Login API with Password Reset', () => {
     // Assert
     expect(response.status).toBe(401);
     expect(data.requiresPasswordReset).toBe(true);
-    expect(data.error).toContain('contacter l\'administrateur');
+    expect(data.error).toContain('Please contact the administrator');
     expect(mockPasswordResetService.createResetToken).toHaveBeenCalledWith(1);
     expect(mockEmailService.sendPasswordResetEmail).toHaveBeenCalled();
   });

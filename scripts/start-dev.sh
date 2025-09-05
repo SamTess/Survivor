@@ -9,8 +9,8 @@ echo "Database is ready!"
 echo "Generating Prisma client..."
 npx prisma generate
 
-echo "Running Prisma migrations..."
-npx prisma migrate deploy
+echo "Pushing database schema..."
+npx prisma db push --accept-data-loss
 
 echo "Starting development server..."
 npm run dev

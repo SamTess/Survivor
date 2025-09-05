@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Search, Menu, X, Sparkles, User } from "lucide-react"
 import { useState } from "react"
 import { cn } from "@/utils/utils"
+import { useAuth } from "@/context"
 import DarkModeToggle from "../layout/DarkModeToggle"
 
 type NavItem = {
@@ -14,17 +15,19 @@ type NavItem = {
   label: string
 }
 
-const navItems: NavItem[] = [
-  { href: '/', label: 'Home' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/news', label: 'News' },
-  { href: '/events', label: 'Events' },
-  { href: '/dashboard', label: 'Dashboard' },
-]
-
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const pathname = usePathname()
+  const { isAuthenticated, isAdmin, user } = useAuth()
+
+  const navItems: NavItem[] = [
+    { href: '/', label: 'Home' },
+    { href: '/projects', label: 'Projects' },
+    { href: '/news', label: 'News' },
+    { href: '/events', label: 'Events' },
+  ]
+  if (isAuthenticated)
+    navItems.push({ href: '/dashboard', label: 'Dashboard' })
 
   return (
     <nav className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
@@ -39,7 +42,7 @@ export function Navbar() {
                 <Sparkles className="border-none w-4 h-4 text-white group-hover:text-primary transition-colors" />
               </div>
             </div>
-            <span className="text-gray-500 font-medium">
+            <span className="text-muted-foreground font-medium">
               JEB
             </span>
           </Link>
@@ -55,7 +58,7 @@ export function Navbar() {
                     "relative px-4 py-2 text-sm font-medium rounded-full transition-all duration-300 group",
                     isActive
                       ? "text-primary bg-primary/10"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                      : "text-muted-foreground hover:text-primary hover:bg-muted/50",
                   )}
                 >
                   {item.label}
@@ -72,27 +75,29 @@ export function Navbar() {
               size="sm"
               className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
-              <Search className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </Button>
-            <DarkModeToggle />
             <Button
               asChild
               size="sm"
               className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
             >
-              <Link href="/profile/1">
-                <User className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login?callback=%2Fprofile'}>
+                <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             </Button>
-            <Button
-              asChild
-              size="sm"
-              className="group rounded-full px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all duration-200 hover:scale-105"
-            >
-              <Link href="/admin">
-                <span className="text-sm font-medium text-primary group-hover:text-primary transition-colors">Admin</span>
-              </Link>
-            </Button>
+            <DarkModeToggle className="text-muted-foreground hover:text-primary" />
+            {isAdmin &&
+              <Button
+                asChild
+                size="sm"
+                className="group rounded-full px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all duration-200 hover:scale-105"
+              >
+                <Link href="/admin">
+                  <span className="text-sm font-medium text-primary group-hover:text-primary transition-colors">Admin</span>
+                </Link>
+              </Button>
+            }
           </div>
 
           <Button
@@ -101,8 +106,8 @@ export function Navbar() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden rounded-full w-10 h-10 p-0 hover:bg-muted/40"
           >
-            {isMenuOpen ? 
-              <X className="h-5 w-5 text-foreground" /> : 
+            {isMenuOpen ?
+              <X className="h-5 w-5 text-foreground" /> :
               <Menu className="h-5 w-5 text-foreground" />
             }
           </Button>
@@ -122,7 +127,7 @@ export function Navbar() {
                       "border-none px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                       isActive
                         ? "text-primary bg-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                        : "text-muted-foreground hover:text-primary hover:bg-muted/50",
                     )}
                   >
                     {item.label}
@@ -135,7 +140,9 @@ export function Navbar() {
                 </div>
                 <div className="flex gap-2 mb-2">
                   <Button asChild className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Link href="/profile/1">Profile</Link>
+                    <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login'}>
+                      {isAuthenticated ? 'Profile' : 'Login'}
+                    </Link>
                   </Button>
                   <Button asChild className="flex-1 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
                     <Link href="/admin">Admin</Link>
