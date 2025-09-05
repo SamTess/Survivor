@@ -61,11 +61,9 @@ export function UniversalModal({
   useEffect(() => {
     if (isOpen) {
       setShouldRender(true)
-      // Petit délai pour permettre au DOM de se mettre à jour avant l'animation
       setTimeout(() => setIsAnimating(true), 10)
     } else {
       setIsAnimating(false)
-      // Attendre la fin de l'animation avant de démonter
       setTimeout(() => setShouldRender(false), 200)
     }
   }, [isOpen])
@@ -88,23 +86,23 @@ export function UniversalModal({
 
   return (
     <Portal>
-      <div 
+      <div
         className={cn(
           "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 transition-opacity duration-200",
           isAnimating ? "opacity-100" : "opacity-0"
-        )} 
+        )}
         onClick={handleOverlayClick}
       >
         <div
           className={cn(
-            "bg-background rounded-lg shadow-lg w-full max-h-[90vh] overflow-hidden transition-all duration-200 transform",
+            "bg-background rounded-lg shadow-lg w-full max-h-[90vh] flex flex-col transition-all duration-200 transform",
             isAnimating ? "scale-100 translate-y-0" : "scale-95 translate-y-4",
             sizeClasses[size],
             className,
           )}
           onClick={(e) => e.stopPropagation()}
         >
-          <Card className="border-0 shadow-none h-full flex flex-col">
+          <Card className="border-0 shadow-none h-full flex flex-col overflow-hidden">
             {(title || description || showCloseButton) && (
               <CardHeader
                 className={cn("flex flex-row items-start justify-between space-y-0 pb-4 flex-shrink-0", headerClassName)}
@@ -122,7 +120,7 @@ export function UniversalModal({
               </CardHeader>
             )}
 
-            <CardContent className={cn("flex-1 overflow-auto", contentClassName)}>{children}</CardContent>
+            <CardContent className={cn("flex-1 overflow-y-auto overflow-x-hidden p-6 modal-content-scroll", contentClassName)}>{children}</CardContent>
 
             {actions.length > 0 && (
               <div className="flex justify-end gap-2 p-6 pt-0 flex-shrink-0">

@@ -227,4 +227,27 @@ body {
   .admin-error-text {
     @apply text-destructive;
   }
+
+  /* Modal scroll improvements */
+  .modal-content-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: theme(colors.muted.foreground) transparent;
+  }
+
+  .modal-content-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .modal-content-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .modal-content-scroll::-webkit-scrollbar-thumb {
+    background: theme(colors.muted.foreground);
+    border-radius: 3px;
+  }
+
+  .modal-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: theme(colors.foreground);
+  }
 }
