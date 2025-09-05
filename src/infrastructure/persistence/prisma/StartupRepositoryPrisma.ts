@@ -167,6 +167,32 @@ export class StartupRepositoryPrisma implements StartupRepository {
     }));
   }
 
+  async getByDateRange(startDate: Date, endDate: Date): Promise<Startup[]> {
+    const startups = await prisma.s_STARTUP.findMany({
+      where: {
+        created_at: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return startups.map(startup => ({
+      id: startup.id,
+      name: startup.name,
+      legal_status: startup.legal_status,
+      address: startup.address,
+      phone: startup.phone,
+      sector: startup.sector,
+      maturity: startup.maturity,
+      email: startup.email,
+      description: startup.description,
+      image_data: startup.image_data,
+      created_at: startup.created_at,
+    }));
+  }
+
   async update(id: number, startup: Partial<Omit<Startup, 'id' | 'created_at'>>): Promise<Startup | null> {
     try {
       const updated = await prisma.s_STARTUP.update({
