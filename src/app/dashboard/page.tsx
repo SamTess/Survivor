@@ -55,17 +55,17 @@ export default function Dashboard() {
               className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth gap-4 rounded-2xl scrollbar-none"
               aria-label="Dashboard sections"
             >
-              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto pr-1 justify-center flex">
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
                 <div className="space-y-6 max-w-6xl px-4">
                   <StatsSection />
                 </div>
               </section>
-              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto pr-1 justify-center flex">
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
                 <div className="space-y-6 max-w-6xl px-4 ">
                   <StartupForm />
                 </div>
               </section>
-              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto pr-1 justify-center flex">
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
                 <div className="space-y-6 max-w-6xl px-4 ">
                   <EventsNewsManager />
                 </div>
