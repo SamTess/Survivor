@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "Demo Day Paris",
+    "dates": "2025-09-15",
+    "location": "Station F",
+    "description": "Pitch session and networking.",
+    "event_type": "Pitch",
+    "target_audience": "Investors",
+    "created_at": "2025-07-01T09:00:00.000Z",
+    "updated_at": "2025-07-01T09:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "name": "Product Webinar",
+    "dates": "2025-10-02",
+    "location": "Online",
+    "description": "Showing our latest features.",
+    "event_type": "Webinar",
+    "target_audience": "Partners",
+    "created_at": "2025-08-10T09:00:00.000Z",
+    "updated_at": "2025-08-10T09:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "name": "Startup Bootcamp 2025",
+    "dates": "2025-09-20",
+    "location": "Lyon Tech Hub",
+    "description": "Intensive 3-day workshop for early-stage startups covering business fundamentals, market validation, and fundraising strategies.",
+    "event_type": "Workshop",
+    "target_audience": "Startups",
+    "created_at": "2025-08-15T10:30:00.000Z",
+    "updated_at": "2025-08-15T10:30:00.000Z"
+  },
+  {
+    "id": 4,
+    "name": "AI & Future of Work Conference",
+    "dates": "2025-10-18",
+    "location": "Paris Convention Center",
+    "description": "Exploring the impact of artificial intelligence on the future workplace and business innovation.",
+    "event_type": "Conference",
+    "target_audience": "Industry Leaders",
+    "created_at": "2025-08-20T14:00:00.000Z",
+    "updated_at": "2025-08-20T14:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "name": "Investor Meetup - Q4 2025",
+    "dates": "2025-11-05",
+    "location": "Business District Marseille",
+    "description": "Quarterly networking event bringing together angel investors, VCs, and promising startups.",
+    "event_type": "Networking",
+    "target_audience": "Investors",
+    "created_at": "2025-08-25T11:15:00.000Z",
+    "updated_at": "2025-08-25T11:15:00.000Z"
+  },
+  {
+    "id": 6,
+    "name": "Tech Trends & Innovation Summit",
+    "dates": "2025-11-22",
+    "location": "Online",
+    "description": "Virtual summit discussing emerging technologies, blockchain, IoT, and digital transformation trends.",
+    "event_type": "Summit",
+    "target_audience": "Tech Professionals",
+    "created_at": "2025-09-01T08:45:00.000Z",
+    "updated_at": "2025-09-01T08:45:00.000Z"
+  },
+  {
+    "id": 7,
+    "name": "Sustainable Business Workshop",
+    "dates": "2025-12-03",
+    "location": "Bordeaux Green Center",
+    "description": "Workshop focused on sustainable business practices, ESG compliance, and green innovation for startups.",
+    "event_type": "Workshop",
+    "target_audience": "Entrepreneurs",
+    "created_at": "2025-09-05T16:20:00.000Z",
+    "updated_at": "2025-09-05T16:20:00.000Z"
+  },
+  {
+    "id": 8,
+    "name": "Women in Tech Leadership Panel",
+    "dates": "2025-12-10",
+    "location": "Nice Innovation Hub",
+    "description": "Panel discussion featuring successful women leaders in technology, sharing insights on career advancement and leadership.",
+    "event_type": "Panel",
+    "target_audience": "Women in Tech",
+    "created_at": "2025-09-10T13:30:00.000Z",
+    "updated_at": "2025-09-10T13:30:00.000Z"
+  },
+  {
+    "id": 9,
+    "name": "Fintech Revolution Expo",
+    "dates": "2026-01-15",
+    "location": "Lille Financial District",
+    "description": "Exhibition showcasing the latest fintech innovations, payment solutions, and digital banking technologies.",
+    "event_type": "Expo",
+    "target_audience": "Financial Services",
+    "created_at": "2025-09-12T09:00:00.000Z",
+    "updated_at": "2025-09-12T09:00:00.000Z"
+  },
+  {
+    "id": 10,
+    "name": "Global Startup Competition 2026",
+    "dates": "2026-02-20",
+    "location": "Online",
+    "description": "International startup competition with prizes totaling €500K. Open to all tech startups worldwide.",
+    "event_type": "Competition",
+    "target_audience": "Global Startups",
+    "created_at": "2025-09-15T12:00:00.000Z",
+    "updated_at": "2025-09-15T12:00:00.000Z"
+  },
+  {
+    "id": 11,
+    "name": "Digital Marketing Masterclass",
+    "dates": "2025-10-25",
+    "location": "Toulouse Digital Campus",
+    "description": "Comprehensive masterclass covering SEO, social media marketing, content strategy, and analytics for tech companies.",
+    "event_type": "Masterclass",
+    "target_audience": "Marketing Teams",
+    "created_at": "2025-08-28T15:45:00.000Z",
+    "updated_at": "2025-08-28T15:45:00.000Z"
+  },
+  {
+    "id": 12,
+    "name": "Venture Capital Deep Dive",
+    "dates": "2025-11-12",
+    "location": "Paris VC Center",
+    "description": "Educational session for entrepreneurs on understanding VC funding, term sheets, and investor relations.",
+    "event_type": "Educational",
+    "target_audience": "Entrepreneurs",
+    "created_at": "2025-09-02T10:30:00.000Z",
+    "updated_at": "2025-09-02T10:30:00.000Z"
+  }
+]

@@ -1,0 +1,106 @@
+import prisma from "../client";
+import { Prisma } from "@prisma/client";
+import { StartupRepository } from "../../../repositories/sync/StartupRepository";
+import { StartupDetailApiResponse, StartupListApiResponse, StartupFounder } from "../../../../domain/interfaces/Startup";
+
+const nz = (v: string | undefined | null) => v ?? "";
+
+export class StartupRepositoryPrisma implements StartupRepository {
+  async upsertList(item: StartupListApiResponse): Promise<void> {
+    await prisma.s_STARTUP.upsert({
+      where: { id: item.id },
+      update: {
+        name: item.name,
+        email: item.email,
+        phone: nz(item.phone),
+        address: nz(item.address),
+        legal_status: nz(item.legal_status),
+        sector: nz(item.sector),
+        maturity: nz(item.maturity),
+            ...(item.description !== undefined ? { description: item.description } : {}),
+      },
+      create: {
+        id: item.id,
+        name: item.name,
+        email: item.email,
+        phone: nz(item.phone),
+        address: nz(item.address),
+        legal_status: nz(item.legal_status),
+        sector: nz(item.sector),
+        maturity: nz(item.maturity),
+            description: item.description ?? "",
+      },
+    });
+  }
+
+  async upsertDetail(item: StartupDetailApiResponse): Promise<void> {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      await tx.s_STARTUP.upsert({
+        where: { id: item.id },
+        update: {
+          name: item.name,
+          email: item.email,
+          phone: nz(item.phone),
+          address: nz(item.address),
+          legal_status: nz(item.legal_status),
+          sector: nz(item.sector),
+          maturity: nz(item.maturity),
+              ...(item.description !== undefined ? { description: item.description } : {}),
+        },
+        create: {
+          id: item.id,
+          name: item.name,
+          email: item.email,
+          phone: nz(item.phone),
+          address: nz(item.address),
+          legal_status: nz(item.legal_status),
+          sector: nz(item.sector),
+          maturity: nz(item.maturity),
+              description: item.description ?? "",
+        },
+      });
+      const existingDetails = await tx.s_STARTUP_DETAIL.findMany({ where: { startup_id: item.id } });
+      if (!existingDetails.length) {
+        await tx.s_STARTUP_DETAIL.create({
+          data: {
+            startup_id: item.id,
+            description: item.description ?? "",
+            website_url: item.website_url,
+            social_media_url: item.social_media_url,
+            project_status: item.project_status,
+            needs: item.needs,
+          },
+        });
+      } else {
+        await tx.s_STARTUP_DETAIL.updateMany({
+          where: { startup_id: item.id },
+          data: {
+            ...(item.description !== undefined ? { description: item.description } : {}),
+            website_url: item.website_url,
+            social_media_url: item.social_media_url,
+            project_status: item.project_status,
+            needs: item.needs,
+          },
+        });
+      }
+    });
+  }
+
+  async upsertFounders(founders: StartupFounder[], startupId: number): Promise<void> {
+    if (!founders?.length) return;
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      for (const f of founders) {
+        await tx.s_FOUNDER.upsert({
+          where: { id: f.id },
+          update: { startup_id: startupId },
+          create: { id: f.id, startup_id: startupId, user_id: null },
+        });
+      }
+    });
+  }
+
+  async saveImage(startupId: number, data: Buffer): Promise<void> {
+    await prisma.s_STARTUP.update({ where: { id: startupId }, data: { image_data: data } });
+  }
+
+}

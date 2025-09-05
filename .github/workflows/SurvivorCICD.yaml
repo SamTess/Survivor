@@ -11,6 +11,16 @@ on:
       - 'ga-ignore-*'
       - 'HEAD'
 
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Type of release to create'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+
 env:
   MIRROR_URL:
   GITHUB_URL:
@@ -30,7 +40,6 @@ jobs:
         run: |
           REPO_URL=$(git config --get remote.origin.url)
 
-          # Normalize URLs by removing any trailing `.git`
           REPO_URL=${REPO_URL%.git}
           MIRROR_URL=${MIRROR_URL%.git}
 
@@ -42,11 +51,418 @@ jobs:
             echo "should_cancel=false" >> "$GITHUB_OUTPUT"
           fi
 
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    needs: [cancel-if-mirror]
+    if: needs.cancel-if-mirror.outputs.should_cancel == 'false'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies for linting
+        run: |
+          npm install --no-save eslint typescript @types/node @types/react
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check TypeScript types
+        run: npx tsc --noEmit
+
+  docker-integration-test:
+    name: Docker Integration Test
+    runs-on: ubuntu-latest
+    needs: [cancel-if-mirror, lint]
+    if: needs.cancel-if-mirror.outputs.should_cancel == 'false'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:buildx-stable-1
+          buildkitd-config-inline: |
+            [worker.oci]
+              max-parallelism = 4
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-v2-${{ hashFiles('package*.json', 'Docker/Dockerfile*', 'prisma/schema.prisma') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-v2-
+            ${{ runner.os }}-buildx-
+
+      - name: Install Docker Compose
+        run: |
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      - name: Create .env file for testing
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NODE_ENV: production
+        run: |
+          cd Docker/
+          cat > .env << EOF
+          DB_HOST=${DB_HOST}
+          DB_PORT=${DB_PORT}
+          DB_NAME=${DB_NAME}
+          DB_USER=${DB_USER}
+          DB_PASSWORD=${DB_PASSWORD}
+          DATABASE_URL=${DATABASE_URL}
+          NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+          NODE_ENV=${NODE_ENV}
+          EOF
+
+          echo ".env file created successfully"
+          echo "Sanity check (password masqué):"
+          grep -E '^(DB_HOST|DB_PORT|DB_NAME|DB_USER|NODE_ENV|NEXT_PUBLIC_APP_URL|DATABASE_URL)=' .env || true
+
+      - name: Validate environment variables
+        run: |
+          cd Docker
+          if ! grep -q '^DB_USER=postgres' .env; then
+            echo "Warning: DB_USER is not 'postgres'. Check that the user exists in the test Postgres image."
+          fi
+          if grep -q '^DB_USER=root' .env; then
+            echo "Error: DB_USER=root will cause failure (root role does not exist)." >&2
+            exit 1
+          fi
+          if ! grep -q '^DATABASE_URL=postgresql://' .env; then
+            echo "DATABASE_URL incorrect or missing" >&2
+            exit 1
+          fi
+          echo "Validation variables: OK"
+
+      - name: Build and start production containers
+        run: |
+          cd Docker
+          echo "Building with optimized BuildKit caching..."
+
+          export $(cat .env | xargs)
+
+          docker buildx build \
+            --file Dockerfile.web \
+            --tag docker-web:latest \
+            --cache-from=type=local,src=/tmp/.buildx-cache \
+            --cache-to=type=local,dest=/tmp/.buildx-cache-new,mode=max \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --build-arg NODE_ENV=production \
+            --build-arg NEXT_TELEMETRY_DISABLED=1 \
+            --build-arg DATABASE_URL="$DATABASE_URL" \
+            --progress=plain \
+            --load \
+            ..
+
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+          echo "Starting production containers..."
+          docker-compose -f docker-compose.ci.yml up -d --no-recreate
+          echo "Containers started, waiting for health checks..."
+
+      - name: Wait for services to be ready
+        run: |
+          cd Docker
+          echo "Waiting for services to be healthy..."
+
+          timeout 120 bash -c '
+            while true; do
+              db_healthy=$(docker inspect $(docker-compose -f docker-compose.ci.yml ps -q db) --format="{{.State.Health.Status}}" 2>/dev/null || echo "none")
+              web_healthy=$(docker inspect $(docker-compose -f docker-compose.ci.yml ps -q web) --format="{{.State.Health.Status}}" 2>/dev/null || echo "none")
+
+
+              if [[ "$db_healthy" == "healthy" ]] && [[ "$web_healthy" == "healthy" ]]; then
+                echo "All services are healthy!"
+                break
+              fi
+
+              if docker-compose -f docker-compose.ci.yml ps | grep -E "(Exit|Restarting)"; then
+                echo "Service health check failed!"
+                docker-compose -f docker-compose.ci.yml ps
+                docker-compose -f docker-compose.ci.yml logs
+                exit 1
+              fi
+
+              if [[ "$db_healthy" == "unhealthy" ]] || [[ "$web_healthy" == "unhealthy" ]]; then
+                echo "Service health check failed - unhealthy containers!"
+                docker-compose -f docker-compose.ci.yml ps
+                docker-compose -f docker-compose.ci.yml logs
+                exit 1
+              fi
+
+              echo "Waiting for services to become healthy..."
+              sleep 5
+            done
+          '
+
+          echo "Services are ready! Final status check:"
+          docker-compose -f docker-compose.ci.yml ps
+
+      - name: Run Prisma migrations (or push schema)
+        run: |
+          echo "Applying Prisma migrations..."
+          cd Docker
+          export $(cat .env | xargs)
+          set -e
+          HAS_MIGRATIONS=$(docker-compose -f docker-compose.ci.yml exec -T web sh -c 'ls -1 prisma/migrations 2>/dev/null | grep -v "^$" || true' | wc -l | tr -d '[:space:]')
+          if [ "$HAS_MIGRATIONS" -gt 0 ]; then
+            echo "Migrations detected ($HAS_MIGRATIONS folders) -> prisma migrate deploy"
+            docker-compose -f docker-compose.ci.yml exec -T web npx prisma migrate deploy
+          else
+            echo "No versioned migrations detected -> prisma db push"
+            docker-compose -f docker-compose.ci.yml exec -T web npx prisma db push
+          fi
+          echo "Table status after synchronization:" \
+            && docker-compose -f docker-compose.ci.yml exec -T db psql -U "${DB_USER}" -d "${DB_NAME}" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;"
+
+      - name: Test database connection and schema
+        run: |
+          echo "Testing database connection and checking tables..."
+          cd Docker
+          export $(cat .env | xargs)
+          EXPECTED=$(docker-compose -f docker-compose.ci.yml exec -T web sh -c "grep -E '^model ' prisma/schema.prisma | wc -l" | tr -d '[:space:]')
+          echo "Expected Prisma models: $EXPECTED"
+          COUNT=$(docker-compose -f docker-compose.ci.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" | tr -d '[:space:]')
+          echo "Actual table count: $COUNT"
+          if [ "$COUNT" -lt "$EXPECTED" ]; then
+            echo "Table count ($COUNT) < expected models ($EXPECTED) => échec" >&2
+            echo "Listing current tables:" >&2
+            docker-compose -f docker-compose.ci.yml exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT table_name FROM information_schema.tables WHERE table_schema='public' ORDER BY 1;" >&2 || true
+            exit 1
+          fi
+
+          echo "Testing specific table exists..."
+          docker-compose -f docker-compose.ci.yml exec -T db psql -t -A -U "$DB_USER" -d "$DB_NAME" -c "
+            SELECT 1
+            FROM information_schema.tables
+            WHERE table_schema = 'public' AND lower(table_name) = 's_user'
+            LIMIT 1;
+          " | grep -q "1"
+          echo "Table s_user trouvée"
+
+      - name: Test web application health
+        run: |
+          echo "Testing web application response..."
+          health_response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health 2>/dev/null || echo "000")
+          if [ "$health_response" = "200" ]; then
+            echo "Health endpoint is responding correctly (HTTP 200)"
+          else
+            echo "Health endpoint failed (HTTP $health_response), trying full health endpoint..."
+            full_health_response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/api/health/full 2>/dev/null || echo "000")
+            if [ "$full_health_response" = "200" ]; then
+              echo "Full health endpoint is responding correctly (HTTP 200)"
+            else
+              echo "Both health endpoints failed. Basic: $health_response, Full: $full_health_response, trying homepage..."
+              home_response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/ 2>/dev/null || echo "000")
+              if [ "$home_response" != "200" ]; then
+                echo "All endpoints failed. Homepage HTTP status: $home_response"
+                exit 1
+              fi
+              echo "Homepage is responding correctly (HTTP 200)"
+            fi
+          fi
+
+      - name: Test database connection from web app
+        run: |
+          echo "Testing if web app can connect to database..."
+          cd Docker
+          export $(cat .env | xargs)
+          logs=$(docker-compose -f docker-compose.ci.yml logs web 2>&1)
+          if echo "$logs" | grep -i "database.*error\|connection.*failed\|econnrefused"; then
+            echo "Database connection errors found in web app logs:"
+            echo "$logs"
+            exit 1
+          fi
+          echo "No database connection errors found in web app logs"
+
+      - name: Show service status
+        if: always()
+        run: |
+          echo "=== Container Status ==="
+          cd Docker
+          export $(cat .env | xargs)
+          docker-compose -f docker-compose.ci.yml ps
+          echo ""
+          echo "=== Web App Logs ==="
+          docker-compose -f docker-compose.ci.yml logs web
+          echo ""
+          echo "=== Database Logs ==="
+          docker-compose -f docker-compose.ci.yml logs db
+
+      - name: Cleanup
+        if: always()
+        run: |
+          cd Docker
+          export $(cat .env | xargs)
+          docker-compose -f docker-compose.ci.yml down -v
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: [cancel-if-mirror, lint]
+    if: needs.cancel-if-mirror.outputs.should_cancel == 'false'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests (Vitest)
+        run: npm test -- --run --passWithNoTests
+
+  staging-release:
+    name: Create Staging Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+    needs: [docker-integration-test, unit-tests]
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout development branch
+        uses: actions/checkout@v4
+        with:
+          ref: development
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: |
+          npm run build
+          echo "Build completed successfully"
+
+      - name: Generate staging release version
+        id: version
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          STAGING_VERSION="staging-${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${STAGING_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Generated staging version: ${STAGING_VERSION}"
+
+      - name: Create release archive
+        run: |
+          mkdir -p staging-release
+
+          cp -r .next staging-release/ 2>/dev/null || echo "No .next directory found"
+          cp -r public staging-release/ 2>/dev/null || echo "No public directory found"
+          cp -r prisma staging-release/
+          cp package.json staging-release/
+          cp package-lock.json staging-release/ 2>/dev/null || echo "No package-lock.json found"
+          cp next.config.ts staging-release/ 2>/dev/null || cp next.config.js staging-release/ 2>/dev/null || echo "No next.config found"
+          cp tsconfig.json staging-release/ 2>/dev/null || echo "No tsconfig.json found"
+
+          cp -r Docker staging-release/
+
+          cat > staging-release/DEPLOYMENT.md << EOF
+
+          ## Release Information
+          - Version: ${{ steps.version.outputs.version }}
+          - Branch: development
+          - Commit: ${{ github.sha }}
+          - Build Date: $(date)
+
+          ## Deployment Steps
+          1. Extract this archive to your staging server
+          2. Navigate to the Docker directory
+          3. Configure your .env file with staging environment variables
+          4. Run: \`docker-compose -f docker-compose.prod.yml up -d\`
+
+          ## Environment Variables Required
+          - DB_HOST
+          - DB_PORT
+          - DB_NAME
+          - DB_USER
+          - DB_PASSWORD
+          - DATABASE_URL
+          - NEXT_PUBLIC_APP_URL
+
+          ## Health Check
+          After deployment, verify the application is running:
+          - Health endpoint: http://your-staging-url/api/health
+          - Application: http://your-staging-url/
+          EOF
+
+          tar -czf staging-${{ steps.version.outputs.version }}.tar.gz staging-release/
+          echo "Release archive created: staging-${{ steps.version.outputs.version }}.tar.gz"
+
+      - name: Create staging release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            --title "Staging Release ${{ steps.version.outputs.version }}" \
+            --notes "## Staging Release 🚀
+
+          **Branch:** development
+          **Commit:** ${{ github.sha }}
+          **Timestamp:** ${{ steps.version.outputs.version }}
+
+          This is an automated staging release created from the development branch.
+
+          ### Changes
+          - Commit: ${{ github.event.head_commit.message }}
+          - Author: ${{ github.event.head_commit.author.name }}
+
+          ### Deployment
+          This release includes:
+          - Built Next.js application
+          - Prisma schema and migrations
+          - Docker configuration for staging deployment
+          - Deployment instructions
+
+          Download the \`staging-${{ steps.version.outputs.version }}.tar.gz\` file and follow the DEPLOYMENT.md instructions for staging deployment.
+
+          ### Files Included
+          - Built application (.next directory)
+          - Static assets (public directory)
+          - Database schema (prisma directory)
+          - Docker configuration
+          - Package configuration
+          - Deployment instructions" \
+            --prerelease \
+            staging-${{ steps.version.outputs.version }}.tar.gz
+
   push_to_mirror:
     name: Pushing to good repository
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [cancel-if-mirror]
+    needs: [docker-integration-test, unit-tests]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -58,3 +474,178 @@ jobs:
         with:
           target_repo_url: ${{ env.GITHUB_URL }}
           ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
+
+  production-release:
+    name: Create Production Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - name: Validate main branch
+        run: |
+          CURRENT_BRANCH=$(git branch --show-current)
+          if [ "$CURRENT_BRANCH" != "main" ]; then
+            echo "Error: Production releases can only be created from the main branch"
+            echo "Current branch: $CURRENT_BRANCH"
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run production pre-checks
+        run: |
+          echo "Running production pre-checks..."
+          echo "Latest commits on main branch:"
+          git log --oneline -5
+
+          if [ ! -f "package.json" ]; then
+            echo "Error: package.json not found"
+            exit 1
+          fi
+
+          if [ ! -f "prisma/schema.prisma" ]; then
+            echo "Error: Prisma schema not found"
+            exit 1
+          fi
+
+          npm run lint
+
+          npx tsc --noEmit
+
+          echo "Production pre-checks passed ✓"
+
+      - name: Build production application
+        run: |
+          npm run build
+          echo "Production build completed successfully"
+
+      - name: Generate production release version
+        id: version
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          PROD_VERSION="prod-${TIMESTAMP}-${SHORT_SHA}"
+          echo "version=${PROD_VERSION}" >> "$GITHUB_OUTPUT"
+          echo "Generated production version: ${PROD_VERSION}"
+
+      - name: Create production release archive
+        run: |
+          mkdir -p production-release
+
+          cp -r .next production-release/
+          cp -r public production-release/
+          cp -r prisma production-release/
+          cp package.json production-release/
+          cp package-lock.json production-release/ 2>/dev/null || echo "No package-lock.json found"
+          cp next.config.ts production-release/ 2>/dev/null || cp next.config.js production-release/ 2>/dev/null || echo "No next.config found"
+          cp tsconfig.json production-release/ 2>/dev/null || echo "No tsconfig.json found"
+
+          cp -r Docker production-release/
+
+          cat > production-release/DEPLOYMENT.md << EOF
+
+          ## Release Information
+          - Version: ${{ steps.version.outputs.version }}
+          - Branch: main
+          - Commit: ${{ github.sha }}
+          - Build Date: $(date)
+          - Released by: ${{ github.actor }}
+
+          ## Pre-deployment Checklist
+          - [ ] Staging environment tested successfully
+          - [ ] Database migrations reviewed
+          - [ ] Environment variables configured
+          - [ ] Backup created
+          - [ ] Monitoring alerts configured
+
+          ## Deployment Steps
+          1. Extract this archive to your production server
+          2. Navigate to the Docker directory
+          3. Configure your .env file with production environment variables
+          4. Run: \`docker-compose -f docker-compose.prod.yml up -d\`
+          5. Verify health endpoints
+          6. Monitor application logs
+
+          ## Environment Variables Required
+          - DB_HOST
+          - DB_PORT
+          - DB_NAME
+          - DB_USER
+          - DB_PASSWORD
+          - DATABASE_URL
+          - NEXT_PUBLIC_APP_URL
+          - NODE_ENV=production
+
+          ## Health Check
+          After deployment, verify the application is running:
+          - Health endpoint: http://your-production-url/api/health
+          - Application: http://your-production-url/
+
+          ## Rollback Plan
+          If issues occur, you can rollback using the previous production release.
+          EOF
+
+          # Create the archive
+          tar -czf production-${{ steps.version.outputs.version }}.tar.gz production-release/
+          echo "Production release archive created: production-${{ steps.version.outputs.version }}.tar.gz"
+
+      - name: Create production release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.version }}" \
+            --title "Production Release ${{ steps.version.outputs.version }}" \
+            --notes "## Production Release 🎉
+
+          **Branch:** main
+          **Commit:** ${{ github.sha }}
+          **Timestamp:** ${{ steps.version.outputs.version }}
+
+          This is a manual production release created from the main branch.
+
+          ### Release Information
+          - Manually triggered by: ${{ github.actor }}
+          - Release version: ${{ steps.version.outputs.version }}
+          - Source commit: ${{ github.sha }}
+          - Build status: ✅ All pre-checks passed
+          - Linting: ✅ Passed
+          - Type checking: ✅ Passed
+          - Build: ✅ Successful
+
+          ### Deployment
+          This release includes:
+          - Production-optimized Next.js build
+          - Prisma schema and migrations
+          - Docker configuration for production deployment
+          - Comprehensive deployment instructions
+          - Pre-deployment checklist
+
+          Download the \`production-${{ steps.version.outputs.version }}.tar.gz\` file and follow the DEPLOYMENT.md instructions for production deployment.
+
+          ### Files Included
+          - Production-built application (.next directory)
+          - Static assets (public directory)
+          - Database schema (prisma directory)
+          - Docker configuration
+          - Package configuration
+          - Deployment instructions with rollback plan
+
+          ⚠️ **Important**: Ensure all staging tests have passed before deploying to production." \
+            --latest \
+            production-${{ steps.version.outputs.version }}.tar.gz

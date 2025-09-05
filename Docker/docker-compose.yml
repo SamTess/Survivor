@@ -1,0 +1,46 @@
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile.dev.web
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - ../src:/app/src
+      - ../public:/app/public
+      - ../prisma:/app/prisma
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+    depends_on:
+      - db
+    networks:
+      - survivor-network
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - survivor-network
+
+volumes:
+  postgres_data:
+
+networks:
+  survivor-network:
+    driver: bridge
