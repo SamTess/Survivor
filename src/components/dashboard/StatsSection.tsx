@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import { FiTrendingUp, FiUsers, FiBarChart2, FiHeart, FiBookmark, FiEye } from "react-icons/fi";
+import React, { useMemo, useState, useEffect } from "react";
+import { FiTrendingUp, FiHeart, FiBookmark, FiEye } from "react-icons/fi";
 
 interface StatsData {
   overview: {
@@ -250,10 +250,10 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
                 <span className="text-sm text-muted-foreground">Content:</span>
                 <select
                   value={selectedContentType}
-                  onChange={(e) => setSelectedContentType(e.target.value)}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedContentType(e.target.value)}
                   className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
                 >
-                  {availableContentTypes.map((contentType) => (
+                  {availableContentTypes.map((contentType: ContentType) => (
                     <option key={contentType.value} value={contentType.value}>
                       {contentType.icon} {contentType.label}
                     </option>
@@ -267,7 +267,7 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
               <span className="text-sm text-muted-foreground">Period:</span>
               <select
                 value={selectedPeriod}
-                onChange={(e) => setSelectedPeriod(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedPeriod(e.target.value)}
                 className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               >
                 {TIME_PERIODS.map((period) => (

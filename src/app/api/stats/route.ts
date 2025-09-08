@@ -2,6 +2,62 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/infrastructure/persistence/prisma/client';
 import { verifyJwt } from '@/infrastructure/security/auth';
 
+interface UserRole {
+  role?: string;
+}
+
+interface User {
+  role?: string;
+  roles?: UserRole[];
+}
+
+interface StartupRecord {
+  id: number;
+}
+
+interface FounderRecord {
+  startup_id: number;
+}
+
+interface NewsRecord {
+  id: number;
+}
+
+interface EventRecord {
+  id: number;
+}
+
+interface InteractionEvent {
+  occurredAt: Date;
+  eventType: string;
+}
+
+interface StartupStats {
+  id: number;
+  name: string;
+  viewsCount: number;
+  likesCount: number;
+  bookmarksCount: number;
+  followersCount: number;
+}
+
+interface NewsStats {
+  id: number;
+  title: string;
+  viewsCount: number;
+  likesCount: number;
+  bookmarksCount: number;
+  startup_id: number;
+}
+
+interface EventStats {
+  id: number;
+  name: string;
+  viewsCount: number;
+  likesCount: number;
+  bookmarksCount: number;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
@@ -37,7 +93,7 @@ export async function GET(request: NextRequest) {
       });
 
       const mainRoleIsAdmin = user?.role?.toLowerCase() === 'admin';
-      const hasAdminRole = user?.roles?.some((role: any) => ['admin', 'super_admin'].includes(role.role?.toLowerCase()));
+      const hasAdminRole = user?.roles?.some((role: UserRole) => ['admin', 'super_admin'].includes(role.role?.toLowerCase() || ''));
 
       isAdmin = mainRoleIsAdmin || hasAdminRole;
 
@@ -55,13 +111,13 @@ export async function GET(request: NextRequest) {
       const allStartups = await prisma.s_STARTUP.findMany({
         select: { id: true }
       });
-      startupIds = allStartups.map(s => s.id);
+      startupIds = allStartups.map((s: StartupRecord) => s.id);
     } else {
       const userStartups = await prisma.s_FOUNDER.findMany({
         where: { user_id: userId },
         select: { startup_id: true }
       });
-      startupIds = userStartups.map(f => f.startup_id);
+      startupIds = userStartups.map((f: FounderRecord) => f.startup_id);
 
       if (startupIds.length === 0) {
         return NextResponse.json({
@@ -103,17 +159,17 @@ export async function GET(request: NextRequest) {
         where: startupIds.length > 0 ? { startup_id: { in: startupIds } } : {},
         select: { id: true }
       });
-      newsIds = newsData.map((n: any) => n.id);
+      newsIds = newsData.map((n: NewsRecord) => n.id);
     }
 
     if (contentType === 'all' || contentType === 'event') {
       const eventData = await prisma.s_EVENT.findMany({
         select: { id: true }
       });
-      eventIds = eventData.map((e: any) => e.id);
+      eventIds = eventData.map((e: EventRecord) => e.id);
     }
 
-    const buildContentFilter = (baseFilter: any = {}) => {
+    const buildContentFilter = (baseFilter: Record<string, any> = {}) => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
@@ -207,13 +263,13 @@ export async function GET(request: NextRequest) {
 
     let totalViews = 0;
     if (contentType === 'startup' || contentType === 'all') {
-      totalViews += startupStats.reduce((sum: number, s: any) => sum + s.viewsCount, 0);
+      totalViews += startupStats.reduce((sum: number, s: StartupStats) => sum + s.viewsCount, 0);
     }
     if (contentType === 'news' || contentType === 'all') {
-      totalViews += newsStats.reduce((sum: number, n: any) => sum + n.viewsCount, 0);
+      totalViews += newsStats.reduce((sum: number, n: NewsStats) => sum + n.viewsCount, 0);
     }
     if (contentType === 'event' || contentType === 'all') {
-      totalViews += eventStats.reduce((sum: number, e: any) => sum + e.viewsCount, 0);
+      totalViews += eventStats.reduce((sum: number, e: EventStats) => sum + e.viewsCount, 0);
     }
     const totalInteractions = totalLikes + totalBookmarks;
     const conversionRate = totalViews > 0 ? totalInteractions / totalViews : 0;
@@ -227,7 +283,7 @@ export async function GET(request: NextRequest) {
       dailyEventCounts.set(dateKey, { views: 0, interactions: 0 });
     }
 
-    dailyInteractionEvents.forEach((event: any) => {
+    dailyInteractionEvents.forEach((event: InteractionEvent) => {
       const dateKey = event.occurredAt.toISOString().split('T')[0];
       const current = dailyEventCounts.get(dateKey) || { views: 0, interactions: 0 };
 
@@ -286,9 +342,9 @@ export async function GET(request: NextRequest) {
         activeUsers: monthlyInteractions.length > 0 ? monthlyInteractions : [0]
       },
       topContent: {
-        startups: startupStats.sort((a: any, b: any) => b.viewsCount - a.viewsCount).slice(0, 5),
-        events: eventStats.sort((a: any, b: any) => b.viewsCount - a.viewsCount).slice(0, 5),
-        news: newsStats.sort((a: any, b: any) => b.viewsCount - a.viewsCount).slice(0, 5)
+        startups: startupStats.sort((a: StartupStats, b: StartupStats) => b.viewsCount - a.viewsCount).slice(0, 5),
+        events: eventStats.sort((a: EventStats, b: EventStats) => b.viewsCount - a.viewsCount).slice(0, 5),
+        news: newsStats.sort((a: NewsStats, b: NewsStats) => b.viewsCount - a.viewsCount).slice(0, 5)
       }
     };
 
