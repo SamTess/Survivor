@@ -2,10 +2,10 @@
 
 import { useMemo, useState, useEffect } from "react";
 import eventsJson from "@/mocks/events.json";
-import newsJson from "@/mocks/news.json";
 import { EventApiResponse } from "@/domain/interfaces/Event";
 import { NewsDetailApiResponse } from "@/domain/interfaces/News";
 import { StartupDetailApiResponse } from "@/domain/interfaces";
+import { useAuth } from "@/context/AuthContext";
 
 interface EventForm {
   name: string;
@@ -29,8 +29,13 @@ interface EventsNewsManagerProps {
 }
 
 export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
+  const { user } = useAuth();
   const [events, setEvents] = useState<EventApiResponse[]>(() => eventsJson.map(e => ({ ...e })));
-  const [news, setNews] = useState<NewsDetailApiResponse[]>(() => newsJson.map(n => ({ ...n })));
+  const [news, setNews] = useState<NewsDetailApiResponse[]>([]);
+  const [newsLoading, setNewsLoading] = useState(true);
+  const [newsError, setNewsError] = useState<string | null>(null);
+  const [newsSubmitting, setNewsSubmitting] = useState(false);
+  const [newsSuccess, setNewsSuccess] = useState<string | null>(null);
 
   const [eventForm, setEventForm] = useState<EventForm>({
     name: "",
@@ -48,6 +53,34 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
     description: ""
   });
 
+  // Fetch news from API
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setNewsLoading(true);
+        setNewsError(null);
+        
+        // If we have a startup, fetch news for that startup specifically
+        const url = startup?.id ? `/api/news?startupId=${startup.id}` : '/api/news';
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+          setNews(data.data || []);
+        } else {
+          setNewsError(data.error || 'Failed to fetch news');
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error);
+        setNewsError('Failed to fetch news');
+      } finally {
+        setNewsLoading(false);
+      }
+    };
+    
+    fetchNews();
+  }, [startup?.id]);
+
   // Update form defaults when startup data becomes available
   useEffect(() => {
     if (startup) {
@@ -64,7 +97,6 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
   }, [startup]);
 
   const nextEventId = useMemo(() => (events.reduce((m, e) => Math.max(m, e.id), 0) + 1), [events]);
-  const nextNewsId = useMemo(() => (news.reduce((m, n) => Math.max(m, n.id), 0) + 1), [news]);
 
   function addEvent(e: React.FormEvent) {
     e.preventDefault();
@@ -80,19 +112,62 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
 
   function addNews(e: React.FormEvent) {
     e.preventDefault();
-    const payload: NewsDetailApiResponse = {
-      id: nextNewsId,
-      title: newsForm.title,
-      news_date: newsForm.news_date,
-      location: newsForm.location,
-      category: newsForm.category,
-      description: newsForm.description || "",
-      startup_id: startup?.id || 1,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+    
+    const postNews = async () => {
+      try {
+        setNewsSubmitting(true);
+        setNewsError(null);
+        setNewsSuccess(null);
+        
+        const payload = {
+          title: newsForm.title,
+          news_date: newsForm.news_date,
+          location: newsForm.location,
+          category: newsForm.category,
+          description: newsForm.description || "",
+          startup_id: startup?.id || (user?.id ? parseInt(user.id.toString()) : undefined),
+        };
+
+        const response = await fetch('/api/news', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        
+        if (data.success) {
+          // Add the new news to the beginning of the list
+          setNews((prev) => [data.data, ...prev]);
+          // Reset form
+          setNewsForm({ 
+            title: "", 
+            news_date: "", 
+            location: startup?.address || "", 
+            category: startup?.sector || "", 
+            description: "" 
+          });
+          setNewsSuccess('News published successfully!');
+          // Clear success message after 3 seconds
+          setTimeout(() => setNewsSuccess(null), 3000);
+        } else {
+          console.error('Failed to create news:', data.error);
+          const errorMessage = typeof data.error === 'string' ? data.error : 
+                             data.error?.message || 'Failed to create news';
+          setNewsError(errorMessage);
+        }
+      } catch (error) {
+        console.error('Error creating news:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
+        setNewsError(`Failed to create news: ${errorMessage}`);
+      } finally {
+        setNewsSubmitting(false);
+      }
     };
-    setNews((prev) => [payload, ...prev]);
-    setNewsForm({ title: "", news_date: "", location: startup?.address || "", category: startup?.sector || "", description: "" });
+
+    postNews();
   }
 
   return (
@@ -146,21 +221,49 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
           <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Location" value={newsForm.location} onChange={(e) => setNewsForm({ ...newsForm, location: e.target.value })} />
           <textarea className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 sm:col-span-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Description" value={newsForm.description} onChange={(e) => setNewsForm({ ...newsForm, description: e.target.value })} />
           <div className="sm:col-span-2 flex justify-end">
-            <button type="submit" className="rounded-2xl bg-foreground px-4 py-2 text-background hover:bg-foreground/90 transition-all duration-200 border border-foreground/20">Publish</button>
+            <button 
+              type="submit" 
+              disabled={newsSubmitting}
+              className="rounded-2xl bg-foreground px-4 py-2 text-background hover:bg-foreground/90 transition-all duration-200 border border-foreground/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {newsSubmitting ? 'Publishing...' : 'Publish'}
+            </button>
           </div>
         </form>
 
         <hr className="mt-5"/>
 
-        <div className="divide-y">
-          {news.map((n) => (
-            <div key={n.id} className="py-3">
-              <p className="font-medium text-gray-900">{n.title}</p>
-              <p className="text-sm text-gray-700">{n.news_date} • {n.category} • {n.location}</p>
-              {n.description && <p className="text-sm text-gray-800 mt-1">{n.description}</p>}
-            </div>
-          ))}
-        </div>
+        {newsError && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
+            {newsError}
+          </div>
+        )}
+
+        {newsSuccess && (
+          <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg">
+            {newsSuccess}
+          </div>
+        )}
+
+        {newsLoading ? (
+          <div className="py-8 text-center text-muted-foreground">
+            Loading news...
+          </div>
+        ) : news.length === 0 ? (
+          <div className="py-8 text-center text-muted-foreground">
+            No news available yet.
+          </div>
+        ) : (
+          <div className="divide-y">
+            {news.map((n) => (
+              <div key={n.id} className="py-3">
+                <p className="font-medium text-gray-900">{n.title}</p>
+                <p className="text-sm text-gray-700">{n.news_date} • {n.category} • {n.location}</p>
+                {n.description && <p className="text-sm text-gray-800 mt-1">{n.description}</p>}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
