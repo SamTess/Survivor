@@ -2,6 +2,41 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/infrastructure/persistence/prisma/client';
 import { ContentType } from '@prisma/client';
 
+/**
+ * @api {post} /likes Create Like
+ * @apiName CreateLike
+ * @apiGroup Likes
+ * @apiVersion 0.1.0
+ * @apiDescription Add a like to a specific content item
+ * 
+ * @apiParam {Number} userId User ID
+ * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
+ * @apiParam {Number} contentId Content ID
+ * 
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userId": 1,
+ *       "contentType": "STARTUP",
+ *       "contentId": 5
+ *     }
+ * 
+ * @apiSuccess {Number} likeCount Total number of likes for this content
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "likeCount": 42
+ *     }
+ * 
+ * @apiError (Error 400) {String} error Missing required fields
+ * @apiError (Error 500) {String} error Internal server error
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Missing required fields"
+ *     }
+ */
 export async function POST(req: NextRequest) {
   try {
     const { userId, contentType, contentId } = await req.json();
@@ -57,6 +92,41 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * @api {delete} /likes Remove Like
+ * @apiName RemoveLike
+ * @apiGroup Likes
+ * @apiVersion 0.1.0
+ * @apiDescription Remove a like from a specific content item
+ * 
+ * @apiParam {Number} userId User ID
+ * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
+ * @apiParam {Number} contentId Content ID
+ * 
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userId": 1,
+ *       "contentType": "STARTUP",
+ *       "contentId": 5
+ *     }
+ * 
+ * @apiSuccess {Number} likeCount Total number of likes for this content
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "likeCount": 41
+ *     }
+ * 
+ * @apiError (Error 400) {String} error Missing required fields
+ * @apiError (Error 500) {String} error Internal server error
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Missing required fields"
+ *     }
+ */
 export async function DELETE(req: NextRequest) {
   try {
     const { userId, contentType, contentId } = await req.json();

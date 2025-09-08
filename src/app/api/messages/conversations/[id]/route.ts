@@ -3,6 +3,37 @@ export const runtime = 'nodejs';
 import prisma from '@/infrastructure/persistence/prisma/client';
 import { verifyJwt } from '@/infrastructure/security/auth';
 
+/**
+ * @api {delete} /messages/conversations/:id Delete Conversation
+ * @apiName DeleteConversation
+ * @apiGroup Messages
+ * @apiVersion 0.1.0
+ * @apiDescription Delete a conversation and all its messages (only for conversation members)
+ *
+ * @apiParam {Number} id Conversation unique ID
+ *
+ * @apiHeader {String} Cookie Authentication cookie with JWT token
+ *
+ * @apiSuccess {Boolean} ok Operation success status
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "ok": true
+ *     }
+ *
+ * @apiError (Error 400) {String} error Invalid conversation ID
+ * @apiError (Error 401) {String} error Unauthorized - authentication required
+ * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
+ * @apiError (Error 404) {String} error Conversation not found
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 403 Forbidden
+ *     {
+ *       "error": "Forbidden"
+ *     }
+ */
+
 function getUserId(req: NextRequest): number | null {
   const token = req.cookies.get('auth')?.value;
   const secret = process.env.AUTH_SECRET || 'dev-secret';

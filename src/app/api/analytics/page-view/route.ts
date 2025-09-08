@@ -7,7 +7,7 @@ import { analyticsService } from "../../../../composition/container";
  * @apiGroup Analytics
  * @apiVersion 0.1.0
  * @apiDescription Record a page view event for analytics tracking
- * 
+ *
  * @apiParam {String} [sessionId] Session ID (optional)
  * @apiParam {Number} [userId] User ID (optional for anonymous tracking)
  * @apiParam {String} path Page path that was viewed
@@ -15,7 +15,7 @@ import { analyticsService } from "../../../../composition/container";
  * @apiParam {String} [utmSource] UTM source parameter (optional)
  * @apiParam {String} [utmMedium] UTM medium parameter (optional)
  * @apiParam {String} [utmCampaign] UTM campaign parameter (optional)
- * 
+ *
  * @apiParamExample {json} Request-Example:
  *     {
  *       "sessionId": "sess_123",
@@ -24,17 +24,17 @@ import { analyticsService } from "../../../../composition/container";
  *       "referrerHost": "google.com",
  *       "utmSource": "google"
  *     }
- * 
+ *
  * @apiSuccess {Boolean} ok Success status
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *       "ok": true
  *     }
- * 
+ *
  * @apiError (Error 400) {String} error Error message
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {

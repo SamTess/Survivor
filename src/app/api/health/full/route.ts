@@ -7,12 +7,12 @@ import prisma from '@/infrastructure/persistence/prisma/client';
  * @apiGroup System
  * @apiVersion 0.1.0
  * @apiDescription Comprehensive health check including database connectivity
- * 
+ *
  * @apiSuccess {String} status Service status (healthy/unhealthy)
  * @apiSuccess {String} timestamp ISO timestamp of the check
  * @apiSuccess {String} service Service state description
  * @apiSuccess {String} database Database connection status (connected/disconnected)
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -21,7 +21,7 @@ import prisma from '@/infrastructure/persistence/prisma/client';
  *       "service": "running",
  *       "database": "connected"
  *     }
- * 
+ *
  * @apiSuccessExample {json} Success-Response (DB Disconnected):
  *     HTTP/1.1 200 OK
  *     {

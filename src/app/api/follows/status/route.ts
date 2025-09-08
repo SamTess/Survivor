@@ -10,25 +10,25 @@ const prisma = new PrismaClient();
  * @apiGroup Follows
  * @apiVersion 0.1.0
  * @apiDescription Check if a user is following a specific content item
- * 
+ *
  * @apiParam {Number} userId User ID
  * @apiParam {String} contentType Content type (STARTUP, USER)
  * @apiParam {Number} contentId Content ID
- * 
+ *
  * @apiParamExample {url} Request-Example:
  *     /follows/status?userId=1&contentType=STARTUP&contentId=5
- * 
+ *
  * @apiSuccess {Boolean} isFollowing Whether the user is following the content
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *       "isFollowing": true
  *     }
- * 
+ *
  * @apiError (Error 400) {String} error Missing required parameters
  * @apiError (Error 500) {String} error Failed to check follow status
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {

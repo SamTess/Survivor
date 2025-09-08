@@ -12,7 +12,7 @@ export async function GET(
   try {
     const { id: paramId } = await params;
     const id = parseInt(paramId);
-    
+
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid investor ID' },
@@ -21,7 +21,7 @@ export async function GET(
     }
 
     const investor = await investorService.getInvestorById(id);
-    
+
     if (!investor) {
       return NextResponse.json(
         { success: false, error: 'Investor not found' },
@@ -34,9 +34,9 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching investor:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch investor' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch investor'
       },
       { status: 500 }
     );
@@ -50,7 +50,7 @@ export async function PUT(
   try {
     const { id: paramId } = await params;
     const id = parseInt(paramId);
-    
+
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid investor ID' },
@@ -59,9 +59,9 @@ export async function PUT(
     }
 
     const body = await request.json();
-    
+
     const investor = await investorService.updateInvestor(id, body);
-    
+
     if (!investor) {
       return NextResponse.json(
         { success: false, error: 'Investor not found or update failed' },
@@ -69,8 +69,8 @@ export async function PUT(
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: investor,
       message: 'Investor updated successfully'
     });
@@ -78,9 +78,9 @@ export async function PUT(
   } catch (error) {
     console.error('Error updating investor:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to update investor' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to update investor'
       },
       { status: 400 }
     );
@@ -94,7 +94,7 @@ export async function DELETE(
   try {
     const { id: paramId } = await params;
     const id = parseInt(paramId);
-    
+
     if (isNaN(id)) {
       return NextResponse.json(
         { success: false, error: 'Invalid investor ID' },
@@ -103,7 +103,7 @@ export async function DELETE(
     }
 
     const deleted = await investorService.deleteInvestor(id);
-    
+
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: 'Investor not found or deletion failed' },
@@ -111,17 +111,17 @@ export async function DELETE(
       );
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'Investor deleted successfully'
     });
 
   } catch (error) {
     console.error('Error deleting investor:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to delete investor' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete investor'
       },
       { status: 500 }
     );

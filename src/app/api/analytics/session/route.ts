@@ -8,7 +8,7 @@ import { ContentType } from "../../../../domain/enums/Analytics";
  * @apiGroup Analytics
  * @apiVersion 0.1.0
  * @apiDescription Start a new analytics session for tracking user interactions
- * 
+ *
  * @apiParam {Number} [userId] User ID (optional for anonymous sessions)
  * @apiParam {String} contentType Content type being viewed (STARTUP, NEWS, EVENT, etc.)
  * @apiParam {Number} [contentId] Content ID (optional)
@@ -19,7 +19,7 @@ import { ContentType } from "../../../../domain/enums/Analytics";
  * @apiParam {String} [utmCampaign] UTM campaign parameter (optional)
  * @apiParam {String} [utmTerm] UTM term parameter (optional)
  * @apiParam {String} [utmContent] UTM content parameter (optional)
- * 
+ *
  * @apiParamExample {json} Request-Example:
  *     {
  *       "userId": 1,
@@ -28,17 +28,17 @@ import { ContentType } from "../../../../domain/enums/Analytics";
  *       "referrerHost": "google.com",
  *       "utmSource": "google"
  *     }
- * 
+ *
  * @apiSuccess {String} id Session ID
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *       "id": "sess_abc123def456"
  *     }
- * 
+ *
  * @apiError (Error 400) {String} error Error message
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {

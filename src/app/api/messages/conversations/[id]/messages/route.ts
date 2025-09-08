@@ -6,6 +6,59 @@ import { verifyJwt } from '@/infrastructure/security/auth';
 import { encryptText, decryptText } from '@/infrastructure/security/crypto';
 import { isNonEmptyString, parseIntParam } from '@/utils/validation';
 
+/**
+ * @api {get} /messages/conversations/:id/messages Get Conversation Messages
+ * @apiName GetConversationMessages
+ * @apiGroup Messages
+ * @apiVersion 0.1.0
+ * @apiDescription Retrieve all messages in a specific conversation
+ *
+ * @apiParam {Number} id Conversation ID
+ *
+ * @apiHeader {String} Cookie Authentication cookie with JWT token
+ *
+ * @apiSuccess {Object[]} messages Array of message objects
+ * @apiSuccess {Number} messages.id Message ID
+ * @apiSuccess {Number} messages.sender_id Sender user ID
+ * @apiSuccess {String} messages.content Decrypted message content
+ * @apiSuccess {String} messages.sent_at Send timestamp
+ * @apiSuccess {Object} [messages.reactions] Message reactions by emoji
+ * @apiSuccess {Number} messages.reactions.emoji Count of reactions for each emoji
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "messages": [
+ *         {
+ *           "id": 1,
+ *           "sender_id": 1,
+ *           "content": "Hello everyone!",
+ *           "sent_at": "2024-01-15T10:00:00.000Z",
+ *           "reactions": {
+ *             "👍": 2,
+ *             "❤️": 1
+ *           }
+ *         },
+ *         {
+ *           "id": 2,
+ *           "sender_id": 2,
+ *           "content": "Hi there!",
+ *           "sent_at": "2024-01-15T10:01:00.000Z"
+ *         }
+ *       ]
+ *     }
+ *
+ * @apiError (Error 400) {String} error Invalid conversation ID
+ * @apiError (Error 401) {String} error Unauthorized - authentication required
+ * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 403 Forbidden
+ *     {
+ *       "error": "Forbidden"
+ *     }
+ */
+
 function getUserId(req: NextRequest): number | null {
   const token = req.cookies.get('auth')?.value;
   const secret = process.env.AUTH_SECRET || 'dev-secret';
@@ -31,7 +84,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
     orderBy: { sent_at: 'asc' },
     select: { id: true, sender_id: true, content: true, sent_at: true },
   });
-  // Reactions aggregate (emoji -> count) per message
   const ids = rows.map((r) => r.id);
   let reactionsMap = new Map<number, Record<string, number>>();
   if (ids.length > 0) {
@@ -52,7 +104,6 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
       reactionsMap = new Map();
     }
   }
-  // Decrypt content and attach reactions
   const messages = rows.map((r) => ({
     id: r.id,
     sender_id: r.sender_id,
@@ -67,6 +118,51 @@ function safeDecrypt(payload: string): string {
   try { return decryptText(payload); } catch { return '[unreadable]'; }
 }
 
+/**
+ * @api {post} /messages/conversations/:id/messages Send Message
+ * @apiName SendMessage
+ * @apiGroup Messages
+ * @apiVersion 0.1.0
+ * @apiDescription Send a new message to a conversation
+ *
+ * @apiParam {Number} id Conversation ID
+ *
+ * @apiHeader {String} Cookie Authentication cookie with JWT token
+ *
+ * @apiParam {String} content Message content (max 5000 characters)
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "content": "Hello everyone! How are you doing today?"
+ *     }
+ *
+ * @apiSuccess {Number} id Created message ID
+ * @apiSuccess {String} sent_at Send timestamp
+ * @apiSuccess {Number} sender_id Sender user ID
+ * @apiSuccess {String} content Message content (echoed back)
+ * @apiSuccess {Boolean} ok Success status
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 201 Created
+ *     {
+ *       "id": 15,
+ *       "sent_at": "2024-01-15T15:30:00.000Z",
+ *       "sender_id": 1,
+ *       "content": "Hello everyone! How are you doing today?",
+ *       "ok": true
+ *     }
+ *
+ * @apiError (Error 400) {String} error Invalid conversation ID or message content
+ * @apiError (Error 401) {String} error Unauthorized - authentication required
+ * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
+ * @apiError (Error 500) {String} error Encryption error
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Invalid content"
+ *     }
+ */
 export async function POST(req: NextRequest, ctx: { params: { id: string } }) {
   const userId = getUserId(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -86,7 +182,6 @@ export async function POST(req: NextRequest, ctx: { params: { id: string } }) {
     data: { conversation_id: cid, sender_id: userId, content: encrypted },
     select: { id: true, sent_at: true, sender_id: true },
   });
-  // Notify Postgres channel for cross-instance realtime
   try {
     await prisma.$executeRawUnsafe(
       `SELECT pg_notify('message_new', $1)`,

@@ -26,6 +26,37 @@ const emailConfig = {
 
 const emailService = new EmailService(emailConfig);
 
+/**
+ * @api {post} /auth/request-reset Request Password Reset
+ * @apiName RequestPasswordReset
+ * @apiGroup Authentication
+ * @apiVersion 0.1.0
+ * @apiDescription Request a password reset link to be sent to the user's email
+ *
+ * @apiParam {String} email User's email address
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "email": "user@example.com"
+ *     }
+ *
+ * @apiSuccess {String} message Confirmation message
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": "Si cet email existe dans notre système, un lien de réinitialisation a été envoyé."
+ *     }
+ *
+ * @apiError (Error 400) {String} error Email is required
+ * @apiError (Error 500) {String} error Internal server error
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Email requis"
+ *     }
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -35,13 +66,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email requis' }, { status: 400 });
     }
 
-    const user = await prisma.s_USER.findFirst({ 
-      where: { email: email.toLowerCase().trim() } 
+    const user = await prisma.s_USER.findFirst({
+      where: { email: email.toLowerCase().trim() }
     });
 
     if (!user) {
-      return NextResponse.json({ 
-        message: 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.' 
+      return NextResponse.json({
+        message: 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.'
       });
     }
 
@@ -51,19 +82,19 @@ export async function POST(req: NextRequest) {
       await emailService.sendPasswordResetEmail(user.email, resetToken, user.name);
     } catch (emailError) {
       console.error('Email sending error:', emailError);
-      return NextResponse.json({ 
-        error: 'Error sending email' 
+      return NextResponse.json({
+        error: 'Error sending email'
       }, { status: 500 });
     }
 
-    return NextResponse.json({ 
-      message: 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.' 
+    return NextResponse.json({
+      message: 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.'
     });
 
   } catch (error) {
     console.error('Error during password reset request:', error);
-    return NextResponse.json({ 
-      error: 'Erreur interne du serveur' 
+    return NextResponse.json({
+      error: 'Erreur interne du serveur'
     }, { status: 500 });
   }
 }

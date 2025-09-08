@@ -4,6 +4,42 @@ import { ContentType } from '@/domain/enums/Analytics';
 
 const prisma = new PrismaClient();
 
+/**
+ * @api {post} /follows Create Follow
+ * @apiName CreateFollow
+ * @apiGroup Follows
+ * @apiVersion 0.1.0
+ * @apiDescription Follow a specific content item or user
+ *
+ * @apiParam {Number} userId User ID (follower)
+ * @apiParam {String} contentType Content type (STARTUP, USER)
+ * @apiParam {Number} contentId Content ID (target)
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userId": 1,
+ *       "contentType": "STARTUP",
+ *       "contentId": 5
+ *     }
+ *
+ * @apiSuccess {Number} followerCount Total number of followers for this content
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "followerCount": 25
+ *     }
+ *
+ * @apiError (Error 400) {String} error Missing required fields
+ * @apiError (Error 409) {String} error Already following
+ * @apiError (Error 500) {String} error Failed to create follow
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 409 Conflict
+ *     {
+ *       "error": "Already following"
+ *     }
+ */
 export async function POST(request: NextRequest) {
   try {
     const { userId, contentType, contentId } = await request.json();
@@ -15,7 +51,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if follow already exists
     const existingFollow = await prisma.s_FOLLOW.findUnique({
       where: {
         followerId_targetType_targetId: {
@@ -33,7 +68,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create follow
     await prisma.s_FOLLOW.create({
       data: {
         followerId: userId,
@@ -42,7 +76,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Update follower count based on content type
     let followerCount = 0;
     if (contentType === ContentType.STARTUP) {
       const startup = await prisma.s_STARTUP.update({
@@ -68,6 +101,41 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * @api {delete} /follows Remove Follow
+ * @apiName RemoveFollow
+ * @apiGroup Follows
+ * @apiVersion 0.1.0
+ * @apiDescription Unfollow a specific content item or user
+ *
+ * @apiParam {Number} userId User ID (follower)
+ * @apiParam {String} contentType Content type (STARTUP, USER)
+ * @apiParam {Number} contentId Content ID (target)
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "userId": 1,
+ *       "contentType": "STARTUP",
+ *       "contentId": 5
+ *     }
+ *
+ * @apiSuccess {Number} followerCount Total number of followers for this content
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "followerCount": 24
+ *     }
+ *
+ * @apiError (Error 400) {String} error Missing required fields
+ * @apiError (Error 500) {String} error Failed to delete follow
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Missing required fields"
+ *     }
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const { userId, contentType, contentId } = await request.json();
@@ -79,7 +147,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Delete follow
     await prisma.s_FOLLOW.delete({
       where: {
         followerId_targetType_targetId: {
@@ -90,7 +157,6 @@ export async function DELETE(request: NextRequest) {
       },
     });
 
-    // Update follower count based on content type
     let followerCount = 0;
     if (contentType === ContentType.STARTUP) {
       const startup = await prisma.s_STARTUP.update({

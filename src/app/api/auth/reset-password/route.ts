@@ -12,6 +12,39 @@ if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
 const passwordResetService = new PasswordResetService();
 
+/**
+ * @api {post} /auth/reset-password Reset Password
+ * @apiName ResetPassword
+ * @apiGroup Authentication
+ * @apiVersion 0.1.0
+ * @apiDescription Reset user password using a valid reset token
+ *
+ * @apiParam {String} token Password reset token
+ * @apiParam {String} password New password (minimum 8 characters)
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "token": "abc123def456",
+ *       "password": "newSecurePassword123"
+ *     }
+ *
+ * @apiSuccess {String} message Success message
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "message": "Password updated successfully"
+ *     }
+ *
+ * @apiError (Error 400) {String} error Missing token/password or invalid token
+ * @apiError (Error 500) {String} error Internal server error
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Token and password are required"
+ *     }
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -58,6 +91,35 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * @api {get} /auth/reset-password Validate Reset Token
+ * @apiName ValidateResetToken
+ * @apiGroup Authentication
+ * @apiVersion 0.1.0
+ * @apiDescription Validate if a password reset token is still valid
+ *
+ * @apiParam {String} token Password reset token (as query parameter)
+ *
+ * @apiParamExample {url} Request-Example:
+ *     /auth/reset-password?token=abc123def456
+ *
+ * @apiSuccess {Boolean} valid Whether the token is valid
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "valid": true
+ *     }
+ *
+ * @apiError (Error 400) {String} error Token is required
+ * @apiError (Error 500) {String} error Internal server error
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Token is required"
+ *     }
+ */
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);

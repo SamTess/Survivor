@@ -8,7 +8,7 @@ import { ContentType, EventType } from "../../../../domain/enums/Analytics";
  * @apiGroup Analytics
  * @apiVersion 0.1.0
  * @apiDescription Record a user interaction event for analytics tracking
- * 
+ *
  * @apiParam {Number} [userId] User ID (optional for anonymous tracking)
  * @apiParam {String} [sessionId] Session ID (optional)
  * @apiParam {String} eventType Event type (e.g., CLICK, VIEW, DOWNLOAD)
@@ -21,7 +21,7 @@ import { ContentType, EventType } from "../../../../domain/enums/Analytics";
  * @apiParam {String} [utmCampaign] UTM campaign parameter (optional)
  * @apiParam {String} [utmTerm] UTM term parameter (optional)
  * @apiParam {String} [utmContent] UTM content parameter (optional)
- * 
+ *
  * @apiParamExample {json} Request-Example:
  *     {
  *       "userId": 1,
@@ -32,17 +32,17 @@ import { ContentType, EventType } from "../../../../domain/enums/Analytics";
  *       "metadata": {"button": "like"},
  *       "utmSource": "google"
  *     }
- * 
+ *
  * @apiSuccess {Boolean} ok Success status
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *       "ok": true
  *     }
- * 
+ *
  * @apiError (Error 400) {String} error Error message
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {

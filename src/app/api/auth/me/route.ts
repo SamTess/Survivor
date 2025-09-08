@@ -14,15 +14,15 @@ if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
  * @apiGroup Authentication
  * @apiVersion 0.1.0
  * @apiDescription Get information about the currently authenticated user
- * 
+ *
  * @apiHeader {String} Cookie Authentication cookie with JWT token
- * 
+ *
  * @apiSuccess {Number} id User ID
  * @apiSuccess {String} name User's full name
  * @apiSuccess {String} email User's email address
  * @apiSuccess {String} role User's role (ADMIN, MODERATOR, USER)
  * @apiSuccess {String[]} permissions User's permissions
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
@@ -32,10 +32,10 @@ if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
  *       "role": "USER",
  *       "permissions": ["read:profile", "write:profile"]
  *     }
- * 
+ *
  * @apiError (Error 401) {String} error Unauthorized - invalid or missing token
  * @apiError (Error 404) {String} error User not found
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 401 Unauthorized
  *     {
