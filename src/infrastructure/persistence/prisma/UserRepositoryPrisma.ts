@@ -114,6 +114,24 @@ export class UserRepositoryPrisma implements UserRepository {
     return users.map(user => this.mapPrismaToUser(user));
   }
 
+  async getByDateRange(startDate: Date, endDate: Date): Promise<User[]> {
+    const users = await prisma.s_USER.findMany({
+      where: {
+        created_at: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      include: {
+        founders: true,
+        investors: true,
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return users.map(user => this.mapPrismaToUser(user));
+  }
+
   async getFounders(): Promise<User[]> {
     const users = await prisma.s_USER.findMany({
       where: {

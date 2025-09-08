@@ -77,12 +77,6 @@ export default function AdminDashboardSection() {
             Executive dashboard with customizable views and accessibility features
           </p>
         </div>
-        <div className="flex items-center space-x-3 mt-4 sm:mt-0">
-          <div className="flex items-center space-x-2 px-3 py-2 bg-muted rounded-lg">
-            <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" aria-hidden="true"></div>
-            <span className="text-sm font-medium">System Online</span>
-          </div>
-        </div>
       </header>
 
       <DashboardControls
