@@ -49,29 +49,29 @@ export class EmailService {
           <div class="container">
             <div class="header">
               <div class="logo">J</div>
-              <h1>Réinitialisation de votre mot de passe</h1>
+              <h1>Reset your password</h1>
             </div>
             <div class="content">
-              <p>Bonjour <strong>${userName}</strong>,</p>
-              
-              <p>Nous avons remarqué que votre compte n'a pas encore de mot de passe défini. Pour des raisons de sécurité, nous vous invitons à créer un mot de passe pour votre compte Jeb Incubator.</p>
-              
-              <p>Cliquez sur le bouton ci-dessous pour créer votre mot de passe :</p>
-              
-              <a href="${resetUrl}" class="button">Créer mon mot de passe</a>
-              
-              <p>Si le bouton ne fonctionne pas, vous pouvez copier et coller ce lien dans votre navigateur :</p>
+              <p>Hello <strong>${userName}</strong>,</p>
+
+              <p>We noticed that your account doesn't have a password set yet. For security reasons, we invite you to create a password for your Jeb Incubator account.</p>
+
+              <p>Click the button below to create your password:</p>
+
+              <a href="${resetUrl}" class="button">Create my password</a>
+
+              <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
               <p style="word-break: break-all; background: #e9ecef; padding: 10px; border-radius: 5px; font-family: monospace;">${resetUrl}</p>
-              
-              <p><strong>Important :</strong> Ce lien expirera dans 72 heures pour des raisons de sécurité.</p>
-              
-              <p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce message en toute sécurité.</p>
-              
-              <p>Cordialement,<br>L'équipe Jeb Incubator</p>
+
+              <p><strong>Important:</strong> This link will expire in 72 hours for security reasons.</p>
+
+              <p>If you didn't request this reset, you can safely ignore this message.</p>
+
+              <p>Best regards,<br>The Jeb Incubator Team</p>
             </div>
             <div class="footer">
-              <p>&copy; 2025 Jeb Incubator. Tous droits réservés.</p>
-              <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+              <p>&copy; 2025 Jeb Incubator. All rights reserved.</p>
+              <p>This email was sent automatically, please do not reply.</p>
             </div>
           </div>
         </body>
@@ -79,24 +79,24 @@ export class EmailService {
     `;
 
     const textContent = `
-      Bonjour ${userName},
+      Hello ${userName},
 
-      Nous avons remarqué que votre compte n'a pas encore de mot de passe défini. Pour des raisons de sécurité, nous vous invitons à créer un mot de passe pour votre compte Jeb Incubator.
+      We noticed that your account doesn't have a password set yet. For security reasons, we invite you to create a password for your Jeb Incubator account.
 
-      Visitez ce lien pour créer votre mot de passe : ${resetUrl}
+      Visit this link to create your password: ${resetUrl}
 
-      Important : Ce lien expirera dans 72 heures pour des raisons de sécurité.
+      Important: This link will expire in 72 hours for security reasons.
 
-      Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce message en toute sécurité.
+      If you didn't request this reset, you can safely ignore this message.
 
-      Cordialement,
-      L'équipe Jeb Incubator
+      Best regards,
+      The Jeb Incubator Team
     `;
 
     await this.transporter.sendMail({
       from: this.config.from,
       to,
-      subject: 'Créez votre mot de passe - Jeb Incubator',
+      subject: 'Create your password - Jeb Incubator',
       text: textContent,
       html: htmlContent,
     });
