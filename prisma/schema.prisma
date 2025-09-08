@@ -59,6 +59,7 @@ model S_USER {
   permissions   S_PERMISSION[]
   messages      S_MESSAGE[] @relation("SenderMessages")
   conversation_users S_CONVERSATION_USER[]
+  message_reactions S_MESSAGE_REACTION[]
   sessions      S_SESSION[]
   interactionEvents S_INTERACTION_EVENT[]
   follows       S_FOLLOW[]
@@ -194,6 +195,22 @@ model S_MESSAGE {
   sent_at         DateTime @default(now())
   conversation    S_CONVERSATION @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   sender          S_USER         @relation("SenderMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+  reactions       S_MESSAGE_REACTION[]
+}
+
+model S_MESSAGE_REACTION {
+  id         Int      @id @default(autoincrement())
+  message_id Int
+  user_id    Int
+  emoji      String
+  created_at DateTime @default(now())
+
+  message    S_MESSAGE @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  user       S_USER    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([message_id, user_id, emoji])
+  @@index([message_id])
+  @@index([user_id])
 }
 
 enum ContentType {

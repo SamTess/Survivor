@@ -18,17 +18,15 @@ export class ApiService {
       headers: {
         'Content-Type': 'application/json',
       },
-      withCredentials: true, // Important for HTTP-only cookies
+      withCredentials: true,
     });
 
     this.setupInterceptors();
   }
 
   private setupInterceptors() {
-    // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        // Add any request transformation here
         return config;
       },
       (error) => {
@@ -40,17 +38,13 @@ export class ApiService {
     // Response interceptor
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
-        // Transform successful responses
         return response;
       },
       (error: AxiosError) => {
-        // Handle common error scenarios
         console.error('API Response Error:', error);
 
         if (error.response?.status === 401) {
-          // Unauthorized - redirect to login or emit event
           console.warn('Unauthorized access - session may have expired');
-          // You can emit a custom event here for logout
           window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
 
@@ -151,7 +145,21 @@ export class ApiService {
   }
 
   async getCurrentUser(): Promise<ApiResponse<SessionUser>> {
-    return this.get<SessionUser>('/auth/me');
+    try {
+      const response = await this.client.get('/auth/me');
+      const u = response.data as { id: number; name: string; email: string; role: string; permissions?: string[] };
+      const role = (u?.role === 'ADMIN') ? 'admin' : 'user';
+      return {
+        success: true,
+        data: { id: u.id, name: u.name, email: u.email, role, permissions: u.permissions },
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as { error?: string } | undefined;
+        return { success: false, error: apiError?.error || error.message };
+      }
+      return { success: false, error: 'Failed to fetch current user' };
+    }
   }
 
   async requestPasswordReset(data: RequestResetData): Promise<ApiResponse<{ message: string }>> {
