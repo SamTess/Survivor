@@ -109,18 +109,18 @@ export function Navbar() {
               </Button>
 
               {isProfileDropdownOpen && isAuthenticated && (
-                <div className="absolute right-0 top-12 w-48 bg-background/95 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                <div className="absolute right-0 top-12 w-48 bg-background/95 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg z-50 animate-in slide-in-from-top-2 duration-200">
                   <Link
                     href={`/profile/${user?.id}`}
                     onClick={() => setIsProfileDropdownOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200 rounded-t-2xl"
                   >
                     <User className="h-4 w-4 text-muted-foreground" />
                     Profile
                   </Link>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left"
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left rounded-b-2xl"
                   >
                     <LogOut className="h-4 w-4" />
                     Logout
