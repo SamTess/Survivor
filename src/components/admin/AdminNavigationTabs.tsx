@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock } from 'react-icons/fa'
+import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock, FaUserShield } from 'react-icons/fa'
 import { Card } from '@/components/ui/card'
 
 import AdminDashboardSection from './AdminDashboardSection'
@@ -9,6 +9,7 @@ import ProjectsCrudSection from './projects/ProjectsCrudSection'
 import NewsCrudSection from './news/NewsCrudSection'
 import EventsCrudSection from './events/EventsCrudSection'
 import UsersCrudSection from './users/UsersCrudSection'
+import AdminStatsSection from './AdminStatsSection'
 
 interface AdminTab {
   id: string
@@ -42,11 +43,15 @@ export default function AdminNavigationTabs() {
 
   const tabs: AdminTab[] = [
     {
-      id: 'dashboard',
-      label: 'Dashboard',
+      id: 'overview',
+      label: 'Overview',
       icon: <FaChartLine size={16} />,
-      component: <AdminDashboardSection />,
-      description: 'Unified dashboard with statistics, analytics, and monitoring'
+      component: (
+        <div className="space-y-8">
+          <AdminStatsSection />
+        </div>
+      ),
+      description: 'Platform statistics and key metrics'
     },
     {
       id: 'projects',
@@ -75,6 +80,13 @@ export default function AdminNavigationTabs() {
       icon: <FaUsers size={16} />,
       component: <UsersCrudSection />,
       description: 'Manage users and permissions'
+    },
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: <FaUserShield size={16} />,
+      component: <AdminDashboardSection />,
+      description: 'Analytics and monitoring'
     }
   ]
 
