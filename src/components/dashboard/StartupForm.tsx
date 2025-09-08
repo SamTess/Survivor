@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import startupData from "@/mocks/startup.json";
+import { StartupDetailApiResponse } from "@/domain/interfaces";
+import { apiService } from "@/context/auth";
 
 interface StartupFormState {
   name: string;
@@ -18,25 +20,40 @@ interface StartupFormState {
   founders: string[];
 }
 
-export default function StartupForm() {
-  const [form, setForm] = useState<StartupFormState>({
-    name: startupData.name,
-    email: startupData.email,
-    phone: startupData.phone,
-    address: startupData.address,
-    website_url: startupData.website_url,
-    social_media_url: startupData.social_media_url,
-    legal_status: startupData.legal_status,
-    sector: startupData.sector,
-    maturity: startupData.maturity,
-    needs: startupData.needs,
-    project_status: startupData.project_status,
-    founders: startupData.founders ?? [],
-  });
+interface StartupFormProps {
+  startup?: StartupDetailApiResponse | null;
+}
+
+export default function StartupForm({ startup }: StartupFormProps) {
+  const [form, setForm] = useState<StartupFormState>(startupData);
   const [newFounder, setNewFounder] = useState("");
   const [saved, setSaved] = useState(false);
-  const initialFormRef = useRef<StartupFormState | null>(null);
+  const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const initialFormRef = useRef<StartupFormState | null>(null);
+
+  // Update form when startup prop changes
+  useEffect(() => {
+    if (startup) {
+      const newForm = {
+        name: startup?.name,
+        email: startup?.email,
+        phone: startup?.phone,
+        address: startup?.address,
+        website_url: startup?.website_url,
+        social_media_url: startup?.social_media_url,
+        legal_status: startup?.legal_status,
+        sector: startup?.sector,
+        maturity: startup?.maturity,
+        needs: startup?.needs,
+        project_status: startup?.project_status,
+        founders: startup?.founders?.map(f => f.name) || [],
+      };
+      setForm(newForm);
+      initialFormRef.current = { ...newForm };
+    }
+  }, [startup]);
 
   // Store initial form only once
   if (initialFormRef.current === null) {
@@ -59,14 +76,50 @@ export default function StartupForm() {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
-  function onSave(e: React.FormEvent) {
+  async function onSave(e: React.FormEvent) {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-    // Later: call API to persist
-    // await fetch('/api/startup', { method: 'PUT', body: JSON.stringify(form) })
-  initialFormRef.current = { ...form };
-  setDirty(false);
+    
+    if (!startup?.id) {
+      setError("No startup ID available for saving");
+      return;
+    }
+
+    setSaving(true);
+    setError(null);
+
+    try {
+      // Prepare the data to send to the API
+      const updateData = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        address: form.address || null,
+        website_url: form.website_url || null,
+        social_media_url: form.social_media_url || null,
+        legal_status: form.legal_status || null,
+        sector: form.sector || null,
+        maturity: form.maturity || null,
+        needs: form.needs || null,
+        project_status: form.project_status || null,
+        // Note: founders will be handled separately if needed
+      };
+
+      const response = await apiService.put(`/startups/${startup.id}`, updateData);
+
+      if (response.success) {
+        setSaved(true);
+        setDirty(false);
+        initialFormRef.current = { ...form };
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        setError(response.error || "Failed to save startup");
+      }
+    } catch (error) {
+      console.error('Error saving startup:', error);
+      setError("An unexpected error occurred while saving");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function addFounder() {
@@ -215,15 +268,36 @@ export default function StartupForm() {
           <div className="fixed inset-x-0 bottom-20 z-40 flex items-center justify-center animate-fade-in-up">
             <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-border/20 bg-card/95 px-4 py-2 shadow-lg backdrop-blur-md">
               <span className="text-sm text-foreground">You have unsaved changes</span>
-              <button type="submit" className="rounded-2xl bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90 transition-all duration-200">
-                Save changes
+              <button 
+                type="submit" 
+                disabled={saving}
+                className="rounded-2xl bg-foreground px-4 py-2 text-sm font-medium text-background hover:bg-foreground/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              >
+                {saving ? "Saving..." : "Save changes"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="fixed inset-x-0 bottom-20 z-40 flex items-center justify-center animate-fade-in-up">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-2 shadow-lg backdrop-blur-md">
+              <span className="text-sm text-destructive">{error}</span>
+              <button 
+                type="button" 
+                onClick={() => setError(null)}
+                className="rounded-2xl bg-destructive px-3 py-1 text-xs font-medium text-destructive-foreground hover:bg-destructive/90 transition-all duration-200"
+              >
+                ×
               </button>
             </div>
           </div>
         )}
 
         <div className="flex items-center justify-start">
-          <p className={`text-xs ${saved ? "text-accent" : "text-muted-foreground"}`}>{saved ? "Saved." : "Changes are local (mock)."}</p>
+          <p className={`text-xs ${saved ? "text-accent" : "text-muted-foreground"}`}>
+            {saved ? "Saved successfully!" : startup?.id ? "Changes will be saved to the server" : "Changes are local (mock)."}
+          </p>
         </div>
       </form>
     </section>

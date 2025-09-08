@@ -27,7 +27,6 @@ export class ApiService {
   private setupInterceptors() {
     this.client.interceptors.request.use(
       (config) => {
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
@@ -39,7 +38,6 @@ export class ApiService {
     // Response interceptor
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
-        console.log(`API Response: ${response.status} ${response.config.url}`);
         return response;
       },
       (error: AxiosError) => {

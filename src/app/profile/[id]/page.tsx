@@ -40,7 +40,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       setError(null);
       try {
         const response = await apiService.get<UserApiResponse>(`/users/${id}`);
-        console.log('Fetch user response:', response);
         if (response.success && response.data) {
           setUser(response.data);
           setEditedUser(response.data);
