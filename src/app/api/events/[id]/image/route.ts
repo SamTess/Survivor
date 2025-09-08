@@ -4,6 +4,29 @@ import { detectMime } from '@/utils/image';
 
 const prisma = new PrismaClient();
 
+/**
+ * @api {get} /events/:id/image Get Event Image
+ * @apiName GetEventImage
+ * @apiGroup Events
+ * @apiVersion 0.1.0
+ * @apiDescription Retrieve the image data for a specific event
+ * 
+ * @apiParam {Number} id Event ID
+ * 
+ * @apiSuccess {Binary} image Event image data
+ * @apiSuccess {String} Content-Type Image MIME type (image/jpeg, image/png, etc.)
+ * 
+ * @apiError (Error 400) {String} error Invalid event ID
+ * @apiError (Error 404) {String} error Event not found or no image available
+ * @apiError (Error 500) {String} error Failed to fetch image
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "success": false,
+ *       "error": "No image available for this event"
+ *     }
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

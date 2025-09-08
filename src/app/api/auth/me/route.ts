@@ -8,6 +8,40 @@ const globalForPrisma = global as unknown as GlobalWithPrisma;
 const prisma = globalForPrisma.prisma ?? new PrismaClient();
 if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
+/**
+ * @api {get} /auth/me Get Current User
+ * @apiName GetCurrentUser
+ * @apiGroup Authentication
+ * @apiVersion 0.1.0
+ * @apiDescription Get information about the currently authenticated user
+ * 
+ * @apiHeader {String} Cookie Authentication cookie with JWT token
+ * 
+ * @apiSuccess {Number} id User ID
+ * @apiSuccess {String} name User's full name
+ * @apiSuccess {String} email User's email address
+ * @apiSuccess {String} role User's role (ADMIN, MODERATOR, USER)
+ * @apiSuccess {String[]} permissions User's permissions
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "id": 1,
+ *       "name": "John Doe",
+ *       "email": "user@example.com",
+ *       "role": "USER",
+ *       "permissions": ["read:profile", "write:profile"]
+ *     }
+ * 
+ * @apiError (Error 401) {String} error Unauthorized - invalid or missing token
+ * @apiError (Error 404) {String} error User not found
+ * 
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 401 Unauthorized
+ *     {
+ *       "error": "unauthorized"
+ *     }
+ */
 export async function GET(req: NextRequest) {
   const token = req.cookies.get('auth')?.value;
   const secret = process.env.AUTH_SECRET || 'dev-secret';

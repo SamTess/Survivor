@@ -5,6 +5,51 @@ import { UserRepositoryPrisma } from '../../../infrastructure/persistence/prisma
 const userRepository = new UserRepositoryPrisma();
 const userService = new UserService(userRepository);
 
+/**
+ * @api {get} /users Get Users
+ * @apiName GetUsers
+ * @apiGroup Users
+ * @apiVersion 0.1.0
+ * @apiDescription Retrieve a list of users with optional filtering and pagination
+ * 
+ * @apiParam {Number} [page=1] Page number for pagination
+ * @apiParam {Number} [limit=10] Number of items per page
+ * @apiParam {String} [role] Filter by user role
+ * @apiParam {String} [search] Search term for user name or email
+ * @apiParam {Boolean} [founders] Get only founders (true/false)
+ * @apiParam {Boolean} [investors] Get only investors (true/false)
+ * 
+ * @apiSuccess {Boolean} success Request success status
+ * @apiSuccess {Object[]} data Array of user objects
+ * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
+ * @apiSuccess {Number} pagination.page Current page number
+ * @apiSuccess {Number} pagination.limit Items per page
+ * @apiSuccess {Number} pagination.total Total number of users
+ * @apiSuccess {Number} pagination.totalPages Total number of pages
+ * 
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "success": true,
+ *       "data": [
+ *         {
+ *           "id": 1,
+ *           "name": "John Doe",
+ *           "email": "john@example.com",
+ *           "role": "founder"
+ *         }
+ *       ],
+ *       "pagination": {
+ *         "page": 1,
+ *         "limit": 10,
+ *         "total": 25,
+ *         "totalPages": 3
+ *       }
+ *     }
+ * 
+ * @apiError (Error 500) {Boolean} success false
+ * @apiError (Error 500) {String} error Error message
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

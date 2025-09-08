@@ -28,6 +28,62 @@ const emailConfig = {
 
 const emailService = new EmailService(emailConfig);
 
+/**
+ * @api {post} /auth/login User Login
+ * @apiName LoginUser
+ * @apiGroup Authentication
+ * @apiVersion 0.1.0
+ * @apiDescription Authenticate a user and return a JWT token
+ *
+ * @apiParam {String} email User's email address
+ * @apiParam {String} password User's password
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "email": "user@example.com",
+ *       "password": "securepassword123"
+ *     }
+ *
+ * @apiSuccess {Number} id User ID
+ * @apiSuccess {String} name User's full name
+ * @apiSuccess {String} email User's email address
+ * @apiSuccess {String} role User's role (admin, user, etc.)
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "id": 1,
+ *       "name": "John Doe",
+ *       "email": "user@example.com",
+ *       "role": "user"
+ *     }
+ *
+ * @apiError (Error 400) {String} error Missing required fields
+ * @apiError (Error 401) {String} error Invalid credentials or password reset required
+ * @apiError (Error 401) {Boolean} [requiresPasswordReset] Indicates if password reset is needed
+ * @apiError (Error 401) {Boolean} [devMode] Development mode indicator
+ * @apiError (Error 401) {String} [resetUrl] Password reset URL (dev mode only)
+ * @apiError (Error 500) {String} error Server error
+ *
+ * @apiErrorExample {json} Error-Response (Missing Fields):
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Missing fields"
+ *     }
+ *
+ * @apiErrorExample {json} Error-Response (Invalid Credentials):
+ *     HTTP/1.1 401 Unauthorized
+ *     {
+ *       "error": "Invalid credentials"
+ *     }
+ *
+ * @apiErrorExample {json} Error-Response (Password Reset Required):
+ *     HTTP/1.1 401 Unauthorized
+ *     {
+ *       "error": "No password set. A password creation email has been sent.",
+ *       "requiresPasswordReset": true
+ *     }
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

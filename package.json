@@ -14,7 +14,12 @@
     "test:watch": "vitest",
     "health-check": "tsx scripts/health-check.ts",
     "cleanup-tokens": "tsx scripts/cleanup-tokens.ts",
-    "test-email": "tsx scripts/test-email.ts"
+    "test-email": "tsx scripts/test-email.ts",
+    "docs:generate": "apidoc -i src/app/api -o docs/api",
+    "docs:serve": "npx http-server docs/api -p 8080 --cors",
+    "docs:watch": "bash scripts/docs-watch.sh",
+    "docs:build": "npm run docs:generate && echo '✅ API Documentation built successfully'",
+    "docs:dev": "concurrently \"npm run docs:watch\" \"npm run docs:serve\""
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
@@ -53,14 +58,24 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/supertest": "^6.0.2",
+    "apidoc": "^1.2.0",
+    "concurrently": "^8.2.2",
     "env-cmd": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "http-server": "^14.1.1",
     "prisma": "^6.15.0",
     "supertest": "^7.0.0",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
     "typescript": "^5",
     "vitest": "^3.2.4"
+  },
+  "apidoc": {
+    "name": "Survivor API Documentation",
+    "version": "0.1.0",
+    "description": "API documentation for the Survivor application",
+    "title": "Survivor API",
+    "url": "http://localhost:3000/api"
   }
 }
