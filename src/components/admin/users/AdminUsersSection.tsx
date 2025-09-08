@@ -14,7 +14,6 @@ import {
   Eye,
   Users,
   Shield,
-  X,
   Loader2,
   Mail,
   Phone
@@ -109,7 +108,7 @@ const PERMISSION_TEMPLATES = [
   }
 ]
 
-export default function UsersCrudSection() {
+export default function AdminUsersSection() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -678,131 +677,127 @@ export default function UsersCrudSection() {
 
       {/* Modal de gestion des permissions */}
       {isPermissionModalOpen && selectedUserForPermissions && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">
-                Permissions pour {selectedUserForPermissions.name}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsPermissionModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X size={16} />
-              </Button>
+        <UniversalModal
+          isOpen={isPermissionModalOpen}
+          onClose={() => setIsPermissionModalOpen(false)}
+          title={`Permissions pour ${selectedUserForPermissions.name}`}
+          size="xl"
+          actions={[
+            {
+              label: "Fermer",
+              onClick: () => setIsPermissionModalOpen(false),
+              variant: "outline"
+            }
+          ]}
+        >
+          <div className="space-y-6">
+            {/* Permission templates */}
+            <div>
+              <h4 className="text-sm font-medium mb-3">Modèles de permissions rapides</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {PERMISSION_TEMPLATES.map((template, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyPermissionTemplate(template)}
+                    className="justify-start text-left h-auto p-3"
+                  >
+                    <div>
+                      <div className="font-medium">{template.name}</div>
+                      <div className="text-xs text-muted-foreground">{template.description}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Permission templates */}
+            {/* Custom permission form */}
+            <form onSubmit={handleSubmitPermission} className="space-y-4">
               <div>
-                <h4 className="text-sm font-medium mb-3">Quick permission templates</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {PERMISSION_TEMPLATES.map((template, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => applyPermissionTemplate(template)}
-                      className="justify-start text-left h-auto p-3"
-                    >
-                      <div>
-                        <div className="font-medium">{template.name}</div>
-                        <div className="text-xs text-muted-foreground">{template.description}</div>
-                      </div>
-                    </Button>
-                  ))}
+                <label className="block text-sm font-medium mb-1">Nom de la permission *</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                  value={permissionFormData.name}
+                  onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                  value={permissionFormData.description}
+                  onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-3">Droits d&apos;accès</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_create}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Créer</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_read}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_read: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Lire</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_update}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Modifier</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_delete}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Supprimer</span>
+                  </label>
                 </div>
               </div>
 
-              {/* Custom permission form */}
-              <form onSubmit={handleSubmitPermission} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Permission Name *</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={permissionFormData.name}
-                    onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    rows={2}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={permissionFormData.description}
-                    onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-3">Access Rights</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_create}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Create</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_read}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_read: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Lire</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_update}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Update</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_delete}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Delete</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsPermissionModalOpen(false)}
-                    disabled={isSubmitting}
-                  >
-                    Close
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
-                    {isSubmitting ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Shield size={16} />
-                    )}
-                    Add Permission
-                  </Button>
-                </div>
-              </form>
-            </div>
+              <div className="flex justify-end gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsPermissionModalOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  Fermer
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
+                  {isSubmitting ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    <Shield size={16} />
+                  )}
+                  Ajouter la permission
+                </Button>
+              </div>
+            </form>
           </div>
-        </div>
+        </UniversalModal>
       )}
 
       {/* View Modal */}

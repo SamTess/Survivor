@@ -5,10 +5,10 @@ import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock, FaUserShield } 
 import { Card } from '@/components/ui/card'
 
 import AdminDashboardSection from './AdminDashboardSection'
-import ProjectsCrudSection from './projects/ProjectsCrudSection'
-import NewsCrudSection from './news/NewsCrudSection'
-import EventsCrudSection from './events/EventsCrudSection'
-import UsersCrudSection from './users/UsersCrudSection'
+import AdminProjectsSection  from './projects/AdminProjectsSection'
+import AdminEventsSection from './events/AdminEventsSection'
+import AdminUsersSection from './users/AdminUsersSection'
+import AdminNewsSection from './news/AdminNewsSection'
 import AdminStatsSection from './AdminStatsSection'
 
 interface AdminTab {
@@ -57,28 +57,28 @@ export default function AdminNavigationTabs() {
       id: 'projects',
       label: 'Projects',
       icon: <FaProjectDiagram size={16} />,
-      component: <ProjectsCrudSection />,
+      component: <AdminProjectsSection />,
       description: 'Manage startups and projects'
     },
     {
       id: 'news',
       label: 'News',
       icon: <FaCog size={16} />,
-      component: <NewsCrudSection />,
+      component: <AdminNewsSection />,
       description: 'Manage articles and news'
     },
     {
       id: 'events',
       label: 'Events',
       icon: <FaClock size={16} />,
-      component: <EventsCrudSection />,
+      component: <AdminEventsSection />,
       description: 'Manage events'
     },
     {
       id: 'users',
       label: 'Users',
       icon: <FaUsers size={16} />,
-      component: <UsersCrudSection />,
+      component: <AdminUsersSection />,
       description: 'Manage users and permissions'
     },
     {
