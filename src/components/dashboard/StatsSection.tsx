@@ -1,6 +1,5 @@
 "use client";
 
-import { StartupDetailApiResponse } from "@/domain/interfaces";
 import React, { useMemo, useState, useEffect } from "react";
 import { FiTrendingUp, FiHeart, FiBookmark, FiEye } from "react-icons/fi";
 
@@ -83,10 +82,6 @@ const CONTENT_TYPES: ContentType[] = [
   { label: 'News', value: 'news', icon: '📰' }
 ];
 
-interface StatsSectionProps {
-  startup?: StartupDetailApiResponse | null;
-}
-
 function formatNumber(n: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
 }
@@ -118,23 +113,7 @@ function Sparkline({ data, color = "#6610F2" }: { data: number[]; color?: string
   );
 }
 
-function Bars({ data, color = "#10b981" }: { data: number[]; color?: string }) {
-  const max = Math.max(1, ...data);
-  return (
-  <div className="flex items-end gap-1 h-24">
-      {data.map((v, i) => (
-        <div
-          key={i}
-      className="w-4 rounded-t animate-bar"
-          style={{ height: `${(v / max) * 100}%`, backgroundColor: color, opacity: 0.8 }}
-          title={`${v}`}
-        />
-      ))}
-    </div>
-  );
-}
-
-export default function StatsSection({ scope = 'user', startup }: StatsSectionProps) {
+export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -235,11 +214,6 @@ export default function StatsSection({ scope = 'user', startup }: StatsSectionPr
       </section>
     );
   }
-
-  // Get startup-specific info when available
-  const startupName = startup?.name || "Your Project";
-  const startupSector = startup?.sector || "Technology";
-  const startupMaturity = startup?.maturity || "Early Stage";
 
   return (
     <section className="space-y-6 overflow-y-auto">

@@ -73,7 +73,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
   }
 
   async getAll(): Promise<Investor[]> {
-    const investors: Investor[] = await prisma.s_INVESTOR.findMany({
+    const investors = await prisma.s_INVESTOR.findMany({
       include: {
         user: true,
       },
@@ -112,7 +112,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
   }
 
   async getByInvestorType(investorType: string): Promise<Investor[]> {
-    const investors: Investor[] = await prisma.s_INVESTOR.findMany({
+    const investors = await prisma.s_INVESTOR.findMany({
       where: { investor_type: investorType },
       include: {
         user: true,
@@ -124,7 +124,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
   }
 
   async getByInvestmentFocus(investmentFocus: string): Promise<Investor[]> {
-    const investors: Investor[] = await prisma.s_INVESTOR.findMany({
+    const investors = await prisma.s_INVESTOR.findMany({
       where: { investment_focus: investmentFocus },
       include: {
         user: true,
@@ -136,7 +136,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
   }
 
   async search(query: string): Promise<Investor[]> {
-    const investors: Investor[] = await prisma.s_INVESTOR.findMany({
+    const investors = await prisma.s_INVESTOR.findMany({
       where: {
         OR: [
           { user: { name: { contains: query, mode: 'insensitive' } } },
@@ -218,7 +218,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
   async getPaginated(page: number, limit: number): Promise<{ investors: Investor[], total: number }> {
     const skip = (page - 1) * limit;
 
-    const [investors, total]: [Investor[], number] = await Promise.all([
+    const [investors, total] = await Promise.all([
       prisma.s_INVESTOR.findMany({
         skip,
         take: limit,

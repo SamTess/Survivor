@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import Dock from "@/components/ui/Dock";
 import { FaChartLine, FaRocket, FaNewspaper, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { ProtectedRoute, useAuth, apiService } from "@/context/auth";
-import { Investor, InvestorApiResponse } from "@/domain/interfaces/Investor";
+import { InvestorApiResponse } from "@/domain/interfaces/Investor";
 import { Founder } from "@/domain/interfaces/Founder";
 import { StartupDetailApiResponse } from "@/domain/interfaces";
 
@@ -20,8 +20,11 @@ export default function Dashboard() {
   const [userFounders, setUserFounders] = useState<Founder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const { user, isAuthenticated } = useAuth();
+
+  if (error && loading && userInvestor && userFounders) { // TODO REMOVE : USELESS CONDITION
+    setError(null);
+  }
 
   useEffect(() => {
     const checkDesktop = () => {
@@ -115,7 +118,7 @@ export default function Dashboard() {
           >
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
               <div className="space-y-6 max-w-6xl px-4">
-                <StatsSection startup={userStartup} scope="user" />
+                <StatsSection scope="user" />
               </div>
             </section>
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
