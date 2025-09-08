@@ -53,44 +53,6 @@ interface EventStats {
   bookmarksCount: number;
 }
 
-interface DateFilter {
-  gte?: Date;
-}
-
-interface NumberArrayFilter {
-  in?: number[];
-}
-
-interface LikeWhereInput {
-  createdAt?: DateFilter;
-  contentType?: string;
-  contentId?: NumberArrayFilter;
-  OR?: Array<{
-    contentType: string;
-    contentId: NumberArrayFilter;
-  }>;
-}
-
-interface BookmarkWhereInput {
-  createdAt?: DateFilter;
-  contentType?: string;
-  contentId?: NumberArrayFilter;
-  OR?: Array<{
-    contentType: string;
-    contentId: NumberArrayFilter;
-  }>;
-}
-
-interface InteractionEventWhereInput {
-  occurredAt?: DateFilter;
-  contentType?: string;
-  contentId?: NumberArrayFilter;
-  OR?: Array<{
-    contentType: string;
-    contentId: NumberArrayFilter;
-  }>;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
