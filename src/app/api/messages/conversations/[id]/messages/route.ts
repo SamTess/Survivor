@@ -35,9 +35,9 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   let reactionsMap = new Map<number, Record<string, number>>();
   if (ids.length > 0) {
     try {
-      const idList = ids.join(',');
-      const rx = await prisma.$queryRawUnsafe<{ message_id: number; emoji: string; count: number }[]>(
-        `SELECT message_id, emoji, COUNT(*)::int as count FROM "S_MESSAGE_REACTION" WHERE message_id IN (${idList}) GROUP BY message_id, emoji`
+      const rx = await prisma.$queryRaw<{ message_id: number; emoji: string; count: number }[]>(
+        `SELECT message_id, emoji, COUNT(*)::int as count FROM "S_MESSAGE_REACTION" WHERE message_id IN (${ids.length > 0 ? 'UNNEST($1::int[])' : 'NULL'}) GROUP BY message_id, emoji`,
+        ids
       );
       reactionsMap = rx.reduce((acc, row) => {
         const cur = acc.get(row.message_id) ?? {};
