@@ -57,7 +57,7 @@ export default function Dashboard() {
             >
               <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
                 <div className="space-y-6 max-w-6xl px-4">
-                  <StatsSection />
+                  <StatsSection scope="user" />
                 </div>
               </section>
               <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
