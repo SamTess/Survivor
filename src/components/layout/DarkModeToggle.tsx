@@ -46,8 +46,9 @@ export default function DarkModeToggle({
     <Button
       size="sm"
       onClick={toggleDarkMode}
-      aria-label="Toggle dark mode"
-      className={`${className} group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105`}
+      aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`}
+      aria-pressed={darkMode}
+      className={`${className} group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background`}
     >
       {icon}
     </Button>

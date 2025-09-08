@@ -98,10 +98,22 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
     </div>
   );
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
     <div
       className="group flex justify-center w-full cursor-pointer"
       onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      role="button"
+      tabIndex={0}
+      aria-label={`View details for ${startup.name} - ${startup.sector} startup`}
+      aria-describedby={`startup-description-${startup.id}`}
     >
       <TiltedCard
         imageSrc={startup.image}
@@ -118,6 +130,9 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
         overlayContent={overlayContent}
         displayOverlayContent={true}
       />
+      <div id={`startup-description-${startup.id}`} className="sr-only">
+        {startup.description}. Located in {location}. {startup.founders?.length || 0} founder{(startup.founders?.length || 0) !== 1 ? 's' : ''}. Maturity stage: {startup.maturity}.
+      </div>
     </div>
   );
 }

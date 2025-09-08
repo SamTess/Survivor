@@ -59,17 +59,22 @@ export default function BookmarkButton({
         onClick={handleClick}
         disabled={isLoading}
         className={`
-          flex items-center gap-1 transition-colors duration-200
+          flex items-center gap-1 transition-all duration-200
           ${isBookmarked ? 'text-yellow-500' : 'text-gray-500 hover:text-yellow-500'}
           ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-background rounded-md px-2 py-1
           ${className}
         `}
+        aria-label={`${isBookmarked ? 'Remove bookmark' : 'Bookmark'} this content`}
+        aria-pressed={isBookmarked}
+        aria-describedby={`bookmark-count-${contentId}`}
       >
         <svg
           className={`${iconSizes[size]} transition-transform duration-200 ${isBookmarked ? 'scale-110' : ''}`}
           fill={isBookmarked ? 'currentColor' : 'none'}
           stroke="currentColor"
           viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -78,11 +83,15 @@ export default function BookmarkButton({
             d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
           />
         </svg>
-        <span className={
-          size === 'small' ? 'text-xs' :
-          size === 'medium' ? 'text-sm' :
-          'text-base'
-        }>
+        <span
+          id={`bookmark-count-${contentId}`}
+          className={
+            size === 'small' ? 'text-xs' :
+            size === 'medium' ? 'text-sm' :
+            'text-base'
+          }
+          aria-live="polite"
+        >
           {bookmarkCount}
         </span>
       </button>
@@ -100,15 +109,20 @@ export default function BookmarkButton({
           : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50 hover:border-gray-300'
         }
         ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}
+        focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 focus:ring-offset-background
         ${sizeClasses[size]}
         ${className}
       `}
+      aria-label={`${isBookmarked ? 'Remove bookmark' : 'Bookmark'} this content`}
+      aria-pressed={isBookmarked}
+      aria-describedby={`bookmark-count-${contentId}`}
     >
       <svg
         className={`${iconSizes[size]} transition-transform duration-200 ${isBookmarked ? 'scale-110' : ''}`}
         fill={isBookmarked ? 'currentColor' : 'none'}
         stroke="currentColor"
         viewBox="0 0 24 24"
+        aria-hidden="true"
       >
         <path
           strokeLinecap="round"
@@ -117,9 +131,9 @@ export default function BookmarkButton({
           d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"
         />
       </svg>
-      <span className="font-medium">{bookmarkCount}</span>
+      <span id={`bookmark-count-${contentId}`} className="font-medium" aria-live="polite">{bookmarkCount}</span>
       {isLoading && (
-        <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+        <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" aria-hidden="true" />
       )}
     </button>
   );
