@@ -18,10 +18,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || '30';
     const scope = searchParams.get('scope') || 'user';
+    const contentType = searchParams.get('contentType') || 'all';
 
-    const periodDays = parseInt(period);
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - periodDays);
+    let startDate: Date | null = null;
+    if (period !== 'all') {
+      const periodDays = parseInt(period);
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - periodDays);
+    }
 
     const userId = payload.userId;
 
@@ -84,12 +88,52 @@ export async function GET(request: NextRequest) {
               news: []
             }
           },
-          period: periodDays,
+          period: period,
           scope,
           generatedAt: new Date().toISOString()
         });
       }
     }
+
+    let newsIds: number[] = [];
+    let eventIds: number[] = [];
+
+    if (contentType === 'all' || contentType === 'news') {
+      const newsData = await prisma.s_NEWS.findMany({
+        where: startupIds.length > 0 ? { startup_id: { in: startupIds } } : {},
+        select: { id: true }
+      });
+      newsIds = newsData.map((n: any) => n.id);
+    }
+
+    if (contentType === 'all' || contentType === 'event') {
+      const eventData = await prisma.s_EVENT.findMany({
+        select: { id: true }
+      });
+      eventIds = eventData.map((e: any) => e.id);
+    }
+
+    const buildContentFilter = (baseFilter: any = {}) => {
+      if (contentType === 'startup') {
+        return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
+      } else if (contentType === 'news') {
+        return { ...baseFilter, contentType: 'NEWS', contentId: { in: newsIds } };
+      } else if (contentType === 'event') {
+        return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
+      } else {
+        const orConditions = [];
+        if (startupIds.length > 0) {
+          orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
+        }
+        if (newsIds.length > 0) {
+          orConditions.push({ contentType: 'NEWS', contentId: { in: newsIds } });
+        }
+        if (scope === 'admin' && eventIds.length > 0) {
+          orConditions.push({ contentType: 'EVENT', contentId: { in: eventIds } });
+        }
+        return orConditions.length > 0 ? { ...baseFilter, OR: orConditions } : baseFilter;
+      }
+    };
 
     const [
       totalLikes,
@@ -101,30 +145,22 @@ export async function GET(request: NextRequest) {
       dailyInteractionEvents
     ] = await Promise.all([
       prisma.s_LIKE.count({
-        where: {
-          createdAt: { gte: startDate },
-          contentType: 'STARTUP',
-          contentId: { in: startupIds }
-        }
+        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {})
       }),
 
       prisma.s_BOOKMARK.count({
-        where: {
-          createdAt: { gte: startDate },
-          contentType: 'STARTUP',
-          contentId: { in: startupIds }
-        }
+        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {})
       }),
 
       prisma.s_FOLLOW.count({
         where: {
-          createdAt: { gte: startDate },
+          ...(startDate && { createdAt: { gte: startDate } }),
           targetType: 'STARTUP',
           targetId: { in: startupIds }
         }
       }),
 
-      prisma.s_STARTUP.findMany({
+      (contentType === 'all' || contentType === 'startup') ? prisma.s_STARTUP.findMany({
         where: { id: { in: startupIds } },
         select: {
           id: true,
@@ -134,10 +170,10 @@ export async function GET(request: NextRequest) {
           bookmarksCount: true,
           followersCount: true
         }
-      }),
+      }) : Promise.resolve([]),
 
-      prisma.s_NEWS.findMany({
-        where: { startup_id: { in: startupIds } },
+      (contentType === 'all' || contentType === 'news') && newsIds.length > 0 ? prisma.s_NEWS.findMany({
+        where: { id: { in: newsIds } },
         select: {
           id: true,
           title: true,
@@ -146,9 +182,10 @@ export async function GET(request: NextRequest) {
           bookmarksCount: true,
           startup_id: true
         }
-      }),
+      }) : Promise.resolve([]),
 
-      scope === 'admin' ? prisma.s_EVENT.findMany({
+      (contentType === 'all' || contentType === 'event') && scope === 'admin' ? prisma.s_EVENT.findMany({
+        where: { id: { in: eventIds } },
         select: {
           id: true,
           name: true,
@@ -159,11 +196,7 @@ export async function GET(request: NextRequest) {
       }) : Promise.resolve([]),
 
       prisma.s_INTERACTION_EVENT.findMany({
-        where: {
-          occurredAt: { gte: startDate },
-          contentType: 'STARTUP',
-          contentId: { in: startupIds }
-        },
+        where: buildContentFilter(startDate ? { occurredAt: { gte: startDate } } : {}),
         select: {
           occurredAt: true,
           eventType: true
@@ -172,20 +205,29 @@ export async function GET(request: NextRequest) {
       })
     ]);
 
-    const totalViews = startupStats.reduce((sum, s) => sum + s.viewsCount, 0);
+    let totalViews = 0;
+    if (contentType === 'startup' || contentType === 'all') {
+      totalViews += startupStats.reduce((sum: number, s: any) => sum + s.viewsCount, 0);
+    }
+    if (contentType === 'news' || contentType === 'all') {
+      totalViews += newsStats.reduce((sum: number, n: any) => sum + n.viewsCount, 0);
+    }
+    if (contentType === 'event' || contentType === 'all') {
+      totalViews += eventStats.reduce((sum: number, e: any) => sum + e.viewsCount, 0);
+    }
     const totalInteractions = totalLikes + totalBookmarks;
     const conversionRate = totalViews > 0 ? totalInteractions / totalViews : 0;
 
     const dailyEventCounts = new Map<string, { views: number; interactions: number }>();
 
-    for (let i = 0; i < periodDays; i++) {
+    for (let i = 0; i < (startDate ? Math.ceil((new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) : 30); i++) {
       const date = new Date();
       date.setDate(date.getDate() - i);
       const dateKey = date.toISOString().split('T')[0];
       dailyEventCounts.set(dateKey, { views: 0, interactions: 0 });
     }
 
-    dailyInteractionEvents.forEach(event => {
+    dailyInteractionEvents.forEach((event: any) => {
       const dateKey = event.occurredAt.toISOString().split('T')[0];
       const current = dailyEventCounts.get(dateKey) || { views: 0, interactions: 0 };
 
@@ -244,16 +286,17 @@ export async function GET(request: NextRequest) {
         activeUsers: monthlyInteractions.length > 0 ? monthlyInteractions : [0]
       },
       topContent: {
-        startups: startupStats.sort((a, b) => b.viewsCount - a.viewsCount).slice(0, 5),
-        events: eventStats.sort((a, b) => b.viewsCount - a.viewsCount).slice(0, 5),
-        news: newsStats.sort((a, b) => b.viewsCount - a.viewsCount).slice(0, 5)
+        startups: startupStats.sort((a: any, b: any) => b.viewsCount - a.viewsCount).slice(0, 5),
+        events: eventStats.sort((a: any, b: any) => b.viewsCount - a.viewsCount).slice(0, 5),
+        news: newsStats.sort((a: any, b: any) => b.viewsCount - a.viewsCount).slice(0, 5)
       }
     };
 
     return NextResponse.json({
       success: true,
       data: stats,
-      period: periodDays,
+      period: period,
+      contentType: contentType,
       scope,
       startupIds: scope === 'admin' ? undefined : startupIds,
       generatedAt: new Date().toISOString()

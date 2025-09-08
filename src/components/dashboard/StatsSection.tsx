@@ -55,6 +55,33 @@ interface StatsSectionProps {
   scope?: 'user' | 'admin';
 }
 
+interface TimePeriod {
+  label: string;
+  value: string;
+  days: number;
+}
+
+interface ContentType {
+  label: string;
+  value: string;
+  icon: string;
+}
+
+const TIME_PERIODS: TimePeriod[] = [
+  { label: 'Last 7 Days', value: '7', days: 7 },
+  { label: 'Last 30 Days', value: '30', days: 30 },
+  { label: 'Last 3 Months', value: '90', days: 90 },
+  { label: 'Last Year', value: '365', days: 365 },
+  { label: 'All Time', value: 'all', days: -1 }
+];
+
+const CONTENT_TYPES: ContentType[] = [
+  { label: 'All Content', value: 'all', icon: '📊' },
+  { label: 'Startups', value: 'startup', icon: '🚀' },
+  { label: 'Events', value: 'event', icon: '📅' },
+  { label: 'News', value: 'news', icon: '📰' }
+];
+
 function formatNumber(n: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
 }
@@ -106,12 +133,53 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('30');
+  const [selectedContentType, setSelectedContentType] = useState<string>('all');
+  const [availableContentTypes, setAvailableContentTypes] = useState<ContentType[]>([]);
+
+  useEffect(() => {
+    const fetchAvailableContentTypes = async () => {
+      try {
+        const response = await fetch(`/api/stats?scope=${scope}&period=all&contentType=all`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            const available = [CONTENT_TYPES[0]];
+
+            if (data.data.topContent.startups?.length > 0) {
+              available.push(CONTENT_TYPES[1]);
+            }
+            if (data.data.topContent.news?.length > 0) {
+              available.push(CONTENT_TYPES[3]);
+            }
+            if (scope === 'admin' && data.data.topContent.events?.length > 0) {
+              available.push(CONTENT_TYPES[2]);
+            }
+
+            setAvailableContentTypes(available);
+
+            if (!available.some(ct => ct.value === selectedContentType)) {
+              setSelectedContentType('all');
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch available content types:', err);
+        const fallback = scope === 'admin'
+          ? CONTENT_TYPES
+          : CONTENT_TYPES.filter(ct => ct.value !== 'event');
+        setAvailableContentTypes(fallback);
+      }
+    };
+
+    fetchAvailableContentTypes();
+  }, [scope, selectedContentType]);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/stats?scope=${scope}&period=30`);
+        const response = await fetch(`/api/stats?scope=${scope}&period=${selectedPeriod}&contentType=${selectedContentType}`);
 
         if (!response.ok) {
           throw new Error('Failed to fetch statistics');
@@ -132,7 +200,7 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
     };
 
     fetchStats();
-  }, [scope]);
+  }, [scope, selectedPeriod, selectedContentType]);
 
   if (loading) {
     return (
@@ -166,10 +234,51 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
   return (
     <section className="space-y-6 overflow-y-auto">
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm animate-card transition-all duration-300">
-        <h2 className="text-lg font-semibold text-foreground">Statistics</h2>
-        <p className="text-sm text-muted-foreground">
-          {scope === 'admin' ? 'Platform-wide statistics' : 'Statistics for your startups'}
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">Statistics</h2>
+            <p className="text-sm text-muted-foreground">
+              {scope === 'admin' ? 'Platform-wide statistics' : 'Statistics for your startups'}
+            </p>
+          </div>
+
+          {/* Filter Selectors */}
+          <div className="flex items-center gap-4">
+            {/* Content Type Selector */}
+            {availableContentTypes.length > 1 && (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Content:</span>
+                <select
+                  value={selectedContentType}
+                  onChange={(e) => setSelectedContentType(e.target.value)}
+                  className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+                >
+                  {availableContentTypes.map((contentType) => (
+                    <option key={contentType.value} value={contentType.value}>
+                      {contentType.icon} {contentType.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Time Period Selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Period:</span>
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
+              >
+                {TIME_PERIODS.map((period) => (
+                  <option key={period.value} value={period.value}>
+                    {period.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -194,7 +303,7 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
           </div>
           <div className="mt-2">
             <Bars data={stats.charts.activeUsers.slice(-7)} color="#ef4444" />
-            <p className="mt-1 text-xs text-muted-foreground">Last 7 days</p>
+            <p className="mt-1 text-xs text-muted-foreground">{TIME_PERIODS.find(p => p.value === selectedPeriod)?.label || 'All Time'}</p>
           </div>
         </div>
 
