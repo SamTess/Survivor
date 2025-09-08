@@ -16,16 +16,16 @@ export default function ForgotPasswordPage() {
     setError(null);
     setMessage(null);
     setIsLoading(true);
-    
+
     try {
-      const res = await fetch('/api/auth/request-reset', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ email }) 
+      const res = await fetch('/api/auth/request-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         setIsSuccess(true);
         setMessage(data.message || 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.');
@@ -65,25 +65,25 @@ export default function ForgotPasswordPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
                 <FiCheck className="h-8 w-8 text-green-600" />
               </div>
-              
+
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Vérifiez votre boîte mail
               </h2>
-              
+
               <p className="text-gray-600 mb-6 leading-relaxed">
                 {message}
               </p>
-              
+
               <p className="text-sm text-gray-500 mb-8">
                 Le lien expirera dans 72 heures pour des raisons de sécurité.
               </p>
-              
+
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
               >
                 <FiArrowLeft className="h-5 w-5" />
-                Retour à la connexion
+                Back to login
               </Link>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function ForgotPasswordPage() {
             />
           </div>
           <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Mot de passe oublié
+            Forgot password
           </h1>
           <p className="mt-2 text-gray-600">
             Entrez votre email pour recevoir un lien de réinitialisation
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
             {/* Email Field */}
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Adresse email
+                Email address
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -183,7 +183,7 @@ export default function ForgotPasswordPage() {
               className="inline-flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
             >
               <FiArrowLeft className="h-4 w-4" />
-              Retour à la connexion
+              Back to login
             </Link>
           </div>
         </div>

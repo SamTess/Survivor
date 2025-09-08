@@ -12,7 +12,7 @@ function ResetPasswordForm() {
   const [error, setError] = useState('');
   const [validToken, setValidToken] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,7 +32,7 @@ function ResetPasswordForm() {
       setCheckingToken(true);
       const response = await fetch(`/api/auth/reset-password?token=${tokenToValidate}`);
       const data = await response.json();
-      
+
       if (data.valid) {
         setValidToken(true);
       } else {
@@ -56,7 +56,7 @@ function ResetPasswordForm() {
     }
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères');
+      setError('The password must contain at least 8 characters');
       return;
     }
 
@@ -77,7 +77,7 @@ function ResetPasswordForm() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage('Mot de passe créé avec succès ! Redirection vers la page de connexion...');
+        setMessage('Password created successfully! Redirecting to login page...');
         setTimeout(() => {
           router.push('/login');
         }, 2000);
@@ -111,7 +111,7 @@ function ResetPasswordForm() {
             onClick={() => router.push('/login')}
             className="px-6 py-3 bg-blue-500 text-white border-none rounded hover:bg-blue-600 cursor-pointer transition-colors"
           >
-            Retour à la connexion
+            Back to login
           </button>
         </div>
       </div>
@@ -122,7 +122,7 @@ function ResetPasswordForm() {
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-5">
       <div className="max-w-md w-full bg-white p-10 rounded-lg shadow-lg">
         <h2 className="text-center text-2xl font-semibold text-gray-800 mb-8">
-          Créer votre mot de passe
+          Create your password
         </h2>
 
         {message && (
@@ -140,7 +140,7 @@ function ResetPasswordForm() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block mb-2 text-gray-700 font-medium">
-              Nouveau mot de passe
+              New password
             </label>
             <input
               type="password"
@@ -155,7 +155,7 @@ function ResetPasswordForm() {
 
           <div>
             <label className="block mb-2 text-gray-700 font-medium">
-              Confirmer le mot de passe
+              Confirm password
             </label>
             <input
               type="password"
@@ -164,7 +164,7 @@ function ResetPasswordForm() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full p-3 border border-gray-300 rounded text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               minLength={8}
-              placeholder="Répétez votre mot de passe"
+              placeholder="Repeat your password"
             />
           </div>
 
@@ -172,17 +172,17 @@ function ResetPasswordForm() {
             type="submit"
             disabled={loading}
             className={`w-full py-3 px-4 text-white font-medium rounded text-base transition-colors ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
+              loading
+                ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-green-600 hover:bg-green-700 cursor-pointer'
             }`}
           >
-            {loading ? 'Création en cours...' : 'Créer le mot de passe'}
+            {loading ? 'Creating...' : 'Create password'}
           </button>
         </form>
 
         <div className="mt-5 text-center text-sm text-gray-600">
-          <p>Votre mot de passe doit contenir au minimum 8 caractères.</p>
+          <p>Your password must contain at least 8 characters.</p>
         </div>
       </div>
     </div>
