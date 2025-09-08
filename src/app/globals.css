@@ -125,7 +125,7 @@ body {
 @layer components {
   .admin-stat-card {
     @apply bg-card border border-border
-           transition-all duration-300 hover:-translate-y-1 hover:shadow-lg
+           transition-all duration-300
            cursor-pointer;
   }
 
@@ -150,27 +150,27 @@ body {
   }
 
   .admin-stat-card--blue {
-    @apply hover:border-blue-300 dark:hover:border-blue-600
-           hover:shadow-blue-500/10 dark:hover:shadow-blue-400/10
-           hover:bg-blue-50/30 dark:hover:bg-blue-900/10;
+    @apply border-blue-400 dark:border-blue-500
+           shadow-blue-500/10 dark:shadow-blue-400/10
+           bg-blue-50/30 dark:bg-blue-900/10;
   }
 
   .admin-stat-card--emerald {
-    @apply hover:border-emerald-300 dark:hover:border-emerald-600
-           hover:shadow-emerald-500/10 dark:hover:shadow-emerald-400/10
-           hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10;
+    @apply border-emerald-400 dark:border-emerald-500
+           shadow-emerald-500/10 dark:shadow-emerald-400/10
+           bg-emerald-50/30 dark:bg-emerald-900/10;
   }
 
   .admin-stat-card--violet {
-    @apply hover:border-violet-300 dark:hover:border-violet-600
-           hover:shadow-violet-500/10 dark:hover:shadow-violet-400/10
-           hover:bg-violet-50/30 dark:hover:bg-violet-900/10;
+    @apply border-violet-400 dark:border-violet-500
+           shadow-violet-500/10 dark:shadow-violet-400/10
+           bg-violet-50/30 dark:bg-violet-900/10;
   }
 
   .admin-stat-card--orange {
-    @apply hover:border-orange-300 dark:hover:border-orange-600
-           hover:shadow-orange-500/10 dark:hover:shadow-orange-400/10
-           hover:bg-orange-50/30 dark:hover:bg-orange-900/10;
+    @apply border-orange-400 dark:border-orange-500
+           shadow-orange-500/10 dark:shadow-orange-400/10
+           bg-orange-50/30 dark:bg-orange-900/10;
   }
 
   .admin-stat-icon-container {
