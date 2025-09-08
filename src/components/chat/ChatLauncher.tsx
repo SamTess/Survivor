@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 const ConversationClient = dynamic<{
   cid: number;
   embedded?: boolean;
-}>(() => import("@/app/messages/[id]/ConversationClient"), { ssr: false });
+}>(() => import("@/app/message/[id]/ConversationClient"), { ssr: false });
 
 type UserLite = { id: number; name?: string };
 type ConvLite = { id: number; users: UserLite[]; last?: { sent_at?: string } };
@@ -276,7 +276,7 @@ export function ChatLauncher(): React.ReactElement {
 
   const panel = !open ? null : (
     <div
-      className="fixed !bottom-20 !right-4 !left-auto z-50 max-w-[95vw]"
+      className="hidden md:block fixed !bottom-20 !right-4 !left-auto z-50 max-w-[95vw]"
       style={{ position: 'fixed', right: 16, bottom: 80, left: 'auto', width: activeId === null ? 'fit-content' : 'min(95vw, 1200px)' }}
     >
   <div className="border rounded-xl shadow-2xl overflow-hidden bg-transparent" style={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
@@ -325,7 +325,7 @@ export function ChatLauncher(): React.ReactElement {
   const btn = (
     <button
       aria-label={open ? "Close messages" : "Open messages"}
-    className="fixed !bottom-4 !right-4 !left-auto z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center text-xl hover:bg-primary/90 border border-primary/30 relative"
+      className="hidden md:flex fixed !bottom-4 !right-4 !left-auto z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg items-center justify-center text-xl hover:bg-primary/90 border border-primary/30 relative"
       style={{ position: 'fixed', right: 16, bottom: 16, left: 'auto' }}
       onClick={() => setOpen((v) => !v)}
       type="button"
