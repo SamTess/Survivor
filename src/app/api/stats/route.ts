@@ -53,24 +53,6 @@ interface EventStats {
   bookmarksCount: number;
 }
 
-interface FilterCondition {
-  gte?: Date;
-  in?: number[];
-}
-
-interface BaseFilter {
-  createdAt?: FilterCondition;
-  occurredAt?: FilterCondition;
-  contentType?: string;
-  contentId?: FilterCondition;
-  targetType?: string;
-  targetId?: FilterCondition;
-  OR?: Array<{
-    contentType: string;
-    contentId: FilterCondition;
-  }>;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
