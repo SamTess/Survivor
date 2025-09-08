@@ -20,24 +20,24 @@ export function StartupCatalog({ initial }: Props) {
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap gap-3 items-end">
           <div className="flex flex-col">
-            <label className="text-xs font-medium">Recherche</label>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Nom, secteur, email..." className="border rounded px-2 py-1 text-sm" />
+            <label className="text-xs font-medium">Search</label>
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Name, sector, email..." className="border rounded px-2 py-1 text-sm" />
           </div>
-          <Select label="Secteur" value={sector} onChange={setSector} options={sectors} />
-          <Select label="Maturité" value={maturity} onChange={setMaturity} options={maturities} />
-          <Select label="Adresse" value={address} onChange={setAddress} options={addresses} />
-          <Select label="Statut légal" value={legalStatus} onChange={setLegalStatus} options={legalStatuses} />
+          <Select label="Sector" value={sector} onChange={setSector} options={sectors} />
+          <Select label="Maturity" value={maturity} onChange={setMaturity} options={maturities} />
+          <Select label="Address" value={address} onChange={setAddress} options={addresses} />
+          <Select label="Legal status" value={legalStatus} onChange={setLegalStatus} options={legalStatuses} />
           <div className="flex flex-col">
-            <label className="text-xs font-medium">Tri</label>
+            <label className="text-xs font-medium">Sort</label>
             <select value={sortBy} onChange={e=>setSortBy(e.target.value as SortOption)} className="border rounded px-2 py-1 text-sm">
-              <option value="name">Nom (A-Z)</option>
-              <option value="created-desc">Création (récent)</option>
-              <option value="created-asc">Création (ancien)</option>
+              <option value="name">Name (A-Z)</option>
+              <option value="created-desc">Created (newest)</option>
+              <option value="created-asc">Created (oldest)</option>
             </select>
           </div>
-          <button type="button" onClick={clearAll} className="ml-auto text-xs underline">Réinitialiser</button>
+          <button type="button" onClick={clearAll} className="ml-auto text-xs underline">Reset</button>
         </div>
-  <p className="text-xs text-muted-foreground">{filtered.length} / {initial.length} startups affichées</p>
+  <p className="text-xs text-muted-foreground">{filtered.length} / {initial.length} startups shown</p>
       </div>
       {filtered.length === 0 && (
         <div className="text-center text-sm text-muted-foreground py-10">No results</div>

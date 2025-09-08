@@ -19,6 +19,5 @@ EMAIL_PASS=
 EMAIL_FROM=
 EMAIL_REJECT_UNAUTHORIZED=true
 OPENAI_API_KEY=
-# API Groq gratuite pour l'amélioration IA des pitch decks
-# Créez un compte gratuit sur https://console.groq.com/
 GROQ_API_KEY=
+MESSAGE_ENC_KEY=

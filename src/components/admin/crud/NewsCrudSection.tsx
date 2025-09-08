@@ -297,7 +297,7 @@ export default function NewsCrudSection() {
               value={selectedStartup}
               onChange={(e) => setSelectedStartup(e.target.value)}
             >
-              <option value="">Toutes les startups</option>
+              <option value="">All startups</option>
               {startups.map(startup => (
                 <option key={startup.id} value={startup.id}>{startup.name}</option>
               ))}
