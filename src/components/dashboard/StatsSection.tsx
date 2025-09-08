@@ -3,8 +3,13 @@
 import { useMemo } from "react";
 import { FiTrendingUp, FiUsers, FiBarChart2 } from "react-icons/fi";
 import statsData from "@/mocks/stats.json";
+import { StartupDetailApiResponse } from "@/domain/interfaces";
 
 type Stats = typeof statsData;
+
+interface StatsSectionProps {
+  startup?: StartupDetailApiResponse | null;
+}
 
 function formatNumber(n: number) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 }).format(n);
@@ -53,16 +58,29 @@ function Bars({ data, color = "#10b981" }: { data: number[]; color?: string }) {
   );
 }
 
-export default function StatsSection() {
+export default function StatsSection({ startup }: StatsSectionProps) {
   const stats: Stats = statsData;
 
   const totalFunding = stats.fundingHistory.reduce((s, f) => s + f.amount, 0);
+
+  // Get startup-specific info when available
+  const startupName = startup?.name || "Your Project";
+  const startupSector = startup?.sector || "Technology";
+  const startupMaturity = startup?.maturity || "Early Stage";
 
   return (
     <section className="space-y-6 overflow-y-auto">
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm animate-card transition-all duration-300">
         <h2 className="text-lg font-semibold text-foreground">Statistics</h2>
-        <p className="text-sm text-muted-foreground">All the stats you need to know about your project.</p>
+        <p className="text-sm text-muted-foreground">
+          {startup ? `All the stats you need to know about ${startupName}.` : "All the stats you need to know about your project."}
+        </p>
+        {startup && (
+          <div className="mt-3 flex gap-3 text-xs">
+            <span className="px-2 py-1 bg-primary/10 text-primary rounded-full">{startupSector}</span>
+            <span className="px-2 py-1 bg-accent/10 text-accent rounded-full">{startupMaturity}</span>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

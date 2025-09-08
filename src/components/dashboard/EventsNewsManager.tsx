@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import eventsJson from "@/mocks/events.json";
 import newsJson from "@/mocks/news.json";
 import { EventApiResponse } from "@/domain/interfaces/Event";
 import { NewsDetailApiResponse } from "@/domain/interfaces/News";
+import { StartupDetailApiResponse } from "@/domain/interfaces";
 
 interface EventForm {
   name: string;
@@ -23,12 +24,44 @@ interface NewsForm {
   description?: string;
 }
 
-export default function EventsNewsManager() {
+interface EventsNewsManagerProps {
+  startup?: StartupDetailApiResponse | null;
+}
+
+export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
   const [events, setEvents] = useState<EventApiResponse[]>(() => eventsJson.map(e => ({ ...e })));
   const [news, setNews] = useState<NewsDetailApiResponse[]>(() => newsJson.map(n => ({ ...n })));
 
-  const [eventForm, setEventForm] = useState<EventForm>({ name: "", dates: "", location: "", description: "", event_type: "", target_audience: "" });
-  const [newsForm, setNewsForm] = useState<NewsForm>({ title: "", news_date: "", location: "", category: "", description: "" });
+  const [eventForm, setEventForm] = useState<EventForm>({
+    name: "",
+    dates: "",
+    location: startup?.address || "",
+    description: "",
+    event_type: "",
+    target_audience: ""
+  });
+  const [newsForm, setNewsForm] = useState<NewsForm>({
+    title: "",
+    news_date: "",
+    location: startup?.address || "",
+    category: startup?.sector || "",
+    description: ""
+  });
+
+  // Update form defaults when startup data becomes available
+  useEffect(() => {
+    if (startup) {
+      setEventForm(prev => ({
+        ...prev,
+        location: prev.location || startup.address || "",
+      }));
+      setNewsForm(prev => ({
+        ...prev,
+        location: prev.location || startup.address || "",
+        category: prev.category || startup.sector || "",
+      }));
+    }
+  }, [startup]);
 
   const nextEventId = useMemo(() => (events.reduce((m, e) => Math.max(m, e.id), 0) + 1), [events]);
   const nextNewsId = useMemo(() => (news.reduce((m, n) => Math.max(m, n.id), 0) + 1), [news]);
@@ -42,7 +75,7 @@ export default function EventsNewsManager() {
       updated_at: new Date().toISOString(),
     };
     setEvents((prev) => [payload, ...prev]);
-    setEventForm({ name: "", dates: "", location: "", description: "", event_type: "", target_audience: "" });
+    setEventForm({ name: "", dates: "", location: startup?.address || "", description: "", event_type: "", target_audience: "" });
   }
 
   function addNews(e: React.FormEvent) {
@@ -54,12 +87,12 @@ export default function EventsNewsManager() {
       location: newsForm.location,
       category: newsForm.category,
       description: newsForm.description || "",
-      startup_id: 1,
+      startup_id: startup?.id || 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
     setNews((prev) => [payload, ...prev]);
-    setNewsForm({ title: "", news_date: "", location: "", category: "", description: "" });
+    setNewsForm({ title: "", news_date: "", location: startup?.address || "", category: startup?.sector || "", description: "" });
   }
 
   return (
@@ -67,7 +100,9 @@ export default function EventsNewsManager() {
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-foreground">Events</h2>
-          <p className="text-sm text-muted-foreground">Create and manage upcoming events.</p>
+          <p className="text-sm text-muted-foreground">
+            {startup ? `Create and manage upcoming events for ${startup.name}.` : "Create and manage upcoming events."}
+          </p>
         </div>
         <form onSubmit={addEvent} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Name" value={eventForm.name} onChange={(e) => setEventForm({ ...eventForm, name: e.target.value })} required />
@@ -100,7 +135,9 @@ export default function EventsNewsManager() {
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-foreground">News</h2>
-          <p className="text-sm text-muted-foreground">Publish product or company updates.</p>
+          <p className="text-sm text-muted-foreground">
+            {startup ? `Publish product or company updates for ${startup.name}.` : "Publish product or company updates."}
+          </p>
         </div>
         <form onSubmit={addNews} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Title" value={newsForm.title} onChange={(e) => setNewsForm({ ...newsForm, title: e.target.value })} required />

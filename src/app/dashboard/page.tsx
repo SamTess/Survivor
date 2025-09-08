@@ -6,12 +6,22 @@ import EventsNewsManager from "@/components/dashboard/EventsNewsManager";
 import { useEffect, useRef, useState } from "react";
 import Dock from "@/components/ui/Dock";
 import { FaChartLine, FaRocket, FaNewspaper, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { ProtectedRoute } from "@/context/auth";
+import { ProtectedRoute, useAuth, apiService } from "@/context/auth";
+import { Investor, InvestorApiResponse } from "@/domain/interfaces/Investor";
+import { Founder } from "@/domain/interfaces/Founder";
+import { StartupDetailApiResponse } from "@/domain/interfaces";
 
 export default function Dashboard() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [active, setActive] = useState(0); // 0=Stats, 1=Startup, 2=Events/News
   const [isDesktop, setIsDesktop] = useState(false);
+  const [userInvestor, setUserInvestor] = useState<InvestorApiResponse | null>(null);
+  const [userStartup, setUserStartup] = useState<StartupDetailApiResponse | null>(null);
+  const [userFounders, setUserFounders] = useState<Founder[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const checkDesktop = () => {
@@ -23,6 +33,53 @@ export default function Dashboard() {
 
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
+
+  // Fetch user's investor or founder data based on role
+  useEffect(() => {
+    const fetchUserRoleData = async () => {
+      if (!user || !isAuthenticated) {
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        if (user.role === 'investor') {
+          const response = await apiService.get<InvestorApiResponse>(`/users/${user.id}/investor`);
+          if (response.success && response.data) {
+            setUserInvestor(response.data);
+          } else {
+            console.log('No investor data found for user');
+          }
+        } else if (user.role === 'founder') {
+          const response = await apiService.get<Founder[]>(`/users/${user.id}/founder`);
+          if (response.success && response.data && response.data.length > 0) {
+            setUserFounders(response.data);
+            const startupId = response.data[0]?.startup_id;
+            if (startupId) {
+              const startupResponse = await apiService.get<StartupDetailApiResponse>(`/startups/${startupId}`);
+              if (startupResponse.success && startupResponse.data) {
+                setUserStartup(startupResponse.data);
+              }
+            } else {
+              console.log('No startup ID found for founder');
+            }
+          } else {
+            console.log('No founder data found for user');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user role data:', error);
+        setError('Failed to fetch user role data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserRoleData();
+  }, [isAuthenticated]);
 
   function goTo(index: number) {
     const el = scrollRef.current;
@@ -58,17 +115,17 @@ export default function Dashboard() {
           >
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
               <div className="space-y-6 max-w-6xl px-4">
-                <StatsSection />
+                <StatsSection startup={userStartup} />
               </div>
             </section>
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
               <div className="space-y-6 max-w-6xl px-4 ">
-                <StartupForm />
+                <StartupForm startup={userStartup} />
               </div>
             </section>
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
               <div className="space-y-6 max-w-6xl px-4 ">
-                <EventsNewsManager />
+                <EventsNewsManager startup={userStartup} />
               </div>
             </section>
           </div>

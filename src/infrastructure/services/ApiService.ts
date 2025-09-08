@@ -29,8 +29,6 @@ export class ApiService {
     this.client.interceptors.request.use(
       (config) => {
         // Add any request transformation here
-        // For example, add auth headers if needed (though we use cookies)
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
@@ -43,7 +41,6 @@ export class ApiService {
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
         // Transform successful responses
-        console.log(`API Response: ${response.status} ${response.config.url}`);
         return response;
       },
       (error: AxiosError) => {
