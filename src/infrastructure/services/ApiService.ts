@@ -108,29 +108,11 @@ export class ApiService {
   // Authentication specific methods
   async login(credentials: LoginCredentials): Promise<ApiResponse<SessionUser>> {
     try {
-      // TEMPORARY: Return mock successful login for development
-      // TODO: Remove this when authentication API is properly implemented
-      const mockUser: SessionUser = {
-        id: 1,
-        name: 'Admin User',
-        email: credentials.email,
-        role: 'admin',
-        permissions: ['read', 'write', 'delete', 'admin']
-      };
-
-      return {
-        success: true,
-        data: mockUser
-      };
-
-      // Original code (uncomment when auth API is ready):
-      /*
       const response = await this.client.post<SessionUser>('/auth/login', credentials);
       return {
         success: true,
         data: response.data,
       };
-      */
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         const errorData = error.response.data as LoginErrorResponse;
@@ -155,23 +137,7 @@ export class ApiService {
   }
 
   async signup(userData: SignupData): Promise<ApiResponse<SessionUser>> {
-    // TEMPORARY: Return mock successful signup for development
-    // TODO: Remove this when authentication API is properly implemented
-    const mockUser: SessionUser = {
-      id: Date.now(), // Simple ID generation
-      name: userData.name,
-      email: userData.email,
-      role: 'user',
-      permissions: ['read']
-    };
-
-    return {
-      success: true,
-      data: mockUser
-    };
-
-    // Original code (uncomment when auth API is ready):
-    // return this.post<SessionUser>('/auth/signup', userData);
+    return this.post<SessionUser>('/auth/signup', userData);
   }
 
   async logout(): Promise<ApiResponse<{ ok: boolean }>> {
@@ -180,23 +146,6 @@ export class ApiService {
 
   async getCurrentUser(): Promise<ApiResponse<SessionUser>> {
     try {
-      // TEMPORARY: Return mock admin user for development
-      // TODO: Remove this when authentication API is properly implemented
-      const mockUser: SessionUser = {
-        id: 1,
-        name: 'Admin User',
-        email: 'admin@example.com',
-        role: 'admin',
-        permissions: ['read', 'write', 'delete', 'admin']
-      };
-
-      return {
-        success: true,
-        data: mockUser
-      };
-
-      // Original code (uncomment when auth API is ready):
-      /*
       const response = await this.client.get('/auth/me');
       const u = response.data as { id: number; name: string; email: string; role: string; permissions?: string[] };
       const role = (u?.role === 'ADMIN') ? 'admin' : 'user';
@@ -204,7 +153,6 @@ export class ApiService {
         success: true,
         data: { id: u.id, name: u.name, email: u.email, role, permissions: u.permissions },
       };
-      */
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const apiError = error.response?.data as { error?: string } | undefined;
