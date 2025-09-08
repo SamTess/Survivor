@@ -42,6 +42,14 @@ export class InvestorService {
     return this.investorRepository.getByEmail(email);
   }
 
+  async getInvestorByUserId(userId: number): Promise<Investor | null> {
+    if (!Number.isInteger(userId) || userId <= 0) {
+      throw new Error("Invalid user ID");
+    }
+
+    return this.investorRepository.getByUserId(userId);
+  }
+
   async getInvestorsByType(investorType: string): Promise<Investor[]> {
     if (!investorType || investorType.trim().length === 0) {
       throw new Error("Investor type cannot be empty");

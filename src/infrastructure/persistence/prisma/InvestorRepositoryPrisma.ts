@@ -99,6 +99,18 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
     return this.mapPrismaToInvestor(investor);
   }
 
+  async getByUserId(userId: number): Promise<Investor | null> {
+    const investor = await prisma.s_INVESTOR.findFirst({
+      where: { user_id: userId },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!investor) return null;
+    return this.mapPrismaToInvestor(investor);
+  }
+
   async getByInvestorType(investorType: string): Promise<Investor[]> {
     const investors = await prisma.s_INVESTOR.findMany({
       where: { investor_type: investorType },
@@ -205,7 +217,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
 
   async getPaginated(page: number, limit: number): Promise<{ investors: Investor[], total: number }> {
     const skip = (page - 1) * limit;
-    
+
     const [investors, total] = await Promise.all([
       prisma.s_INVESTOR.findMany({
         skip,
