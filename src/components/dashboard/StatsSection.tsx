@@ -302,7 +302,7 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
             <FiHeart className="text-red-500" size={24} />
           </div>
           <div className="mt-2">
-            <Bars data={stats.charts.activeUsers.slice(-7)} color="#ef4444" />
+            <Sparkline data={stats.charts.activeUsers} color="#ef4444" />
             <p className="mt-1 text-xs text-muted-foreground">{TIME_PERIODS.find(p => p.value === selectedPeriod)?.label || 'All Time'}</p>
           </div>
         </div>
@@ -326,7 +326,7 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
             </div>
             <FiTrendingUp className="text-primary" size={24} />
           </div>
-          <div className="mt-2"><Bars data={stats.charts.monthlyViews.slice(-7)} color="#6610F2" /></div>
+          <div className="mt-2"><Sparkline data={stats.charts.activeUsers} color="#6610F2" /></div>
         </div>
       </div>
 
