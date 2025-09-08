@@ -91,7 +91,7 @@ export default function DashboardControls({
                   }`} aria-hidden="true">
                     <Icon className={`h-4 w-4 ${
                       settings[key]
-                        ? `text-${color}-600 dark:text-${color}-400`
+                        ? ``
                         : 'text-muted-foreground'
                     }`} />
                   </div>
@@ -116,9 +116,11 @@ export default function DashboardControls({
                   </div>
                 </div>
 
-                <div className={`absolute top-2 right-2 w-2 h-2 rounded-full ${
+                <div className={`absolute top-2 right-2 w-3 h-3 rounded-full transition-all duration-200 ${
                   settings[key]
-                    ? `bg-${color}-500`
+                    ? color === 'blue'
+                      ? 'bg-blue-600 shadow-lg'
+                      : 'bg-purple-600 shadow-lg'
                     : 'bg-slate-300 dark:bg-slate-600'
                 }`} aria-hidden="true" />
               </div>

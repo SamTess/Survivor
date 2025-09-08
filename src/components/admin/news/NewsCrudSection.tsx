@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { FormModal } from '@/components/modals/ModalVariants'
 import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
@@ -12,8 +13,6 @@ import {
   Trash2,
   Eye,
   FileText,
-  X,
-  Save,
   Loader2,
   Image as ImageIcon
 } from 'lucide-react'
@@ -70,6 +69,7 @@ export default function NewsCrudSection() {
     location: '',
     category: ''
   })
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -402,118 +402,131 @@ export default function NewsCrudSection() {
         </CardContent>
       </Card>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">
-                {editingNews ? 'Edit Article' : 'New Article'}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsModalOpen(false)}
-                className="h-8 w-8 p-0"
+      <FormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        title={editingNews ? 'Edit Article' : 'New Article'}
+        loading={isSubmitting}
+        submitLabel={editingNews ? 'Update' : 'Create'}
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="news-title" className="block text-sm font-medium mb-1">
+              Title <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="news-title"
+              type="text"
+              required
+              autoComplete="off"
+              placeholder="Enter article title"
+              aria-describedby="news-title-help"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            />
+            <div id="news-title-help" className="text-xs text-muted-foreground mt-1">
+              Enter a compelling title for the news article
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="news-description" className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              id="news-description"
+              rows={4}
+              autoComplete="off"
+              placeholder="Write the full article content or summary"
+              aria-describedby="news-description-help"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+            <div id="news-description-help" className="text-xs text-muted-foreground mt-1">
+              Provide the complete article text or a detailed summary
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="news-startup" className="block text-sm font-medium mb-1">
+                Startup <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="news-startup"
+                required
+                autoComplete="off"
+                aria-describedby="news-startup-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.startup_id}
+                onChange={(e) => setFormData({ ...formData, startup_id: e.target.value })}
               >
-                <X size={16} />
-              </Button>
+                <option value="">Select a startup</option>
+                {startups.map(startup => (
+                  <option key={startup.id} value={startup.id}>{startup.name}</option>
+                ))}
+              </select>
+              <div id="news-startup-help" className="text-xs text-muted-foreground mt-1">
+                Choose the startup this news article is about
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title *</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                />
+            <div>
+              <label htmlFor="news-category" className="block text-sm font-medium mb-1">Category</label>
+              <select
+                id="news-category"
+                autoComplete="off"
+                aria-describedby="news-category-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.category}
+                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              >
+                <option value="">Select a category</option>
+                {NEWS_CATEGORIES.map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <div id="news-category-help" className="text-xs text-muted-foreground mt-1">
+                Choose the category that best fits this news
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  rows={4}
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+            <div>
+              <label htmlFor="news-date" className="block text-sm font-medium mb-1">News Date</label>
+              <input
+                id="news-date"
+                type="date"
+                autoComplete="off"
+                aria-describedby="news-date-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.news_date}
+                onChange={(e) => setFormData({ ...formData, news_date: e.target.value })}
+              />
+              <div id="news-date-help" className="text-xs text-muted-foreground mt-1">
+                Select the date when this news occurred
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Startup *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.startup_id}
-                    onChange={(e) => setFormData({ ...formData, startup_id: e.target.value })}
-                  >
-                    <option value="">Select a startup</option>
-                    {startups.map(startup => (
-                      <option key={startup.id} value={startup.id}>{startup.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
-                  <select
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.category}
-                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  >
-                    <option value="">Select a category</option>
-                    {NEWS_CATEGORIES.map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">News Date</label>
-                  <input
-                    type="date"
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.news_date}
-                    onChange={(e) => setFormData({ ...formData, news_date: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Location</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                </div>
+            <div>
+              <label htmlFor="news-location" className="block text-sm font-medium mb-1">Location</label>
+              <input
+                id="news-location"
+                type="text"
+                autoComplete="address-line1"
+                placeholder="City, Country or Remote"
+                aria-describedby="news-location-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+              <div id="news-location-help" className="text-xs text-muted-foreground mt-1">
+                Enter the location where the news occurred
               </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
-                  {isSubmitting ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Save size={16} />
-                  )}
-                  {editingNews ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
-      )}
+      </FormModal>
 
       {/* View Modal */}
       {viewingNews && (

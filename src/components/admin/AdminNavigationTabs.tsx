@@ -5,10 +5,10 @@ import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock } from 'react-ic
 import { Card } from '@/components/ui/card'
 
 import AdminDashboardSection from './AdminDashboardSection'
-import ProjectsCrudSection from './crud/ProjectsCrudSection'
-import NewsCrudSection from './crud/NewsCrudSection'
-import EventsCrudSection from './crud/EventsCrudSection'
-import UsersCrudSection from './crud/UsersCrudSection'
+import ProjectsCrudSection from './projects/ProjectsCrudSection'
+import NewsCrudSection from './news/NewsCrudSection'
+import EventsCrudSection from './events/EventsCrudSection'
+import UsersCrudSection from './users/UsersCrudSection'
 
 interface AdminTab {
   id: string

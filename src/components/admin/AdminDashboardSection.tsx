@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useAdminStats } from '@/hooks/useAdminStats'
 import { useRecentActivity } from '@/hooks/useRecentActivity'
 import DashboardControls, { DashboardSettings } from './DashboardControls'
-import AdminStatsSection from './AdminStatsSection'
+import KPISection from './KPIComponent'
 import AdminRecentActivitySection from './AdminRecentActivitySection'
 
 export default function AdminDashboardSection() {
@@ -92,7 +92,7 @@ export default function AdminDashboardSection() {
       />
 
       {settings.showKPIs && (
-        <AdminStatsSection />
+        <KPISection />
       )}
 
       {settings.showRecentActivity && (

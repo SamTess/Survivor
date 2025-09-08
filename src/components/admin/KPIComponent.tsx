@@ -15,7 +15,7 @@ interface StatCard {
   trend?: string
 }
 
-export default function AdminStatsSection() {
+export default function KPISection() {
   const { stats, loading, error } = useAdminStats()
   const [modalType, setModalType] = useState<'users' | 'projects' | 'news' | 'events' | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
