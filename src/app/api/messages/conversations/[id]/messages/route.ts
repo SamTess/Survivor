@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import prisma from '@/infrastructure/persistence/prisma/client';
+import { Prisma } from '@prisma/client';
 import { verifyJwt } from '@/infrastructure/security/auth';
 import { encryptText, decryptText } from '@/infrastructure/security/crypto';
 import { isNonEmptyString, parseIntParam } from '@/utils/validation';
@@ -35,10 +36,12 @@ export async function GET(req: NextRequest, ctx: { params: { id: string } }) {
   let reactionsMap = new Map<number, Record<string, number>>();
   if (ids.length > 0) {
     try {
-      const rx = await prisma.$queryRaw<{ message_id: number; emoji: string; count: number }[]>(
-        `SELECT message_id, emoji, COUNT(*)::int as count FROM "S_MESSAGE_REACTION" WHERE message_id IN (${ids.length > 0 ? 'UNNEST($1::int[])' : 'NULL'}) GROUP BY message_id, emoji`,
-        ids
-      );
+      const rx = await prisma.$queryRaw<{ message_id: number; emoji: string; count: number }[]>(Prisma.sql`
+        SELECT message_id, emoji, COUNT(*)::int as count
+        FROM "S_MESSAGE_REACTION"
+        WHERE message_id IN (${Prisma.join(ids)})
+        GROUP BY message_id, emoji
+      `);
       reactionsMap = rx.reduce((acc, row) => {
         const cur = acc.get(row.message_id) ?? {};
         cur[row.emoji] = (cur[row.emoji] ?? 0) + Number(row.count || 0);
