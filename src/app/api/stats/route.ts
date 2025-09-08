@@ -58,6 +58,24 @@ interface EventStats {
   bookmarksCount: number;
 }
 
+interface FilterCondition {
+  gte?: Date;
+  in?: number[];
+}
+
+interface BaseFilter {
+  createdAt?: FilterCondition;
+  occurredAt?: FilterCondition;
+  contentType?: string;
+  contentId?: FilterCondition;
+  targetType?: string;
+  targetId?: FilterCondition;
+  OR?: Array<{
+    contentType: string;
+    contentId: FilterCondition;
+  }>;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
@@ -169,7 +187,7 @@ export async function GET(request: NextRequest) {
       eventIds = eventData.map((e: EventRecord) => e.id);
     }
 
-    const buildContentFilter = (baseFilter: Record<string, any> = {}) => {
+    const buildContentFilter = (baseFilter: BaseFilter = {}): BaseFilter => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
