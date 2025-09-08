@@ -53,6 +53,44 @@ interface EventStats {
   bookmarksCount: number;
 }
 
+interface DateFilter {
+  gte?: Date;
+}
+
+interface NumberArrayFilter {
+  in?: number[];
+}
+
+interface LikeWhereInput {
+  createdAt?: DateFilter;
+  contentType?: string;
+  contentId?: NumberArrayFilter;
+  OR?: Array<{
+    contentType: string;
+    contentId: NumberArrayFilter;
+  }>;
+}
+
+interface BookmarkWhereInput {
+  createdAt?: DateFilter;
+  contentType?: string;
+  contentId?: NumberArrayFilter;
+  OR?: Array<{
+    contentType: string;
+    contentId: NumberArrayFilter;
+  }>;
+}
+
+interface InteractionEventWhereInput {
+  occurredAt?: DateFilter;
+  contentType?: string;
+  contentId?: NumberArrayFilter;
+  OR?: Array<{
+    contentType: string;
+    contentId: NumberArrayFilter;
+  }>;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
@@ -167,7 +205,7 @@ export async function GET(request: NextRequest) {
       eventIds = eventData.map((e: EventRecord) => e.id);
     }
 
-    const buildContentFilter = (baseFilter: Record<string, unknown> = {}) => {
+    const buildLikeFilter = (baseFilter: Partial<LikeWhereInput> = {}): LikeWhereInput => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
@@ -175,7 +213,51 @@ export async function GET(request: NextRequest) {
       } else if (contentType === 'event') {
         return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
       } else {
-        const orConditions = [];
+        const orConditions: Array<{ contentType: string; contentId: NumberArrayFilter }> = [];
+        if (startupIds.length > 0) {
+          orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
+        }
+        if (newsIds.length > 0) {
+          orConditions.push({ contentType: 'NEWS', contentId: { in: newsIds } });
+        }
+        if (scope === 'admin' && eventIds.length > 0) {
+          orConditions.push({ contentType: 'EVENT', contentId: { in: eventIds } });
+        }
+        return orConditions.length > 0 ? { ...baseFilter, OR: orConditions } : baseFilter;
+      }
+    };
+
+    const buildBookmarkFilter = (baseFilter: Partial<BookmarkWhereInput> = {}): BookmarkWhereInput => {
+      if (contentType === 'startup') {
+        return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
+      } else if (contentType === 'news') {
+        return { ...baseFilter, contentType: 'NEWS', contentId: { in: newsIds } };
+      } else if (contentType === 'event') {
+        return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
+      } else {
+        const orConditions: Array<{ contentType: string; contentId: NumberArrayFilter }> = [];
+        if (startupIds.length > 0) {
+          orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
+        }
+        if (newsIds.length > 0) {
+          orConditions.push({ contentType: 'NEWS', contentId: { in: newsIds } });
+        }
+        if (scope === 'admin' && eventIds.length > 0) {
+          orConditions.push({ contentType: 'EVENT', contentId: { in: eventIds } });
+        }
+        return orConditions.length > 0 ? { ...baseFilter, OR: orConditions } : baseFilter;
+      }
+    };
+
+    const buildInteractionFilter = (baseFilter: Partial<InteractionEventWhereInput> = {}): InteractionEventWhereInput => {
+      if (contentType === 'startup') {
+        return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
+      } else if (contentType === 'news') {
+        return { ...baseFilter, contentType: 'NEWS', contentId: { in: newsIds } };
+      } else if (contentType === 'event') {
+        return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
+      } else {
+        const orConditions: Array<{ contentType: string; contentId: NumberArrayFilter }> = [];
         if (startupIds.length > 0) {
           orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
         }
@@ -199,11 +281,11 @@ export async function GET(request: NextRequest) {
       dailyInteractionEvents
     ] = await Promise.all([
       prisma.s_LIKE.count({
-        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {}) as any
+        where: buildLikeFilter(startDate ? { createdAt: { gte: startDate } } : {})
       }),
 
       prisma.s_BOOKMARK.count({
-        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {}) as any
+        where: buildBookmarkFilter(startDate ? { createdAt: { gte: startDate } } : {})
       }),
 
       prisma.s_FOLLOW.count({
@@ -250,7 +332,7 @@ export async function GET(request: NextRequest) {
       }) : Promise.resolve([]),
 
       prisma.s_INTERACTION_EVENT.findMany({
-        where: buildContentFilter(startDate ? { occurredAt: { gte: startDate } } : {}) as any,
+        where: buildInteractionFilter(startDate ? { occurredAt: { gte: startDate } } : {}),
         select: {
           occurredAt: true,
           eventType: true
