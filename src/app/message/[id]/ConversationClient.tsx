@@ -41,7 +41,7 @@ export default function ConversationClient({ cid, embedded }: { cid: number; emb
           ok = r.ok;
         } catch { /* noop */ }
         if (!ok) {
-          try { await fetch(`/api/messages/conversations/${cid}/messages/${mid}/reactions`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ emoji }) }); } catch {}
+          // Optionally handle the error, e.g., setError('Failed to remove reaction');
         }
         setMyReactions(prev => {
           const next: Record<number, Set<string>> = { ...prev };
