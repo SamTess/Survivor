@@ -53,44 +53,6 @@ interface EventStats {
   bookmarksCount: number;
 }
 
-interface DateFilter {
-  gte?: Date;
-}
-
-interface NumberArrayFilter {
-  in?: number[];
-}
-
-interface LikeWhereInput {
-  createdAt?: DateFilter;
-  contentType?: string;
-  contentId?: NumberArrayFilter;
-  OR?: Array<{
-    contentType: string;
-    contentId: NumberArrayFilter;
-  }>;
-}
-
-interface BookmarkWhereInput {
-  createdAt?: DateFilter;
-  contentType?: string;
-  contentId?: NumberArrayFilter;
-  OR?: Array<{
-    contentType: string;
-    contentId: NumberArrayFilter;
-  }>;
-}
-
-interface InteractionEventWhereInput {
-  occurredAt?: DateFilter;
-  contentType?: string;
-  contentId?: NumberArrayFilter;
-  OR?: Array<{
-    contentType: string;
-    contentId: NumberArrayFilter;
-  }>;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
@@ -205,7 +167,7 @@ export async function GET(request: NextRequest) {
       eventIds = eventData.map((e: EventRecord) => e.id);
     }
 
-    const buildLikeFilter = (baseFilter: Partial<LikeWhereInput> = {}): LikeWhereInput => {
+    const buildLikeFilter = (baseFilter: Record<string, unknown> = {}): Record<string, unknown> => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
@@ -213,7 +175,7 @@ export async function GET(request: NextRequest) {
       } else if (contentType === 'event') {
         return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
       } else {
-        const orConditions: Array<{ contentType: string; contentId: NumberArrayFilter }> = [];
+        const orConditions: Array<{ contentType: string; contentId: { in: number[] } }> = [];
         if (startupIds.length > 0) {
           orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
         }
@@ -227,7 +189,7 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    const buildBookmarkFilter = (baseFilter: Partial<BookmarkWhereInput> = {}): BookmarkWhereInput => {
+    const buildBookmarkFilter = (baseFilter: Record<string, unknown> = {}): Record<string, unknown> => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
@@ -235,7 +197,7 @@ export async function GET(request: NextRequest) {
       } else if (contentType === 'event') {
         return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
       } else {
-        const orConditions: Array<{ contentType: string; contentId: NumberArrayFilter }> = [];
+        const orConditions: Array<{ contentType: string; contentId: { in: number[] } }> = [];
         if (startupIds.length > 0) {
           orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
         }
@@ -249,7 +211,7 @@ export async function GET(request: NextRequest) {
       }
     };
 
-    const buildInteractionFilter = (baseFilter: Partial<InteractionEventWhereInput> = {}): InteractionEventWhereInput => {
+    const buildInteractionFilter = (baseFilter: Record<string, unknown> = {}): Record<string, unknown> => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
@@ -257,7 +219,7 @@ export async function GET(request: NextRequest) {
       } else if (contentType === 'event') {
         return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
       } else {
-        const orConditions: Array<{ contentType: string; contentId: NumberArrayFilter }> = [];
+        const orConditions: Array<{ contentType: string; contentId: { in: number[] } }> = [];
         if (startupIds.length > 0) {
           orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
         }
