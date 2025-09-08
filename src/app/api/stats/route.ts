@@ -6,11 +6,6 @@ interface UserRole {
   role?: string;
 }
 
-interface User {
-  role?: string;
-  roles?: UserRole[];
-}
-
 interface StartupRecord {
   id: number;
 }
@@ -58,24 +53,6 @@ interface EventStats {
   bookmarksCount: number;
 }
 
-interface FilterCondition {
-  gte?: Date;
-  in?: number[];
-}
-
-interface BaseFilter {
-  createdAt?: FilterCondition;
-  occurredAt?: FilterCondition;
-  contentType?: string;
-  contentId?: FilterCondition;
-  targetType?: string;
-  targetId?: FilterCondition;
-  OR?: Array<{
-    contentType: string;
-    contentId: FilterCondition;
-  }>;
-}
-
 export async function GET(request: NextRequest) {
   try {
     const token = request.cookies.get('auth')?.value;
@@ -111,7 +88,10 @@ export async function GET(request: NextRequest) {
       });
 
       const mainRoleIsAdmin = user?.role?.toLowerCase() === 'admin';
-      const hasAdminRole = user?.roles?.some((role: UserRole) => ['admin', 'super_admin'].includes(role.role?.toLowerCase() || ''));
+      const hasAdminRole = user?.roles?.some((role: UserRole) => {
+        const roleString = role.role?.toLowerCase();
+        return roleString ? ['admin', 'super_admin'].includes(roleString) : false;
+      }) ?? false;
 
       isAdmin = mainRoleIsAdmin || hasAdminRole;
 
@@ -187,7 +167,7 @@ export async function GET(request: NextRequest) {
       eventIds = eventData.map((e: EventRecord) => e.id);
     }
 
-    const buildContentFilter = (baseFilter: BaseFilter = {}): BaseFilter => {
+    const buildContentFilter = (baseFilter: Record<string, unknown> = {}) => {
       if (contentType === 'startup') {
         return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
       } else if (contentType === 'news') {
@@ -219,11 +199,11 @@ export async function GET(request: NextRequest) {
       dailyInteractionEvents
     ] = await Promise.all([
       prisma.s_LIKE.count({
-        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {})
+        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {}) as any
       }),
 
       prisma.s_BOOKMARK.count({
-        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {})
+        where: buildContentFilter(startDate ? { createdAt: { gte: startDate } } : {}) as any
       }),
 
       prisma.s_FOLLOW.count({
@@ -270,7 +250,7 @@ export async function GET(request: NextRequest) {
       }) : Promise.resolve([]),
 
       prisma.s_INTERACTION_EVENT.findMany({
-        where: buildContentFilter(startDate ? { occurredAt: { gte: startDate } } : {}),
+        where: buildContentFilter(startDate ? { occurredAt: { gte: startDate } } : {}) as any,
         select: {
           occurredAt: true,
           eventType: true
