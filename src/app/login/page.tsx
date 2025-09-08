@@ -47,28 +47,18 @@ export default function LoginPage() {
       router.refresh();
     } else if (result.error) {
       if (result.error.requiresPasswordReset) {
-        setCustomError(result.error.message || 'Un email de création de mot de passe vous a été envoyé. Veuillez vérifier votre boîte mail.');
+        setCustomError(result.error.message || 'A password reset has just been sent to you. Please check your inbox.');
       } else {
-        const data = await res.json().catch(() => ({}));
-
-        if (data.requiresPasswordReset) {
-          setError(data.error || 'A password creation email has been sent to you. Please check your mailbox.');
-        } else {
-          setError(data.error || 'Incorrect email or password');
-        }
+        setCustomError(result.error.message || 'Incorrect email or password.');
       }
-    } catch {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
     }
   }
 
   return (
-    <div className="h-screen pt-28 overflow-y-auto flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
+    <div className="h-screen pt-44 overflow-y-auto flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 px-4 py-8">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8 animate-fade-in-up">
+        <div className="text-center mb-4 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 shadow-lg overflow-hidden">
             <Image
               src="/logo.png"
@@ -112,7 +102,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl bg-white/50 backdrop-blur-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  className="w-full pl-10 pr-4 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 transition-all duration-200"
                   placeholder="your@email.com"
                   required
                 />
@@ -191,12 +181,12 @@ export default function LoginPage() {
           {/* Sign up link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Pas encore de compte ?{' '}
+              Not registered yet ?{' '}
               <Link
                 href={`/signup${nextPath !== '/' ? `?callback=${encodeURIComponent(nextPath)}` : ''}`}
                 className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors duration-200"
               >
-                Créer un compte
+                Create an account
               </Link>
             </p>
           </div>

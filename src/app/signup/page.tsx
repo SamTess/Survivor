@@ -55,44 +55,29 @@ export default function SignupPage() {
     setValidationError(null);
 
     if (!isPasswordValid) {
-      setError('Password does not meet all required criteria.');
+      setValidationError('Password does not meet all requierments.');
       return;
     }
 
     if (!doPasswordsMatch) {
-      setError('Passwords do not match.');
+      setValidationError('The passwords don\'t match.');
       return;
     }
 
     const result = await signup({ name, email, password });
 
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
-      });
-
-      if (res.ok) {
-        router.push('/');
-        router.refresh();
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error || 'An error occurred while creating the account');
-      }
-    } catch {
-      setError('An error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (result.success) {
+      router.push(nextPath);
+      router.refresh();
     }
     // Error handling is now managed by the AuthContext
   }
 
   return (
-    <div className="h-screen pt-66 flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 px-4 py-8 overflow-y-auto">
+    <div className="h-screen pt-82 flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-indigo-50 px-4 py-8 overflow-y-auto">
       <div className="w-full max-w-md">
         {/* Logo/Brand */}
-        <div className="text-center mb-8 animate-fade-in-up">
+        <div className="text-center mb-4 animate-fade-in-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 shadow-lg overflow-hidden">
             <Image
               src="/logo.png"
@@ -102,8 +87,8 @@ export default function SignupPage() {
               className="object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Rejoignez Jeb</h1>
-          <p className="text-gray-600">Create your account and start your adventure</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Jeb</h1>
+          <p className="text-gray-600">Create your account and start your journey</p>
         </div>
 
         {/* Signup Form */}
@@ -158,7 +143,7 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200"
-                  placeholder="votre@email.com"
+                  placeholder="your@email.com"
                   required
                 />
               </div>
@@ -167,7 +152,7 @@ export default function SignupPage() {
             {/* Password Field */}
             <div className="space-y-2">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Mot de passe
+                Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -219,7 +204,7 @@ export default function SignupPage() {
             {/* Confirm Password Field */}
             <div className="space-y-2">
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
-                Confirmer le mot de passe
+                Confirm password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -254,12 +239,12 @@ export default function SignupPage() {
               </div>
 
               {confirmPassword && !doPasswordsMatch && (
-                <p className="text-sm text-red-600">Les mots de passe ne correspondent pas</p>
+                <p className="text-sm text-red-600">The passwords don&apos;t match</p>
               )}
               {confirmPassword && doPasswordsMatch && (
                 <p className="text-sm text-green-600 flex items-center">
                   <FiCheck className="w-4 h-4 mr-1" />
-                  Les mots de passe correspondent
+                  Passwords are matching
                 </p>
               )}
             </div>
@@ -294,12 +279,12 @@ export default function SignupPage() {
           {/* Login link */}
           <div className="text-center">
             <p className="text-gray-600">
-              Already have an account?{' '}
-              <Link 
-                href="/login" 
+              Already have an account ?{' '}
+              <Link
+                href={`/login${nextPath !== '/' ? `?callback=${encodeURIComponent(nextPath)}` : ''}`}
                 className="font-semibold text-purple-600 hover:text-purple-500 transition-colors duration-200"
               >
-                Sign in
+                Connect
               </Link>
             </p>
           </div>

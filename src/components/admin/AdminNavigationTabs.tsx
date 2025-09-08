@@ -1,11 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock, FaUserShield } from 'react-icons/fa'
+import { FaChartLine, FaCog, FaUsers, FaProjectDiagram, FaClock } from 'react-icons/fa'
 import { Card } from '@/components/ui/card'
 
-import AdminStatsSection from './AdminStatsSection'
-import AdminRecentActivitySection from './AdminRecentActivitySection'
 import AdminDashboardSection from './AdminDashboardSection'
 import ProjectsCrudSection from './crud/ProjectsCrudSection'
 import NewsCrudSection from './crud/NewsCrudSection'
@@ -25,9 +23,9 @@ export default function AdminNavigationTabs() {
 
   const getStoredTab = () => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem(ADMIN_TAB_KEY) || 'overview'
+      return localStorage.getItem(ADMIN_TAB_KEY) || 'dashboard'
     }
-    return 'overview'
+    return 'dashboard'
   }
 
   const [activeTab, setActiveTab] = useState(getStoredTab)
@@ -44,16 +42,11 @@ export default function AdminNavigationTabs() {
 
   const tabs: AdminTab[] = [
     {
-      id: 'overview',
-      label: 'Overview',
+      id: 'dashboard',
+      label: 'Dashboard',
       icon: <FaChartLine size={16} />,
-      component: (
-        <div className="space-y-8">
-          <AdminStatsSection />
-          <AdminRecentActivitySection />
-        </div>
-      ),
-      description: 'Platform statistics and key metrics'
+      component: <AdminDashboardSection />,
+      description: 'Unified dashboard with statistics, analytics, and monitoring'
     },
     {
       id: 'projects',
@@ -82,13 +75,6 @@ export default function AdminNavigationTabs() {
       icon: <FaUsers size={16} />,
       component: <UsersCrudSection />,
       description: 'Manage users and permissions'
-    },
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: <FaUserShield size={16} />,
-      component: <AdminDashboardSection />,
-      description: 'Analytics and monitoring'
     }
   ]
 
@@ -96,54 +82,62 @@ export default function AdminNavigationTabs() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-          <FaUserShield className="text-primary" size={32} />
-          Admin Area
+      <header className="space-y-2">
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3" id="admin-area-title">
+          <FaChartLine className="text-primary" size={32} aria-hidden="true" />
+          Admin Dashboard
         </h1>
         <p className="text-muted-foreground text-lg">
-          Management of projects, startups, and users - Complete administrative control panel.
+          Complete administrative control panel for managing projects, users, and platform analytics.
         </p>
-      </div>
+      </header>
 
-      {/* Navigation Tabs */}
       <Card className="p-2">
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => handleTabChange(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-lg transition-all duration-200 text-sm font-medium ${
-                activeTab === tab.id
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-              }`}
-              title={tab.description}
-            >
-              {tab.icon}
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
-        </div>
+        <nav aria-label="Admin navigation tabs" role="navigation">
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => handleTabChange(tab.id)}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg transition-all duration-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                  activeTab === tab.id
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                title={tab.description}
+                aria-current={activeTab === tab.id ? 'page' : undefined}
+              >
+                {tab.icon}
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.slice(0, 4)}</span>
+              </button>
+            ))}
+          </div>
+        </nav>
       </Card>
 
-      {/* Active Tab Description */}
       {activeTabData && (
-        <div className="bg-muted/20 rounded-lg p-4 border border-border/20">
+        <div
+          className="bg-muted/20 rounded-lg p-4 border border-border/20"
+          role="region"
+          aria-labelledby="tab-description-title"
+        >
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {activeTabData.icon}
-            <span className="font-medium">{activeTabData.label}</span>
-            <span>•</span>
+            <span className="font-medium" id="tab-description-title">{activeTabData.label}</span>
+            <span aria-hidden="true">•</span>
             <span>{activeTabData.description}</span>
           </div>
         </div>
       )}
 
-      {/* Active Tab Content */}
-      <div className="animate-fade-in-up">
+      <main
+        className="animate-fade-in-up"
+        role="main"
+        aria-labelledby={activeTabData ? `${activeTabData.id}-title` : undefined}
+      >
         {activeTabData?.component}
-      </div>
+      </main>
     </div>
   )
 }
