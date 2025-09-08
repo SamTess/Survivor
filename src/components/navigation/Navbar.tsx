@@ -4,8 +4,8 @@ import React from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Search, Menu, X, Sparkles, User } from "lucide-react"
-import { useState } from "react"
+import { Search, Menu, X, Sparkles, User, LogOut } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
 import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
 import DarkModeToggle from "../layout/DarkModeToggle"
@@ -17,8 +17,10 @@ type NavItem = {
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const pathname = usePathname()
-  const { isAuthenticated, isAdmin, user } = useAuth()
+  const { isAuthenticated, isAdmin, user, logout } = useAuth()
+  const profileDropdownRef = useRef<HTMLDivElement>(null)
 
   const navItems: NavItem[] = [
     { href: '/', label: 'Home' },
@@ -28,6 +30,24 @@ export function Navbar() {
   ]
   if (isAuthenticated)
     navItems.push({ href: '/dashboard', label: 'Dashboard' })
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    setIsProfileDropdownOpen(false)
+    await logout()
+  }
 
   return (
     <nav className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
@@ -77,15 +97,51 @@ export function Navbar() {
             >
               <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
             </Button>
-            <Button
-              asChild
-              size="sm"
-              className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
-            >
-              <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login?callback=%2Fprofile'}>
+
+            {/* Profile Dropdown */}
+            <div className="relative" ref={profileDropdownRef}>
+              <Button
+                size="sm"
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
+              >
                 <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </Link>
-            </Button>
+              </Button>
+
+              {isProfileDropdownOpen && isAuthenticated && (
+                <div className="absolute right-0 top-12 w-48 bg-background/95 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                  <Link
+                    href={`/profile/${user?.id}`}
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
+                  >
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    Profile
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+
+              {isProfileDropdownOpen && !isAuthenticated && (
+                <div className="absolute right-0 top-12 w-48 bg-background/95 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                  <Link
+                    href="/login?callback=%2Fprofile"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
+                  >
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    Login
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <DarkModeToggle className="text-muted-foreground hover:text-primary" />
             {isAdmin &&
               <Button
@@ -144,9 +200,18 @@ export function Navbar() {
                       {isAuthenticated ? 'Profile' : 'Login'}
                     </Link>
                   </Button>
-                  <Button asChild className="flex-1 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                    <Link href="/admin">Admin</Link>
-                  </Button>
+                  {isAuthenticated ? (
+                    <Button
+                      onClick={handleLogout}
+                      className="flex-1 rounded-full bg-red-600 hover:bg-red-700 text-white"
+                    >
+                      Logout
+                    </Button>
+                  ) : (
+                    <Button asChild className="flex-1 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+                      <Link href="/admin">Admin</Link>
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
