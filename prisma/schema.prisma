@@ -54,7 +54,7 @@ model S_USER {
   updated_at    DateTime @updatedAt
   role          String
   founders      S_FOUNDER[]
-  investors     S_INVESTOR[]
+  investors     Investor[]
   partners      S_PARTNER[]
   permissions   S_PERMISSION[]
   messages      S_MESSAGE[] @relation("SenderMessages")
@@ -78,7 +78,7 @@ model S_FOUNDER {
   user       S_USER?   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
-model S_INVESTOR {
+model Investor {
   id               Int      @id @default(autoincrement())
   name             String
   legal_status     String

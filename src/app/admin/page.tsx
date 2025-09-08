@@ -15,9 +15,19 @@ export default function AdminDashboard() {
     return () => clearTimeout(timer)
   }, [])
 
+  useEffect(() => {
+    if (!isAdmin && !isLoading) {
+      router.push('/login')
+    }
+  }, [isAdmin, isLoading, router])
+
   if (!isAdmin) {
-    router.push(`/login`)
-    return null
+    return (
+      <div className="flex items-center justify-center h-screen w-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="ml-4 text-muted-foreground">Checking permissions...</p>
+      </div>
+    )
   }
 
   if (isLoading) {

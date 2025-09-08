@@ -106,6 +106,7 @@ export default function Dashboard() {
   }, []);
 
   return (
+<<<<<<< HEAD
     <ProtectedRoute>
       <div className="flex h-full w-screen fixed flex-col mx-auto">
           <div
@@ -116,6 +117,76 @@ export default function Dashboard() {
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
               <div className="space-y-6 max-w-6xl px-4">
                 <StatsSection startup={userStartup} />
+=======
+    <>
+        <div className="flex h-full w-screen fixed flex-col mx-auto">
+            <div
+              ref={scrollRef}
+              className="flex h-full w-full snap-x snap-mandatory overflow-x-auto scroll-smooth gap-4 rounded-2xl scrollbar-none"
+              aria-label="Dashboard sections"
+            >
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
+                <div className="space-y-6 max-w-6xl px-4">
+                  <StatsSection scope="user" />
+                </div>
+              </section>
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
+                <div className="space-y-6 max-w-6xl px-4 ">
+                  <StartupForm />
+                </div>
+              </section>
+              <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
+                <div className="space-y-6 max-w-6xl px-4 ">
+                  <EventsNewsManager />
+                </div>
+              </section>
+            </div>
+
+            {/* Floating Navigation Arrows for Desktop */}
+            {isDesktop && (
+              <>
+                {/* Left Arrow */}
+                {active > 0 && (
+                  <button
+                    onClick={() => goTo(active - 1)}
+                    className="fixed left-8 top-1/2 -translate-y-1/2 z-40 group"
+                    aria-label="Previous section"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 bg-card/90 border border-border/20 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <FaChevronLeft className="text-muted-foreground group-hover:text-primary transition-colors duration-200" size={16} />
+                    </div>
+                  </button>
+                )}
+
+                {/* Right Arrow */}
+                {active < 2 && (
+                  <button
+                    onClick={() => goTo(active + 1)}
+                    className="fixed right-8 top-1/2 -translate-y-1/2 z-40 group"
+                    aria-label="Next section"
+                  >
+                    <div className="flex items-center justify-center w-12 h-12 bg-card/90 border border-border/20 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                      <FaChevronRight className="text-muted-foreground group-hover:text-primary transition-colors duration-200" size={16} />
+                    </div>
+                  </button>
+                )}
+              </>
+            )}
+
+            <nav className="fixed inset-x-0 bottom-4 z-40 flex items-center justify-center" aria-label="Slide navigation">
+              <div className="flex items-center gap-2 rounded-2xl border border-border/20 bg-card/90 px-3 py-2 shadow-sm animate-fade-in-up">
+                {[0, 1, 2].map((i) => (
+                  <button
+                    key={i}
+                    onClick={() => goTo(i)}
+                    aria-current={active === i}
+                    aria-label={`Go to section ${i + 1}`}
+                    className={`h-2.5 w-2.5 rounded-full transition-colors ${
+                      active === i ? "bg-foreground" : "bg-muted-foreground/50 hover:bg-muted-foreground"
+                    }`}
+                  />
+                ))}
+>>>>>>> e4804c385fdae8799b94e06b4f47a93a4ec98204
               </div>
             </section>
             <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
