@@ -5,6 +5,7 @@ import BookmarkButton from '@/components/ui/BookmarkButton';
 import FollowButton from '@/components/ui/FollowButton';
 import PitchDeckButton from '@/components/ui/PitchDeckButton';
 import { ContentType } from '@/domain/enums/Analytics';
+import ContactStartupButton from '@/components/chat/ContactStartupButton';
 
 interface ProjectPageProps {
   params: Promise<{
@@ -67,6 +68,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   }
 
   const detail = project.details[0];
+  const founderUserIds = (project.founders || [])
+    .filter((f: ProjectFounder) => f.user && Number.isFinite(f.user.id))
+    .map((f: ProjectFounder) => f.user!.id);
 
   const generateCoverImage = (sector: string, id: number) => {
     const sectorImages: Record<string, string> = {
@@ -356,6 +360,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       </div>
                     </div>
                   )}
+
+                  {/* Contact founders via chat */}
+                  <div className="pt-2">
+                    <ContactStartupButton
+                      startupId={project.id}
+                      startupName={project.name}
+                      founderUserIds={founderUserIds}
+                      className="inline-flex w-full items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
                 </div>
               </div>
 

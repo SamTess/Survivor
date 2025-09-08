@@ -190,6 +190,19 @@ export function Navbar() {
                   </Link>
                 )
               })}
+              {/* Mobile-only Messages entry */}
+              <Link
+                href="/message"
+                onClick={() => setIsMenuOpen(false)}
+                className={cn(
+                  "border-none px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
+                  pathname?.startsWith('/message')
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-primary hover:bg-muted/50",
+                )}
+              >
+                Messages
+              </Link>
               <div className="px-4 pt-2">
                 <div className="flex justify-center gap-2 mb-4">
                   <DarkModeToggle />
