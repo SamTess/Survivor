@@ -1,11 +1,13 @@
 'use client';
 
+import { useRef } from 'react';
 import Image from 'next/image';
 import { FaCalendarAlt, FaMapMarkerAlt, FaTimes, FaTag } from 'react-icons/fa';
 import { formatDate } from '@/utils/dateUtils';
 import { getNewsCategoryColor } from '@/utils/styleUtils';
 import { NewsDetailApiResponse } from '@/domain/interfaces/News';
 import MarkdownRenderer from '@/components/ui/MarkdownRenderer';
+import { useModalKeyboard } from '@/hooks/useAccessibility';
 
 interface NewsModalProps {
   isOpen: boolean;
@@ -14,27 +16,50 @@ interface NewsModalProps {
 }
 
 export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useModalKeyboard(isOpen, onClose, {
+    closeOnEscape: true,
+    trapFocus: true
+  });
+
   if (!isOpen || !newsItem) return null;
 
   const defaultImage = '/logo.png';
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="news-modal-title"
+      aria-describedby="news-modal-content"
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black opacity-50 transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       ></div>
 
       {/* Modal */}
       <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+        <div
+          ref={modalRef}
+          className="relative bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden focus:outline-none"
+          tabIndex={-1}
+        >
           {/* Close Button */}
           <button
+            ref={closeButtonRef}
             onClick={onClose}
-            className="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors duration-200"
+            className="absolute top-4 right-4 z-10 p-2 bg-white rounded-full shadow-lg hover:bg-gray-50 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            aria-label="Close news modal (Escape)"
+            title="Close news modal (Escape)"
           >
             <FaTimes className="w-5 h-5 text-gray-600" />
+            <span className="sr-only">Close</span>
           </button>
 
           {/* Modal Content */}
@@ -61,7 +86,7 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
             {/* Content */}
             <div className="p-8">
               {/* Title */}
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+              <h1 id="news-modal-title" className="text-3xl font-bold text-gray-900 mb-4">
                 {newsItem.title}
               </h1>
 
@@ -82,9 +107,9 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
               </div>
 
               {/* Article Content */}
-              <div className="prose prose-lg max-w-none">
+              <div id="news-modal-content" className="prose prose-lg max-w-none">
                 {newsItem.description ? (
-                  <MarkdownRenderer 
+                  <MarkdownRenderer
                     content={newsItem.description}
                     compact={false}
                   />
@@ -103,7 +128,8 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
                   </div>
                   <button
                     onClick={onClose}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200"
+                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    aria-label="Close news modal"
                   >
                     Close
                   </button>
