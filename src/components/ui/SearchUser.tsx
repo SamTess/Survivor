@@ -2,12 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input } from './input';
 import { UserCard } from './UserCard';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { useUserSearch } from '@/hooks/useUserSearch';
 import { User } from '@/domain/interfaces/User';
-import { Search, Loader2, X, Filter, Users } from 'lucide-react';
+import { Search, Loader2, X, Users } from 'lucide-react';
 
 interface SearchUserProps {
   /** Callback when a user is selected */
@@ -24,14 +22,6 @@ interface SearchUserProps {
   maxResults?: number;
 }
 
-const ROLE_OPTIONS = [
-  { value: '', label: 'All Roles' },
-  { value: 'FOUNDER', label: 'Founder' },
-  { value: 'INVESTOR', label: 'Investor' },
-  { value: 'ADMIN', label: 'Admin' },
-  { value: 'USER', label: 'User' },
-];
-
 /**
  * SearchUser component that uses the useUserSearch hook
  * Provides a clean, lightweight search interface for finding users
@@ -39,20 +29,18 @@ const ROLE_OPTIONS = [
 export function SearchUser({
   onUserSelect,
   placeholder = "Search users by name, email, or role...",
-  showRoleFilter = true,
   className = '',
   cardSize = 'md',
   maxResults = 15
 }: SearchUserProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedRole, setSelectedRole] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   const { users, loading, error, clearResults } = useUserSearch(
     searchQuery,
-    selectedRole || undefined,
+    undefined,
     { maxResults }
   );
 
@@ -141,12 +129,7 @@ export function SearchUser({
             ) : showNoResults ? (
               <div className="text-center py-6">
                 <p className="text-muted-foreground text-sm">
-                  No users found for "{searchQuery}"
-                  {selectedRole && (
-                    <span className="block mt-1">
-                      with role "{ROLE_OPTIONS.find(r => r.value === selectedRole)?.label}"
-                    </span>
-                  )}
+                  No users found for &ldquo;{searchQuery}&rdquo;
                 </p>
               </div>
             ) : hasResults ? (

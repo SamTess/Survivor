@@ -11,7 +11,6 @@ import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
 import DarkModeToggle from "../layout/DarkModeToggle"
 import { SearchUser } from "@/components/ui/SearchUser"
-import { User } from "@/domain/interfaces/User"
 
 type NavItem = {
   href: string
@@ -58,9 +57,8 @@ export function Navbar() {
     await logout()
   }
 
-  const handleUserSelect = (user: User) => {
+  const handleUserSelect = () => {
     setIsSearchOpen(false)
-    // Navigation is handled by the SearchUser component itself
   }
 
   return (
