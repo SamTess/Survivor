@@ -70,10 +70,26 @@ export function useStatsDetails() {
           throw new Error('Failed to fetch statistics details')
         }
 
-        const data = await response.json()
-        setData(data)
+        const result = await response.json()
+
+        if (result.success && result.data) {
+          const validatedData: StatsDetailData = {
+            recentUsers: Array.isArray(result.data.recentUsers) ? result.data.recentUsers : [],
+            recentProjects: Array.isArray(result.data.recentProjects) ? result.data.recentProjects : [],
+            recentNews: Array.isArray(result.data.recentNews) ? result.data.recentNews : [],
+            upcomingEvents: Array.isArray(result.data.upcomingEvents) ? result.data.upcomingEvents : [],
+            userGrowthChart: Array.isArray(result.data.userGrowthChart) ? result.data.userGrowthChart : [],
+            projectsDistribution: Array.isArray(result.data.projectsDistribution) ? result.data.projectsDistribution : [],
+            newsPerformance: Array.isArray(result.data.newsPerformance) ? result.data.newsPerformance : [],
+            eventsStats: Array.isArray(result.data.eventsStats) ? result.data.eventsStats : []
+          };
+          setData(validatedData);
+        } else {
+          throw new Error('Invalid response format');
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load activity data')
+        setError(err instanceof Error ? err.message : 'Failed to load statistics details')
+        console.error('Error fetching stats details:', err)
       } finally {
         setLoading(false)
       }
