@@ -71,6 +71,20 @@ const getRoleIcon = (role: string) => {
 }
 
 function UsersContent({ users }: { users: UserDetail[] }) {
+  if (!users || !Array.isArray(users) || users.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-muted/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <FaArrowUp className="text-green-500" />
+            Recent Registrations
+          </h4>
+          <p className="text-sm text-muted-foreground">No recent user registrations found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
@@ -114,6 +128,20 @@ function UsersContent({ users }: { users: UserDetail[] }) {
 }
 
 function ProjectsContent({ projects }: { projects: ProjectDetail[] }) {
+  if (!projects || !Array.isArray(projects) || projects.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-muted/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <FaProjectDiagram className="text-emerald-500" />
+            Active Projects
+          </h4>
+          <p className="text-sm text-muted-foreground">No active projects found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
@@ -160,6 +188,20 @@ function ProjectsContent({ projects }: { projects: ProjectDetail[] }) {
 }
 
 function NewsContent({ news }: { news: NewsDetail[] }) {
+  if (!news || !Array.isArray(news) || news.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-muted/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <FaNewspaper className="text-violet-500" />
+            Recent Articles
+          </h4>
+          <p className="text-sm text-muted-foreground">No recent articles found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
@@ -202,6 +244,20 @@ function NewsContent({ news }: { news: NewsDetail[] }) {
 }
 
 function EventsContent({ events }: { events: EventDetail[] }) {
+  if (!events || !Array.isArray(events) || events.length === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="bg-muted/30 p-4 rounded-lg">
+          <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
+            <FaCalendarAlt className="text-orange-500" />
+            Upcoming Events
+          </h4>
+          <p className="text-sm text-muted-foreground">No upcoming events found</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
