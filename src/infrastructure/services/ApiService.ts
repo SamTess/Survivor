@@ -148,10 +148,12 @@ export class ApiService {
     try {
       const response = await this.client.get('/auth/me');
       const u = response.data as { id: number; name: string; email: string; role: string; permissions?: string[] };
-      const role = (u?.role === 'ADMIN') ? 'admin' : 'user';
+
+      const role = u?.role || 'user';
+
       return {
         success: true,
-        data: { id: u.id, name: u.name, email: u.email, role, permissions: u.permissions },
+        data: { id: u.id, name: u.name, email: u.email, role: role as 'user' | 'admin' | 'investor' | 'founder', permissions: u.permissions },
       };
     } catch (error) {
       if (axios.isAxiosError(error)) {
