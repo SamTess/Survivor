@@ -17,10 +17,11 @@ async function ensureMember(conversationId: number, userId: number): Promise<boo
   return !!link;
 }
 
-export async function DELETE(req: NextRequest, ctx: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const userId = getUserId(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const cid = Number.parseInt(ctx.params.id, 10);
+  const { id } = await ctx.params;
+  const cid = Number.parseInt(id, 10);
   if (!Number.isFinite(cid) || cid <= 0) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   const exists = await prisma.s_CONVERSATION.findUnique({ where: { id: cid }, select: { id: true } });
   if (!exists) return NextResponse.json({ error: 'Not found' }, { status: 404 });
