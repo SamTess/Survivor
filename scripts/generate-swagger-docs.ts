@@ -3,8 +3,25 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import fs from 'fs';
 import path from 'path';
-import glob from 'glob';
-import yaml from 'yaml';
+import { load } from 'js-yaml';
+
+function getTypeScriptFiles(dir: string): string[] {
+  const files: string[] = [];
+  const items = fs.readdirSync(dir);
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item);
+    const stat = fs.statSync(fullPath);
+
+    if (stat.isDirectory()) {
+      files.push(...getTypeScriptFiles(fullPath));
+    } else if (item.endsWith('.ts') && !item.endsWith('.d.ts')) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
 
 const options = {
   definition: {
@@ -24,7 +41,7 @@ const options = {
   apis: [] as string[],
 };
 
-const files = glob.sync('./src/app/api/**/*.ts');
+const files = getTypeScriptFiles('./src/app/api');
 const validFiles: string[] = [];
 
 files.forEach((file: string) => {
@@ -40,7 +57,7 @@ files.forEach((file: string) => {
             .replace(/^\s*\*\s?/gm, '');
 
         try {
-            yaml.parse(yamlStr);
+            load(yamlStr);
         } catch (err) {
             console.error(`❌ YAML parsing error in file: ${file}`);
             console.error(err);
