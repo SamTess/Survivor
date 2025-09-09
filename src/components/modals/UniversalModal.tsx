@@ -101,8 +101,8 @@ export function UniversalModal({
     }
   }
 
-  const titleId = title ? `modal-title-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` : undefined
-  const descId = description ? `modal-desc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}` : undefined
+  const titleId = title ? `modal-title-${Date.now()}-${Math.random().toString(36).slice(2, 11)}` : undefined
+  const descId = description ? `modal-desc-${Date.now()}-${Math.random().toString(36).slice(2, 11)}` : undefined
 
   return (
     <Portal>
