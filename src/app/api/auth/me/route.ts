@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'nodejs';
 import { PrismaClient } from '@prisma/client';
 import { verifyJwt } from '../../../../infrastructure/security/auth';
+import { normalizeRole } from '../../../../utils/roleUtils';
 
 interface GlobalWithPrisma { prisma?: PrismaClient }
 const globalForPrisma = global as unknown as GlobalWithPrisma;
@@ -15,6 +16,6 @@ export async function GET(req: NextRequest) {
   if (!payload) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const user = await prisma.s_USER.findUnique({ where: { id: payload.userId }, include: { permissions: true } });
   if (!user) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  const role = (['ADMIN','MODERATOR'].includes(user.role) ? user.role : 'visitor') as 'ADMIN' | 'MODERATOR' | 'visitor';
-  return NextResponse.json({ id: user.id, name: user.name, email: user.email, role, permissions: user.permissions.map(p => p.name) });
+  const normalizedRole = normalizeRole(user.role);
+  return NextResponse.json({ id: user.id, name: user.name, email: user.email, role: normalizedRole, permissions: user.permissions.map(p => p.name) });
 }
