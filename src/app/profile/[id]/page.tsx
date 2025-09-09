@@ -106,6 +106,15 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
+  const handleStartConversation = () => {
+    if (!user) return;
+
+    const title = user.name && user.name.trim() ? user.name : `User #${user.id}`;
+    window.dispatchEvent(new CustomEvent('chat:startConversation', {
+      detail: { participantIds: [user.id], title }
+    }));
+  };
+
   const getRoleColor = (role: string) => {
     switch (role.toLowerCase()) {
       case 'founder':
@@ -212,38 +221,50 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 </div>
 
                 {/* Action Buttons */}
-                {isOwnProfile && (
-                  <div className="flex space-x-3">
-                    {isEditing ? (
-                      <>
+                <div className="flex space-x-3">
+                  {isOwnProfile ? (
+                    <>
+                      {isEditing ? (
+                        <>
+                          <button
+                            onClick={handleSave}
+                            disabled={saving}
+                            className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          >
+                            {saving && (
+                              <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                            )}
+                            {saving ? 'Saving...' : 'Save'}
+                          </button>
+                          <button
+                            onClick={handleCancel}
+                            disabled={saving}
+                            className="bg-muted text-foreground px-4 py-2 rounded-2xl hover:bg-muted/80 transition-all duration-200 border border-border/20 backdrop-blur-md disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
                         <button
-                          onClick={handleSave}
-                          disabled={saving}
-                          className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                          onClick={handleEdit}
+                          className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md"
                         >
-                          {saving && (
-                            <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-                          )}
-                          {saving ? 'Saving...' : 'Save'}
+                          Edit Profile
                         </button>
-                        <button
-                          onClick={handleCancel}
-                          disabled={saving}
-                          className="bg-muted text-foreground px-4 py-2 rounded-2xl hover:bg-muted/80 transition-all duration-200 border border-border/20 backdrop-blur-md disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        onClick={handleEdit}
-                        className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md"
-                      >
-                        Edit Profile
-                      </button>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </>
+                  ) : (
+                    <button
+                      onClick={handleStartConversation}
+                      className="bg-accent text-accent-foreground px-4 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
+                      </svg>
+                      Start Conversation
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

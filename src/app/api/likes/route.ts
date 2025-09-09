@@ -2,6 +2,71 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/infrastructure/persistence/prisma/client';
 import { ContentType } from '@prisma/client';
 
+/**
+ * @openapi
+ * /likes:
+ *   post:
+ *     summary: Create Like
+ *     description: Add a like to a specific content item
+ *     tags:
+ *       - Likes
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Like added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 likeCount:
+ *                   type: integer
+ *                   description: Total number of likes for this content
+ *                   example: 42
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
 export async function POST(req: NextRequest) {
   try {
     const { userId, contentType, contentId } = await req.json();
@@ -57,6 +122,71 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * @openapi
+ * /likes:
+ *   delete:
+ *     summary: Remove Like
+ *     description: Remove a like from a specific content item
+ *     tags:
+ *       - Likes
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Like removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 likeCount:
+ *                   type: integer
+ *                   description: Total number of likes for this content
+ *                   example: 41
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
 export async function DELETE(req: NextRequest) {
   try {
     const { userId, contentType, contentId } = await req.json();
