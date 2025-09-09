@@ -4,7 +4,7 @@ export interface PDFStats {
   totalUsers?: number
   activeProjects?: number
   NewsArticle?: number
-  UpcommingEvents?: number
+  UpcomingEvents?: number
 }
 
 export interface PDFActivity {
@@ -26,7 +26,7 @@ export interface TrendData {
   totalUsers: string
   activeProjects: string
   NewsArticle: string
-  UpcommingEvents: string
+  UpcomingEvents: string
 }
 
 export async function generateDashboardPDF(
@@ -39,7 +39,7 @@ export async function generateDashboardPDF(
     totalUsers: '+12%',
     activeProjects: '+8%',
     NewsArticle: '+15%',
-    UpcommingEvents: '+22%'
+    UpcomingEvents: '+22%'
   }
 
   const doc = new jsPDF()
@@ -115,7 +115,7 @@ export async function generateDashboardPDF(
       { label: 'Total Users', value: stats.totalUsers || 0, trend: finalTrends.totalUsers, desc: 'Total registered users' },
       { label: 'Active Projects', value: stats.activeProjects || 0, trend: finalTrends.activeProjects, desc: 'Projects active' },
       { label: 'News Article', value: stats.NewsArticle || 0, trend: finalTrends.NewsArticle, desc: 'News article' },
-      { label: 'Upcomming Events', value: stats.UpcommingEvents || 0, trend: finalTrends.UpcommingEvents, desc: 'Total user interactions' }
+      { label: 'Upcomming Events', value: stats.UpcomingEvents || 0, trend: finalTrends.UpcomingEvents, desc: 'Total user interactions' }
     ]
 
     kpis.forEach((kpi, index) => {
