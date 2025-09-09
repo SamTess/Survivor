@@ -2,7 +2,7 @@
 import React from "react";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
-import { Trash2 } from "lucide-react";
+import { Trash2, MessageCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 const ConversationClient = dynamic<{
@@ -331,7 +331,7 @@ export function ChatLauncher(): React.ReactElement {
       type="button"
     >
       <>
-        💬
+        <MessageCircle size={18} />
         {totalUnread > 0 && (
       <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] leading-[18px] text-center font-semibold border border-primary-foreground">
             {String(Math.min(totalUnread, 99))}
