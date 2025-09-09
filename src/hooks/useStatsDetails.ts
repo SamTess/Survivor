@@ -72,9 +72,7 @@ export function useStatsDetails() {
 
         const result = await response.json()
 
-        // Extract data from the API response structure
         if (result.success && result.data) {
-          // Ensure all arrays are properly initialized
           const validatedData: StatsDetailData = {
             recentUsers: Array.isArray(result.data.recentUsers) ? result.data.recentUsers : [],
             recentProjects: Array.isArray(result.data.recentProjects) ? result.data.recentProjects : [],

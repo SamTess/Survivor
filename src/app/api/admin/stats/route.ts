@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { AdminStatsService } from '../../../../application/services/AdminStatsService';
 
-// Use shared AdminStatsService for better maintainability
 const adminStatsService = new AdminStatsService();
 
 export async function GET() {

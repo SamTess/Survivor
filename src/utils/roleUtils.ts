@@ -24,9 +24,8 @@ export function normalizeRole(dbRole: string | null | undefined): UserRole {
 
   const upperRole = dbRole.toUpperCase();
 
-  // Validate that the role is a known DatabaseRole before proceeding
   if (!isDatabaseRole(upperRole)) {
-    return 'user'; // Default to user for unknown roles
+    return 'user';
   }
 
   switch (upperRole) {
