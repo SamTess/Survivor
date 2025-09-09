@@ -185,7 +185,8 @@ export async function GET(request: NextRequest) {
         searchTerm,
         ...(role && { filter: { role } })
       });
-    }    if (founders) {
+    }
+    if (founders) {
       const users = await userService.getFounders();
       return NextResponse.json({ success: true, data: users });
     }
