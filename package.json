@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "health-check": "tsx scripts/health-check.ts",
     "cleanup-tokens": "tsx scripts/cleanup-tokens.ts",
-    "test-email": "tsx scripts/test-email.ts"
+  "test-email": "tsx scripts/test-email.ts",
+  "backfill:roles": "tsx scripts/backfill-roles.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",

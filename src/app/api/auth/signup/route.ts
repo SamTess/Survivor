@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
   const existing = await prisma.s_USER.findFirst({ where: { email } });
     if (existing) return NextResponse.json({ error: 'Email already used' }, { status: 409 });
     const password_hash = hashPassword(password);
-    const user = await prisma.s_USER.create({ data: { name, email, password_hash, address: '', role: 'USER' } });
+    // Default role set to 'visitor' instead of 'USER'
+    const user = await prisma.s_USER.create({ data: { name, email, password_hash, address: '', role: 'visitor' } });
     const token = signJwt({ userId: user.id }, 60 * 60 * 24 * 7, getAuthSecret());
     const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
     res.cookies.set('auth', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, sameSite: 'lax', path: '/' });

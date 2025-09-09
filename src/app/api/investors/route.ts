@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InvestorService } from '../../../application/services/investors/InvestorService';
 import { InvestorRepositoryPrisma } from '../../../infrastructure/persistence/prisma/InvestorRepositoryPrisma';
+import { verifyJwt } from '../../../infrastructure/security/auth';
+import prisma from '../../../infrastructure/persistence/prisma/client';
 
 const investorRepository = new InvestorRepositoryPrisma();
 const investorService = new InvestorService(investorRepository);
@@ -61,7 +63,23 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
+    // If authenticated, enforce linking to current user and sync fields
+    const token = request.cookies.get('auth')?.value;
+    const secret = process.env.AUTH_SECRET || 'dev-secret';
+    const payload = verifyJwt(token, secret);
+    if (payload) {
+      const user = await prisma.s_USER.findUnique({ where: { id: payload.userId } });
+      if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 401 });
+
+      // Ensure email/name align with user and set role if needed
+      body.email = user.email;
+      body.name = body.name || user.name;
+      if (user.role !== 'investor') {
+        await prisma.s_USER.update({ where: { id: user.id }, data: { role: 'investor' } });
+      }
+    }
+
     const investor = await investorService.createInvestor(body);
     
     return NextResponse.json({ 
