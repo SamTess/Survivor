@@ -123,19 +123,17 @@ export function SearchUser({
 
       {/* Search Results */}
       {(hasResults || showNoResults || error) && (
-        <Card className="bg-card/80 backdrop-blur-md border-border/20">
-          <CardHeader className="py-3 px-4">
-            <CardTitle className="text-base font-medium flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Search Results
-              {hasResults && (
-                <span className="text-sm font-normal text-muted-foreground">
-                  ({users.length} found)
-                </span>
-              )}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="max-h-80 overflow-y-auto px-3 pb-3">
+        <div className="">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">Search Results</span>
+            {hasResults && (
+              <span className="text-xs text-muted-foreground">
+                ({users.length} found)
+              </span>
+            )}
+          </div>
+          <div className="max-h-80 overflow-y-auto overflow-x-clip scrollbar-none px-1 pb-2">
             {error ? (
               <div className="text-center py-6">
                 <p className="text-destructive text-sm">{error}</p>
@@ -167,8 +165,8 @@ export function SearchUser({
                 ))}
               </div>
             ) : null}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );
