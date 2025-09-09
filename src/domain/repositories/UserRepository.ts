@@ -9,6 +9,7 @@ export interface UserRepository {
   getAll(): Promise<User[]>;
   getByEmail(email: string): Promise<User | null>;
   getByRole(role: string): Promise<User[]>;
+  getByDateRange(startDate: Date, endDate: Date): Promise<User[]>;
   getFounders(): Promise<User[]>;
   getInvestors(): Promise<User[]>;
   search(query: string): Promise<User[]>;
