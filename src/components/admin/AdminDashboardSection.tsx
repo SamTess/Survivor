@@ -6,6 +6,7 @@ import { useRecentActivity } from '@/hooks/useRecentActivity'
 import DashboardControls, { DashboardSettings } from './DashboardControls'
 import KPISection from './KPIComponent'
 import AdminRecentActivitySection from './AdminRecentActivitySection'
+import jsPDF from 'jspdf'
 
 export default function AdminDashboardSection() {
   const { stats, loading: statsLoading } = useAdminStats()
@@ -31,22 +32,59 @@ export default function AdminDashboardSection() {
   }, [])
 
   const handleExport = () => {
-    const reportData = {
-      generated: new Date().toISOString(),
-      stats,
-      systemHealth: { uptime: '99.9%', responseTime: '42ms', dbSize: '2.1GB' },
-      recentActivities: activityData?.activities?.slice(0, 10)
+    const doc = new jsPDF()
+
+    doc.setFontSize(20)
+    doc.text('Dashboard Report', 20, 30)
+
+    doc.setFontSize(12)
+    doc.text(`Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 20, 45)
+
+    let yPosition = 65
+
+    if (stats) {
+      doc.setFontSize(16)
+      doc.text('Statistics', 20, yPosition)
+      yPosition += 15
+
+      doc.setFontSize(12)
+      const statsText = [
+        `Total Users: ${stats.totalUsers?.value || 0}`,
+        `Active Projects: ${stats.activeProjects?.value || 0}`,
+        `News Articles: ${stats.newsArticles?.value || 0}`,
+        `Upcoming Events: ${stats.upcomingEvents?.value || 0}`
+      ]
+
+      statsText.forEach(stat => {
+        doc.text(stat, 20, yPosition)
+        yPosition += 10
+      })
+
+      yPosition += 10
     }
 
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    if (activityData?.activities && activityData.activities.length > 0) {
+      doc.setFontSize(16)
+      doc.text('Recent Activities', 20, yPosition)
+      yPosition += 15
+
+      doc.setFontSize(10)
+      activityData.activities.slice(0, 10).forEach((activity, index) => {
+        const activityText = `${index + 1}. ${activity.description} - ${new Date(activity.timestamp).toLocaleDateString()}`
+        // Split long text into multiple lines
+        const lines = doc.splitTextToSize(activityText, 170)
+        lines.forEach((line: string) => {
+          if (yPosition > 270) {
+            doc.addPage()
+            yPosition = 30
+          }
+          doc.text(line, 20, yPosition)
+          yPosition += 8
+        })
+      })
+    }
+
+    doc.save(`dashboard-report-${new Date().toISOString().split('T')[0]}.pdf`)
   }
 
   if (statsLoading || activityLoading) {
