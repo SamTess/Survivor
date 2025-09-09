@@ -21,13 +21,13 @@ const options = {
       },
     ],
   },
-  apis: [],
+  apis: [] as string[],
 };
 
 const files = glob.sync('./src/app/api/**/*.ts');
 const validFiles: string[] = [];
 
-files.forEach(file => {
+files.forEach((file: string) => {
   const content = fs.readFileSync(file, 'utf-8');
   const matches = content.match(/@openapi([\s\S]*?)\*\//g);
   let valid = true;

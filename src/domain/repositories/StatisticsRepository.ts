@@ -1,5 +1,4 @@
 import {
-  StatisticsData,
   StatisticsFilters,
   ContentStats,
   PlatformMetrics
