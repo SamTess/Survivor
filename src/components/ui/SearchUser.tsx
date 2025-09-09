@@ -8,24 +8,14 @@ import { User } from '@/domain/interfaces/User';
 import { Search, Loader2, X, Users } from 'lucide-react';
 
 interface SearchUserProps {
-  /** Callback when a user is selected */
   onUserSelect?: (user: User) => void;
-  /** Placeholder text for the search input */
   placeholder?: string;
-  /** Whether to show role filter */
   showRoleFilter?: boolean;
-  /** Custom CSS classes */
   className?: string;
-  /** Size variant for user cards */
   cardSize?: 'sm' | 'md' | 'lg';
-  /** Maximum number of results */
   maxResults?: number;
 }
 
-/**
- * SearchUser component that uses the useUserSearch hook
- * Provides a clean, lightweight search interface for finding users
- */
 export function SearchUser({
   onUserSelect,
   placeholder = "Search users by name, email, or role...",
@@ -44,7 +34,6 @@ export function SearchUser({
     { maxResults }
   );
 
-  // Auto-focus on mount
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
@@ -52,9 +41,7 @@ export function SearchUser({
   }, []);
 
   const handleUserClick = (user: User) => {
-    // Call the onUserSelect callback if provided
     onUserSelect?.(user);
-    // Navigate to the user's profile page
     router.push(`/profile/${user.id}`);
   };
 

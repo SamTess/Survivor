@@ -81,14 +81,12 @@ export class UserService {
 
     let users = await this.userRepository.search(query.trim());
 
-    // Apply role filter if provided
     if (filters.role) {
       users = users.filter(user =>
         user.role.toLowerCase() === filters.role!.toLowerCase()
       );
     }
 
-    // Apply limit if provided
     if (filters.limit && filters.limit > 0) {
       users = users.slice(0, filters.limit);
     }

@@ -145,26 +145,22 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const role = searchParams.get('role');
     const search = searchParams.get('search');
-    const query = searchParams.get('query'); // Alternative search parameter
+    const query = searchParams.get('query');
     const founders = searchParams.get('founders') === 'true';
     const investors = searchParams.get('investors') === 'true';
 
-    // Use search or query parameter (search takes precedence)
     const searchTerm = search || query;
 
-    // Handle search queries with pagination support
     if (searchTerm) {
-      // Use enhanced search if role filter is also provided
-      const users = role 
+      const users = role
         ? await userService.searchUsersWithFilters(searchTerm, { role })
         : await userService.searchUsers(searchTerm);
-      
-      // Apply pagination to search results if requested
+
       if (page > 1 || limit !== 10) {
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
         const paginatedUsers = users.slice(startIndex, endIndex);
-        
+
         return NextResponse.json({
           success: true,
           data: paginatedUsers,
@@ -178,9 +174,9 @@ export async function GET(request: NextRequest) {
           ...(role && { filter: { role } })
         });
       }
-      
-      return NextResponse.json({ 
-        success: true, 
+
+      return NextResponse.json({
+        success: true,
         data: users,
         searchTerm,
         ...(role && { filter: { role } })
@@ -199,7 +195,6 @@ export async function GET(request: NextRequest) {
     if (role) {
       const users = await userService.getUsersByRole(role);
 
-      // Apply pagination to role-filtered results if requested
       if (page > 1 || limit !== 10) {
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;

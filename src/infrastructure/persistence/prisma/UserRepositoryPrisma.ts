@@ -34,7 +34,6 @@ export class UserRepositoryPrisma implements UserRepository {
   }
 
   async create(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
-    // Check if user already exists
     const existingUser = await prisma.s_USER.findFirst({
       where: { email: user.email }
     });
@@ -184,7 +183,6 @@ export class UserRepositoryPrisma implements UserRepository {
       orderBy: { created_at: 'desc' },
     });
 
-    // Sort results to prioritize exact matches and name matches
     return users
       .map(user => this.mapPrismaToUser(user))
       .sort((a, b) => {
@@ -194,19 +192,15 @@ export class UserRepositoryPrisma implements UserRepository {
         const aEmailLower = a.email.toLowerCase();
         const bEmailLower = b.email.toLowerCase();
 
-        // Exact name matches first
         if (aNameLower === queryLower && bNameLower !== queryLower) return -1;
         if (bNameLower === queryLower && aNameLower !== queryLower) return 1;
 
-        // Name starts with query
         if (aNameLower.startsWith(queryLower) && !bNameLower.startsWith(queryLower)) return -1;
         if (bNameLower.startsWith(queryLower) && !aNameLower.startsWith(queryLower)) return 1;
 
-        // Email starts with query
         if (aEmailLower.startsWith(queryLower) && !bEmailLower.startsWith(queryLower)) return -1;
         if (bEmailLower.startsWith(queryLower) && !aEmailLower.startsWith(queryLower)) return 1;
 
-        // Default to alphabetical by name
         return aNameLower.localeCompare(bNameLower);
       });
   }
