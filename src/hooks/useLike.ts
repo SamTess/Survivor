@@ -78,7 +78,6 @@ export const useLike = ({
       });
 
       if (!response.ok) {
-        // Revert optimistic update silently
         setIsLiked(!newIsLiked);
         setLikeCount((prev: number) => (newIsLiked ? prev - 1 : prev + 1));
         return;
@@ -88,7 +87,6 @@ export const useLike = ({
       setLikeCount(data.likeCount);
 
   } catch {
-      // Network or unexpected error: revert silently
       setIsLiked(!newIsLiked);
       setLikeCount((prev: number) => (newIsLiked ? prev - 1 : prev + 1));
     } finally {

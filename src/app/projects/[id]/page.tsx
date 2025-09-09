@@ -90,8 +90,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   const coverImage = generateCoverImage(project.sector, project.id);
 
-  // FounderAvatar moved to a client component (UserAvatar) to avoid event handlers in a Server Component
-
   return (
     <div className="h-screen bg-background pt-14 overflow-y-auto">
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">

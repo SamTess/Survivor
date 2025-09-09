@@ -28,7 +28,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+      setIsDesktop(window.innerWidth >= 768);
     };
 
     checkDesktop();
@@ -37,7 +37,6 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
 
-  // Fetch user's investor or founder data based on role
   useEffect(() => {
     const fetchUserRoleData = async () => {
       if (!user || !isAuthenticated) {
@@ -49,14 +48,14 @@ export default function Dashboard() {
       setError(null);
 
       try {
-  if (user.role === 'investor') {
+        if (user.role === 'investor') {
           const response = await apiService.get<InvestorApiResponse>(`/users/${user.id}/investor`);
           if (response.success && response.data) {
             setUserInvestor(response.data);
           } else {
             console.log('No investor data found for user');
           }
-  } else if (user.role === 'founder') {
+        } else if (user.role === 'founder') {
           const response = await apiService.get<Founder[]>(`/users/${user.id}/founder`);
           if (response.success && response.data && response.data.length > 0) {
             setUserFounders(response.data);
@@ -72,9 +71,7 @@ export default function Dashboard() {
           } else {
             console.log('No founder data found for user');
           }
-        } else if (user.role === 'visitor' || user.role === 'user') {
-          // No extra fetch; basic visitor dashboard
-        }
+        } else if (user.role === 'visitor' || user.role === 'user') { /* Ignore */ }
       } catch (error) {
         console.error('Error fetching user role data:', error);
         setError('Failed to fetch user role data');

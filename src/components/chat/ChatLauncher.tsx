@@ -196,7 +196,6 @@ export function ChatLauncher(): React.ReactElement {
     return () => window.removeEventListener("chat:startConversation", handler as EventListener);
   }, [loadConvs, currentUserId]);
 
-  // Use shared client avatar to avoid <img> lint warning and unify fallbacks
   const AvatarBubble: React.FC<{ user: UserLite }> = ({ user: u }) => (
     <UserAvatar uid={u.id} name={u.name} size={24} className="ring-2 ring-white" />
   );

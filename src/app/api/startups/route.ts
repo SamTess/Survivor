@@ -33,8 +33,8 @@ export async function GET(request: NextRequest) {
 
     if (page > 1 || limit !== 10) {
       const result = await startupService.getStartupsPaginated(page, limit);
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         data: result.startups,
         pagination: {
           page,
@@ -51,9 +51,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching startups:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch startups' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch startups'
       },
       { status: 500 }
     );
@@ -63,16 +63,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
     const startup = await startupService.createStartup(body);
-
-    // Try to link the authenticated user as a founder of this startup
     const token = request.cookies.get('auth')?.value;
     const secret = process.env.AUTH_SECRET || 'dev-secret';
     const payload = verifyJwt(token, secret);
     if (payload) {
       const userId = payload.userId;
-      // Avoid duplicate founder entries
       const existing = await prisma.s_FOUNDER.findFirst({
         where: { user_id: userId, startup_id: startup.id },
       });
@@ -83,16 +79,15 @@ export async function POST(request: NextRequest) {
             startup_id: startup.id,
           },
         });
-        // Ensure role reflects founder
         const user = await prisma.s_USER.findUnique({ where: { id: userId } });
         if (user && user.role !== 'founder') {
           await prisma.s_USER.update({ where: { id: userId }, data: { role: 'founder' } });
         }
       }
     }
-    
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       data: startup,
       message: 'Startup created successfully'
     }, { status: 201 });
@@ -100,9 +95,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating startup:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create startup' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create startup'
       },
       { status: 400 }
     );

@@ -79,12 +79,10 @@ export const useFollow = ({
 
       if (!response.ok) {
         if (response.status === 409) {
-          // Already following
           setIsFollowing(true);
           setFollowerCount((prev: number) => (newIsFollowing ? prev - 1 : prev + 1));
           return;
         }
-        // Revert optimistic update silently
         setIsFollowing(!newIsFollowing);
         setFollowerCount((prev: number) => (newIsFollowing ? prev - 1 : prev + 1));
         return;
@@ -94,7 +92,6 @@ export const useFollow = ({
       setFollowerCount(data.followerCount);
 
   } catch {
-      // Network or unexpected error: revert silently
       setIsFollowing(!newIsFollowing);
       setFollowerCount((prev: number) => (newIsFollowing ? prev - 1 : prev + 1));
     } finally {

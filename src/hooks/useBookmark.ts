@@ -79,12 +79,10 @@ export const useBookmark = ({
 
       if (!response.ok) {
         if (response.status === 409) {
-          // Already bookmarked
           setIsBookmarked(true);
           setBookmarkCount((prev: number) => (newIsBookmarked ? prev - 1 : prev + 1));
           return;
         }
-        // Revert optimistic update silently
         setIsBookmarked(!newIsBookmarked);
         setBookmarkCount((prev: number) => (newIsBookmarked ? prev - 1 : prev + 1));
         return;
@@ -94,7 +92,6 @@ export const useBookmark = ({
       setBookmarkCount(data.bookmarkCount);
 
   } catch {
-      // Network or unexpected error: revert silently
       setIsBookmarked(!newIsBookmarked);
       setBookmarkCount((prev: number) => (newIsBookmarked ? prev - 1 : prev + 1));
     } finally {

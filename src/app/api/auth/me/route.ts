@@ -15,7 +15,6 @@ export async function GET(req: NextRequest) {
   if (!payload) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const user = await prisma.s_USER.findUnique({ where: { id: payload.userId }, include: { permissions: true } });
   if (!user) return NextResponse.json({ error: 'not found' }, { status: 404 });
-  // Map role: return admin/moderator as-is; otherwise default to 'visitor'
   const role = (['ADMIN','MODERATOR'].includes(user.role) ? user.role : 'visitor') as 'ADMIN' | 'MODERATOR' | 'visitor';
   return NextResponse.json({ id: user.id, name: user.name, email: user.email, role, permissions: user.permissions.map(p => p.name) });
 }
