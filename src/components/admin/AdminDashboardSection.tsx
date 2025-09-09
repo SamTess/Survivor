@@ -6,7 +6,7 @@ import { useRecentActivity } from '@/hooks/useRecentActivity'
 import DashboardControls, { DashboardSettings } from './DashboardControls'
 import KPISection from './KPIComponent'
 import AdminRecentActivitySection from './AdminRecentActivitySection'
-import jsPDF from 'jspdf'
+import { generateDashboardPDF } from '@/utils/pdfGenerator'
 
 export default function AdminDashboardSection() {
   const { stats, loading: statsLoading } = useAdminStats()
@@ -31,60 +31,37 @@ export default function AdminDashboardSection() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleExport = () => {
-    const doc = new jsPDF()
+  const handleExport = async () => {
+    try {
+      const trendsResponse = await fetch('/api/trends')
+      const trendsResult = await trendsResponse.json()
 
-    doc.setFontSize(20)
-    doc.text('Dashboard Report', 20, 30)
+      const pdfStats = stats ? {
+        totalUsers: stats.totalUsers?.value || 0,
+        activeProjects: stats.activeProjects?.value || 0,
+        NewsArticle: stats.newsArticles?.value || 0,
+        UpcommingEvents: stats.upcomingEvents?.value || 0
+      } : null
 
-    doc.setFontSize(12)
-    doc.text(`Generated: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 20, 45)
+      const pdfActivity = activityData?.activities?.map(activity => ({
+        id: activity.id || '',
+        type: activity.type || 'activity',
+        description: activity.description || '',
+        timestamp: activity.timestamp || new Date().toISOString(),
+        user: activity.user || undefined
+      })) || null
 
-    let yPosition = 65
+      const trends = trendsResult.success ? {
+        totalUsers: trendsResult.data.totalUsers,
+        activeProjects: trendsResult.data.activeProjects,
+        NewsArticle: trendsResult.data.NewsArticle,
+        UpcommingEvents: trendsResult.data.UpcommingEvents
+      } : undefined
 
-    if (stats) {
-      doc.setFontSize(16)
-      doc.text('Statistics', 20, yPosition)
-      yPosition += 15
-
-      doc.setFontSize(12)
-      const statsText = [
-        `Total Users: ${stats.totalUsers?.value || 0}`,
-        `Active Projects: ${stats.activeProjects?.value || 0}`,
-        `News Articles: ${stats.newsArticles?.value || 0}`,
-        `Upcoming Events: ${stats.upcomingEvents?.value || 0}`
-      ]
-
-      statsText.forEach(stat => {
-        doc.text(stat, 20, yPosition)
-        yPosition += 10
-      })
-
-      yPosition += 10
+      await generateDashboardPDF(pdfStats, pdfActivity, null, trends)
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error)
     }
-
-    if (activityData?.activities && activityData.activities.length > 0) {
-      doc.setFontSize(16)
-      doc.text('Recent Activities', 20, yPosition)
-      yPosition += 15
-
-      doc.setFontSize(10)
-      activityData.activities.slice(0, 10).forEach((activity, index) => {
-        const activityText = `${index + 1}. ${activity.description} - ${new Date(activity.timestamp).toLocaleDateString()}`
-        // Split long text into multiple lines
-        const lines = doc.splitTextToSize(activityText, 170)
-        lines.forEach((line: string) => {
-          if (yPosition > 270) {
-            doc.addPage()
-            yPosition = 30
-          }
-          doc.text(line, 20, yPosition)
-          yPosition += 8
-        })
-      })
-    }
-
-    doc.save(`dashboard-report-${new Date().toISOString().split('T')[0]}.pdf`)
   }
 
   if (statsLoading || activityLoading) {
