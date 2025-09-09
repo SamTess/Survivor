@@ -7,6 +7,80 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// --------------------
+// Opportunities Tracker Models
+// --------------------
+
+enum OpportunityDirection {
+  S_TO_I
+  S_TO_P
+  I_TO_S
+  P_TO_S
+}
+
+enum EntityType {
+  STARTUP
+  INVESTOR
+  PARTNER
+}
+
+enum OpportunityStatus {
+  NEW
+  QUALIFIED
+  CONTACTED
+  IN_DISCUSSION
+  PILOT
+  DEAL
+  LOST
+}
+
+enum OpportunityEventType {
+  AUTO_CREATED
+  RESCORED
+  STATUS_CHANGED
+  NOTE
+  EMAIL_SENT
+  MEETING
+  PILOT_STARTED
+  DEAL_SIGNED
+}
+
+model OPPORTUNITY {
+  id             String              @id @default(uuid())
+  direction      OpportunityDirection
+  source_type    EntityType
+  source_id      Int
+  target_type    EntityType
+  target_id      Int
+  score          Decimal?            @db.Decimal(5, 2)
+  score_breakdown Json?
+  status         OpportunityStatus   @default(NEW)
+  reason         String?
+  next_action    String?
+  owner_user_id  Int?
+  created_at     DateTime            @default(now())
+  updated_at     DateTime            @updatedAt
+
+  events OPPORTUNITY_EVENT[]
+
+  @@index([status])
+  @@index([direction])
+  @@unique([direction, source_type, source_id, target_type, target_id])
+}
+
+model OPPORTUNITY_EVENT {
+  id             String                 @id @default(uuid())
+  opportunity_id String
+  occurred_at    DateTime               @default(now())
+  type           OpportunityEventType
+  payload        Json?
+
+  opportunity OPPORTUNITY @relation(fields: [opportunity_id], references: [id], onDelete: Cascade)
+
+  @@index([occurred_at])
+  @@index([type])
+}
+
 model S_STARTUP {
   id           Int      @id @default(autoincrement())
   name         String
