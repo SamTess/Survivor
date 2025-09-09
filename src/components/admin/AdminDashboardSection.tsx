@@ -1,71 +1,98 @@
 "use client"
 
-import React from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { FaChartLine } from 'react-icons/fa'
+import React, { useState, useEffect } from 'react'
+import { useAdminStats } from '@/hooks/useAdminStats'
+import { useRecentActivity } from '@/hooks/useRecentActivity'
+import DashboardControls, { DashboardSettings } from './DashboardControls'
+import KPISection from './KPIComponent'
+import AdminRecentActivitySection from './AdminRecentActivitySection'
 
 export default function AdminDashboardSection() {
+  const { stats, loading: statsLoading } = useAdminStats()
+  const { data: activityData, loading: activityLoading } = useRecentActivity()
+
+  const [settings, setSettings] = useState<DashboardSettings>({
+    showKPIs: true,
+    showRecentActivity: true
+  })
+
+  const [timeOfDay, setTimeOfDay] = useState('')
+
+  useEffect(() => {
+    const updateTimeOfDay = () => {
+      const hour = new Date().getHours()
+      if (hour < 12) setTimeOfDay('Good morning')
+      else if (hour < 17) setTimeOfDay('Good afternoon')
+      else setTimeOfDay('Good evening')
+    }
+    updateTimeOfDay()
+    const interval = setInterval(updateTimeOfDay, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleExport = () => {
+    const reportData = {
+      generated: new Date().toISOString(),
+      stats,
+      systemHealth: { uptime: '99.9%', responseTime: '42ms', dbSize: '2.1GB' },
+      recentActivities: activityData?.activities?.slice(0, 10)
+    }
+
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
+  if (statsLoading || activityLoading) {
+    return (
+      <div className="space-y-6" role="status" aria-label="Loading dashboard">
+        <div className="animate-pulse">
+          <div className="h-8 bg-muted rounded w-48 mb-2"></div>
+          <div className="h-4 bg-muted rounded w-96"></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="h-32 bg-muted rounded animate-pulse"></div>
+          ))}
+        </div>
+        <span className="sr-only">Loading dashboard content...</span>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-foreground mb-2">Dashboard</h2>
-        <p className="text-muted-foreground">Statistics on project visibility and user interactions</p>
-      </div>
+    <main className="space-y-6" role="main" aria-labelledby="dashboard-title">
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div>
+          <h1 id="dashboard-title" className="text-3xl font-bold text-foreground mb-2">
+            {timeOfDay}, Admin! 👋
+          </h1>
+          <p className="text-muted-foreground" id="dashboard-subtitle">
+            Executive dashboard with customizable views and accessibility features
+          </p>
+        </div>
+      </header>
 
-      <Card className="p-6">
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center space-y-2">
-              <div className="text-2xl font-bold text-primary">94.2%</div>
-              <div className="text-sm text-muted-foreground">System Uptime</div>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="text-2xl font-bold text-green-600">2.3k</div>
-              <div className="text-sm text-muted-foreground">Monthly Active Users</div>
-            </div>
-            <div className="text-center space-y-2">
-              <div className="text-2xl font-bold text-blue-600">1.8k</div>
-              <div className="text-sm text-muted-foreground">New Registrations</div>
-            </div>
-          </div>
+      <DashboardControls
+        settings={settings}
+        onSettingsChange={setSettings}
+        onExport={handleExport}
+      />
 
-          <div className="pt-4 border-t border-border">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Last updated</span>
-              <span className="text-sm font-medium text-foreground">
-                {new Date().toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
-              </span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {settings.showKPIs && (
+        <KPISection />
+      )}
 
-      {/* Additional analytics charts could go here */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <FaChartLine className="text-primary" />
-            <h3 className="font-semibold">Project Views</h3>
-          </div>
-          <div className="text-center py-8 text-muted-foreground">
-            Chart visualization would go here
-          </div>
-        </Card>
+      {settings.showRecentActivity && (
+        <AdminRecentActivitySection />
+      )}
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <FaChartLine className="text-primary" />
-            <h3 className="font-semibold">User Engagement</h3>
-          </div>
-          <div className="text-center py-8 text-muted-foreground">
-            Chart visualization would go here
-          </div>
-        </Card>
-      </div>
-    </div>
+    </main>
   )
 }

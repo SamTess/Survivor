@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { FormModal } from '@/components/modals/ModalVariants'
 import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
@@ -12,8 +13,6 @@ import {
   Trash2,
   Eye,
   Calendar,
-  X,
-  Save,
   Loader2,
   MapPin,
   Users,
@@ -54,7 +53,7 @@ const TARGET_AUDIENCES = [
   'Entrepreneurs', 'Investors', 'Developers', 'Students', 'General Public', 'Industry Professionals', 'Startups', 'All'
 ]
 
-export default function EventsCrudSection() {
+export default function AdminEventsSection() {
   const [events, setEvents] = useState<Event[]>([])
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
@@ -73,6 +72,7 @@ export default function EventsCrudSection() {
     event_type: '',
     target_audience: ''
   })
+
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
@@ -423,118 +423,129 @@ export default function EventsCrudSection() {
         </CardContent>
       </Card>
 
-      {/* Create/Edit */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">
-                {editingEvent ? 'Edit Event' : 'New Event'}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X size={16} />
-              </Button>
+      <FormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleSubmit}
+        title={editingEvent ? 'Edit Event' : 'New Event'}
+        loading={isSubmitting}
+        submitLabel={editingEvent ? 'Update' : 'Create'}
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="event-name" className="block text-sm font-medium mb-1">
+              Event Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="event-name"
+              type="text"
+              required
+              autoComplete="off"
+              placeholder="Enter event name"
+              aria-describedby="event-name-help"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            />
+            <div id="event-name-help" className="text-xs text-muted-foreground mt-1">
+              Enter a descriptive name for the event
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="event-description" className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              id="event-description"
+              rows={4}
+              autoComplete="off"
+              placeholder="Describe the event, its purpose, and what attendees can expect"
+              aria-describedby="event-description-help"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            />
+            <div id="event-description-help" className="text-xs text-muted-foreground mt-1">
+              Provide details about the event agenda, speakers, and objectives
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="event-dates" className="block text-sm font-medium mb-1">Date and Time</label>
+              <input
+                id="event-dates"
+                type="datetime-local"
+                autoComplete="off"
+                placeholder="Select date and time"
+                aria-describedby="event-dates-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.dates}
+                onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
+              />
+              <div id="event-dates-help" className="text-xs text-muted-foreground mt-1">
+                Choose the start date and time of the event
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Event Name *</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                />
+            <div>
+              <label htmlFor="event-location" className="block text-sm font-medium mb-1">Location</label>
+              <input
+                id="event-location"
+                type="text"
+                autoComplete="address-line1"
+                placeholder="Venue name and address"
+                aria-describedby="event-location-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.location}
+                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              />
+              <div id="event-location-help" className="text-xs text-muted-foreground mt-1">
+                Enter the venue name and complete address
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  rows={4}
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+            <div>
+              <label htmlFor="event-type" className="block text-sm font-medium mb-1">Event Type</label>
+              <select
+                id="event-type"
+                autoComplete="off"
+                aria-describedby="event-type-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.event_type}
+                onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
+              >
+                <option value="">Select a type</option>
+                {EVENT_TYPES.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              <div id="event-type-help" className="text-xs text-muted-foreground mt-1">
+                Choose the category that best describes this event
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Date and Time</label>
-                  <input
-                    type="datetime-local"
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.dates}
-                    onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Location</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Event Type</label>
-                  <select
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.event_type}
-                    onChange={(e) => setFormData({ ...formData, event_type: e.target.value })}
-                  >
-                    <option value="">Select a type</option>
-                    {EVENT_TYPES.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Target Audience</label>
-                  <select
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={formData.target_audience}
-                    onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
-                  >
-                    <option value="">Select an audience</option>
-                    {TARGET_AUDIENCES.map(audience => (
-                      <option key={audience} value={audience}>{audience}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label htmlFor="event-audience" className="block text-sm font-medium mb-1">Target Audience</label>
+              <select
+                id="event-audience"
+                autoComplete="off"
+                aria-describedby="event-audience-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={formData.target_audience}
+                onChange={(e) => setFormData({ ...formData, target_audience: e.target.value })}
+              >
+                <option value="">Select an audience</option>
+                {TARGET_AUDIENCES.map(audience => (
+                  <option key={audience} value={audience}>{audience}</option>
+                ))}
+              </select>
+              <div id="event-audience-help" className="text-xs text-muted-foreground mt-1">
+                Select the primary audience for this event
               </div>
-
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
-                  {isSubmitting ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Save size={16} />
-                  )}
-                  {editingEvent ? 'Update' : 'Create'}
-                </Button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
-      )}
+      </FormModal>
 
       {/* View Modal */}
       {viewingEvent && (

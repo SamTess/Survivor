@@ -48,6 +48,7 @@ export default function SignupPage() {
 
   const isPasswordValid = passwordRequirements.every(req => req.test(password));
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
+  const isFormValid = name.trim() && email.trim() && password.trim() && confirmPassword.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && name.trim().length >= 2 && isPasswordValid && doPasswordsMatch;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -87,21 +88,60 @@ export default function SignupPage() {
               className="object-contain"
             />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Jeb</h1>
+          <h1 id="signup-title" className="text-3xl font-bold text-gray-900 mb-2">Join Jeb</h1>
           <p className="text-gray-600">Create your account and start your journey</p>
         </div>
 
         {/* Signup Form */}
         <div className="bg-white/80 backdrop-blur-sm border border-white/20 rounded-2xl shadow-xl p-8 animate-card">
-          <form onSubmit={submit} className="space-y-6">
+          {/* Required fields indicator */}
+          <div className="mb-6 text-sm text-gray-600 bg-purple-50 border border-purple-200 rounded-lg p-3">
+            <span className="">Required fields</span>
+            <span className="ml-1 text-red-400">*</span>
+            <span className="ml-2">All fields marked with an asterisk are required.</span>
+          </div>
+
+          <form onSubmit={submit} className="space-y-6" role="form" aria-labelledby="signup-title">
             {(error || validationError) && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-down">
-                <div className="flex items-center">
+              <div
+                className="bg-red-50 border border-red-200 rounded-xl p-4 animate-fade-down"
+                role="alert"
+                aria-live="polite"
+              >
+                <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-red-400 rounded-full mt-2" aria-hidden="true"></div>
                   </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{validationError || error}</p>
+                  <div className="ml-3 flex-1">
+                    <h3 className="text-sm font-medium text-red-800 mb-1">
+                      {(validationError || error || '').includes('Password does not meet') ? 'Password Requirements Not Met' :
+                       (validationError || error || '').includes('passwords don\'t match') ? 'Password Mismatch' : 'Signup Error'}
+                    </h3>
+                    <p className="text-sm text-red-700">
+                      {validationError || error}
+                    </p>
+                    {(validationError || error || '').includes('Password does not meet') && (
+                      <div className="mt-2 text-xs text-red-600">
+                        <p>• Password must be at least 8 characters long</p>
+                        <p>• Include at least one uppercase letter</p>
+                        <p>• Include at least one lowercase letter</p>
+                        <p>• Include at least one digit</p>
+                      </div>
+                    )}
+                    {(validationError || error || '').includes('passwords don\'t match') && (
+                      <div className="mt-2 text-xs text-red-600">
+                        <p>• Both password fields must contain the same text</p>
+                        <p>• Check for typos in both fields</p>
+                      </div>
+                    )}
+                    {!(validationError || error || '').includes('Password does not meet') &&
+                     !(validationError || error || '').includes('passwords don\'t match') && (
+                      <div className="mt-2 text-xs text-red-600">
+                        <p>• Please check all fields are filled correctly</p>
+                        <p>• Make sure your email address is valid</p>
+                        <p>• Try using a different email if the problem persists</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -109,68 +149,138 @@ export default function SignupPage() {
 
             {/* Name Field */}
             <div className="space-y-2">
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+                id="name-label"
+              >
                 Full Name
+                <span className="text-red-500 ml-1" aria-label="Required field">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiUser className="h-5 w-5 text-gray-400" />
+                  <FiUser className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </div>
                 <input
                   id="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200"
+                  className={`w-full pl-10 pr-4 py-3 border-0 border-b bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200 ${
+                    name && name.trim().length < 2 ? 'border-red-300' : 'border-gray-300'
+                  }`}
                   placeholder="Jean Dupont"
                   required
+                  aria-required="true"
+                  aria-labelledby="name-label"
+                  aria-describedby="name-help name-error"
+                  autoComplete="name"
+                  aria-invalid={name && name.trim().length < 2 ? 'true' : 'false'}
                 />
+              </div>
+              <div className="flex justify-between items-start">
+                <p id="name-help" className="text-xs text-gray-500">
+                  Enter your full name as it appears on official documents
+                </p>
+                {name && name.trim().length >= 2 && (
+                  <p className="text-xs text-green-600 font-medium flex items-center" role="status">
+                    <span className="mr-1">✓</span>
+                    Name looks good
+                  </p>
+                )}
+                {name && name.trim().length < 2 && (
+                  <p id="name-error" className="text-xs text-red-600 font-medium" role="alert">
+                    Name must be at least 2 characters
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Email Field */}
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+                id="email-label"
+              >
                 Email
+                <span className="text-red-500 ml-1" aria-label="Required field">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiMail className="h-5 w-5 text-gray-400" />
+                  <FiMail className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </div>
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200"
+                  className={`w-full pl-10 pr-4 py-3 border-0 border-b bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200 ${
+                    email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'border-red-300' : 'border-gray-300'
+                  }`}
                   placeholder="your@email.com"
                   required
+                  aria-required="true"
+                  aria-labelledby="email-label"
+                  aria-describedby="email-help email-error"
+                  autoComplete="email"
+                  aria-invalid={email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? 'true' : 'false'}
                 />
+              </div>
+              <div className="flex justify-between items-start">
+                <p id="email-help" className="text-xs text-gray-500">
+                  Enter your email address for account verification
+                </p>
+                {email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+                  <p className="text-xs text-green-600 font-medium flex items-center" role="status">
+                    <span className="mr-1">✓</span>
+                    Valid email
+                  </p>
+                )}
+                {email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+                  <p id="email-error" className="text-xs text-red-600 font-medium" role="alert">
+                    Please enter a valid email address
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Password Field */}
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+                id="password-label"
+              >
                 Password
+                <span className="text-red-500 ml-1" aria-label="Required field">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="h-5 w-5 text-gray-400" />
+                  <FiLock className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </div>
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border-0 border-b border-gray-300 bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200"
+                  className={`w-full pl-10 pr-12 py-3 border-0 border-b bg-transparent text-gray-900 placeholder-gray-400 focus:outline-none focus:border-purple-500 transition-all duration-200 ${
+                    password && !isPasswordValid ? 'border-red-300' : 'border-gray-300'
+                  }`}
                   placeholder="••••••••"
                   required
+                  aria-required="true"
+                  aria-labelledby="password-label"
+                  aria-describedby="password-help password-error password-requirements"
+                  autoComplete="new-password"
+                  aria-invalid={password && !isPasswordValid ? 'true' : 'false'}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
                 >
                   {showPassword ? (
                     <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
@@ -179,18 +289,34 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
+              <div className="flex justify-between items-start">
+                <p id="password-help" className="text-xs text-gray-500">
+                  Create a strong password for your account
+                </p>
+                {password && isPasswordValid && (
+                  <p className="text-xs text-green-600 font-medium flex items-center" role="status">
+                    <span className="mr-1">✓</span>
+                    Strong password
+                  </p>
+                )}
+                {password && !isPasswordValid && (
+                  <p id="password-error" className="text-xs text-red-600 font-medium" role="alert">
+                    Password does not meet requirements
+                  </p>
+                )}
+              </div>
 
               {/* Password Requirements */}
               {password && (
-                <div className="mt-3 space-y-2">
+                <div id="password-requirements" className="mt-3 space-y-2" role="list" aria-label="Password requirements">
                   {passwordRequirements.map((req, index) => (
-                    <div key={index} className="flex items-center text-sm">
+                    <div key={index} className="flex items-center text-sm" role="listitem">
                       <div className={`w-4 h-4 rounded-full flex items-center justify-center mr-3 transition-colors ${
                         req.test(password)
                           ? 'bg-green-100 text-green-600'
                           : 'bg-gray-100 text-gray-400'
                       }`}>
-                        {req.test(password) && <FiCheck className="w-3 h-3" />}
+                        {req.test(password) && <FiCheck className="w-3 h-3" aria-hidden="true" />}
                       </div>
                       <span className={req.test(password) ? 'text-green-600' : 'text-gray-500'}>
                         {req.label}
@@ -203,12 +329,17 @@ export default function SignupPage() {
 
             {/* Confirm Password Field */}
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+                id="confirm-password-label"
+              >
                 Confirm password
+                <span className="text-red-500 ml-1" aria-label="Required field">*</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiLock className="h-5 w-5 text-gray-400" />
+                  <FiLock className="h-5 w-5 text-gray-400" aria-hidden="true" />
                 </div>
                 <input
                   id="confirmPassword"
@@ -224,11 +355,18 @@ export default function SignupPage() {
                   }`}
                   placeholder="••••••••"
                   required
+                  aria-required="true"
+                  aria-labelledby="confirm-password-label"
+                  aria-describedby="confirm-password-help confirm-password-error confirm-password-success"
+                  autoComplete="new-password"
+                  aria-invalid={confirmPassword && !doPasswordsMatch ? 'true' : 'false'}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  aria-label={showConfirmPassword ? "Hide password confirmation" : "Show password confirmation"}
+                  aria-pressed={showConfirmPassword}
                 >
                   {showConfirmPassword ? (
                     <FiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 transition-colors" />
@@ -237,36 +375,52 @@ export default function SignupPage() {
                   )}
                 </button>
               </div>
-
-              {confirmPassword && !doPasswordsMatch && (
-                <p className="text-sm text-red-600">The passwords don&apos;t match</p>
-              )}
-              {confirmPassword && doPasswordsMatch && (
-                <p className="text-sm text-green-600 flex items-center">
-                  <FiCheck className="w-4 h-4 mr-1" />
-                  Passwords are matching
+              <div className="flex justify-between items-start">
+                <p id="confirm-password-help" className="text-xs text-gray-500">
+                  Re-enter your password to confirm
                 </p>
-              )}
+                {confirmPassword && doPasswordsMatch && (
+                  <p id="confirm-password-success" className="text-xs text-green-600 font-medium flex items-center" role="status">
+                    <FiCheck className="w-4 h-4 mr-1" aria-hidden="true" />
+                    Passwords are matching
+                  </p>
+                )}
+                {confirmPassword && !doPasswordsMatch && (
+                  <p id="confirm-password-error" className="text-xs text-red-600 font-medium" role="alert">
+                    The passwords don&apos;t match
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading || !isPasswordValid || !doPasswordsMatch}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-            >
-              {loading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Creating...</span>
-                </>
-              ) : (
-                <>
-                  <span>Create my account</span>
-                  <FiArrowRight className="h-5 w-5" />
-                </>
-              )}
-            </button>
+            <div className="space-y-2">
+              <button
+                type="submit"
+                disabled={loading || !isFormValid}
+                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
+                aria-describedby={loading ? "loading-status" : "submit-help"}
+              >
+                {loading ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" aria-hidden="true"></div>
+                    <span>Creating...</span>
+                    <span id="loading-status" className="sr-only">Loading, please wait</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Create my account</span>
+                    <FiArrowRight className="h-5 w-5" aria-hidden="true" />
+                  </>
+                )}
+              </button>
+              <p id="submit-help" className="text-xs text-center text-gray-500">
+                {!isFormValid
+                  ? "Please fill in all required fields correctly to enable account creation"
+                  : "All fields are valid. Click to create your account."
+                }
+              </p>
+            </div>
           </form>
 
           {/* Divider */}

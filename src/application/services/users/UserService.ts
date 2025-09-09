@@ -50,6 +50,14 @@ export class UserService {
     return this.userRepository.getByRole(role.trim());
   }
 
+  async getByDateRange(startDate: Date, endDate: Date): Promise<User[]> {
+    if (startDate > endDate) {
+      throw new Error("Start date cannot be after end date");
+    }
+
+    return this.userRepository.getByDateRange(startDate, endDate);
+  }
+
   async getFounders(): Promise<User[]> {
     return this.userRepository.getFounders();
   }

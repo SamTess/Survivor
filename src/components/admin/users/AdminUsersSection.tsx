@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { FormModal } from '@/components/modals/ModalVariants'
 import { UniversalModal } from '@/components/modals/UniversalModal'
 import {
   Search,
@@ -13,8 +14,6 @@ import {
   Eye,
   Users,
   Shield,
-  X,
-  Save,
   Loader2,
   Mail,
   Phone
@@ -46,6 +45,15 @@ interface Permission {
   user_id: number
 }
 
+interface PermissionFormData {
+  name: string
+  description: string
+  can_create: boolean
+  can_read: boolean
+  can_update: boolean
+  can_delete: boolean
+}
+
 interface UserFormData {
   name: string
   email: string
@@ -55,15 +63,6 @@ interface UserFormData {
   description: string
   role: string
   password?: string
-}
-
-interface PermissionFormData {
-  name: string
-  description: string
-  can_create: boolean
-  can_read: boolean
-  can_update: boolean
-  can_delete: boolean
 }
 
 const USER_ROLES = [
@@ -109,7 +108,7 @@ const PERMISSION_TEMPLATES = [
   }
 ]
 
-export default function UsersCrudSection() {
+export default function AdminUsersSection() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -131,6 +130,7 @@ export default function UsersCrudSection() {
     role: 'user',
     password: ''
   })
+
   const [permissionFormData, setPermissionFormData] = useState<PermissionFormData>({
     name: '',
     description: '',
@@ -189,31 +189,11 @@ export default function UsersCrudSection() {
 
   const handleCreateUser = () => {
     setEditingUser(null)
-    setUserFormData({
-      name: '',
-      email: '',
-      address: '',
-      phone: '',
-      legal_status: '',
-      description: '',
-      role: 'user',
-      password: ''
-    })
     setIsUserModalOpen(true)
   }
 
   const handleEditUser = (user: User) => {
     setEditingUser(user)
-    setUserFormData({
-      name: user.name,
-      email: user.email,
-      address: user.address,
-      phone: user.phone || '',
-      legal_status: user.legal_status || '',
-      description: user.description || '',
-      role: user.role,
-      password: '' // Don't display existing password
-    })
     setIsUserModalOpen(true)
   }
 
@@ -527,270 +507,297 @@ export default function UsersCrudSection() {
       </Card>
 
       {/* User creation/edit modal */}
-      {isUserModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">
-                {editingUser ? 'Edit User' : 'New User'}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsUserModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X size={16} />
-              </Button>
+      <FormModal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        onSubmit={handleSubmitUser}
+        title={editingUser ? 'Edit User' : 'New User'}
+        loading={isSubmitting}
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="user-name" className="block text-sm font-medium mb-1">
+                Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="user-name"
+                type="text"
+                required
+                autoComplete="name"
+                placeholder="Enter full name"
+                aria-describedby="name-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={userFormData?.name || ''}
+                onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
+              />
+              <div id="name-help" className="text-xs text-muted-foreground mt-1">
+                Enter the user&apos;s full name
+              </div>
             </div>
 
-            <form onSubmit={handleSubmitUser} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Name *</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={userFormData.name}
-                    onChange={(e) => setUserFormData({ ...userFormData, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Email *</label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={userFormData.email}
-                    onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Password {editingUser ? '(leave empty to keep unchanged)' : '*'}
-                  </label>
-                  <input
-                    type="password"
-                    required={!editingUser}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={userFormData.password}
-                    onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Role *</label>
-                  <select
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={userFormData.role}
-                    onChange={(e) => setUserFormData({ ...userFormData, role: e.target.value })}
-                  >
-                    {USER_ROLES.map(role => (
-                      <option key={role} value={role}>{role}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Phone</label>
-                  <input
-                    type="tel"
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={userFormData.phone}
-                    onChange={(e) => setUserFormData({ ...userFormData, phone: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Legal Status</label>
-                  <select
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={userFormData.legal_status}
-                    onChange={(e) => setUserFormData({ ...userFormData, legal_status: e.target.value })}
-                  >
-                    <option value="">Select</option>
-                    {LEGAL_STATUSES.map(status => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-                </div>
+            <div>
+              <label htmlFor="user-email" className="block text-sm font-medium mb-1">
+                Email <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="user-email"
+                type="email"
+                required
+                autoComplete="email"
+                placeholder="user@example.com"
+                aria-describedby="email-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={userFormData?.email || ''}
+                onChange={(e) => setUserFormData({ ...userFormData, email: e.target.value })}
+              />
+              <div id="email-help" className="text-xs text-muted-foreground mt-1">
+                Valid email format required (e.g., user@domain.com)
               </div>
+            </div>
 
+            <div>
+              <label htmlFor="user-password" className="block text-sm font-medium mb-1">
+                Password {editingUser ? '(leave empty to keep unchanged)' : <span className="text-red-500">*</span>}
+              </label>
+              <input
+                id="user-password"
+                type="password"
+                required={!editingUser}
+                autoComplete={editingUser ? "current-password" : "new-password"}
+                placeholder={editingUser ? "Leave empty to keep current" : "Enter password"}
+                aria-describedby="password-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={userFormData?.password || ''}
+                onChange={(e) => setUserFormData({ ...userFormData, password: e.target.value })}
+              />
+              <div id="password-help" className="text-xs text-muted-foreground mt-1">
+                {editingUser ? "Leave empty to keep current password" : "Minimum 8 characters required"}
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="user-role" className="block text-sm font-medium mb-1">
+                Role <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="user-role"
+                required
+                autoComplete="organization-title"
+                aria-describedby="role-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={userFormData?.role || 'user'}
+                onChange={(e) => setUserFormData({ ...userFormData, role: e.target.value })}
+              >
+                {USER_ROLES.map(role => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
+              <div id="role-help" className="text-xs text-muted-foreground mt-1">
+                Select the user&apos;s role in the system
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="user-phone" className="block text-sm font-medium mb-1">Phone</label>
+              <input
+                id="user-phone"
+                type="tel"
+                autoComplete="tel"
+                placeholder="+33 6 12 34 56 78"
+                aria-describedby="phone-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={userFormData?.phone || ''}
+                onChange={(e) => setUserFormData({ ...userFormData, phone: e.target.value })}
+              />
+              <div id="phone-help" className="text-xs text-muted-foreground mt-1">
+                Format: +33 6 12 34 56 78 or 06 12 34 56 78
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="user-legal-status" className="block text-sm font-medium mb-1">Legal Status</label>
+              <select
+                id="user-legal-status"
+                autoComplete="organization"
+                aria-describedby="legal-status-help"
+                className="w-full px-3 py-2 border border-input bg-background rounded-md"
+                value={userFormData?.legal_status || ''}
+                onChange={(e) => setUserFormData({ ...userFormData, legal_status: e.target.value })}
+              >
+                <option value="">Select legal status</option>
+                {LEGAL_STATUSES.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+              <div id="legal-status-help" className="text-xs text-muted-foreground mt-1">
+                Choose the legal structure of the user
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="user-address" className="block text-sm font-medium mb-1">
+              Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              id="user-address"
+              type="text"
+              required
+              autoComplete="address-line1"
+              placeholder="123 Main Street, City, Country"
+              aria-describedby="address-help"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              value={userFormData?.address || ''}
+              onChange={(e) => setUserFormData({ ...userFormData, address: e.target.value })}
+            />
+            <div id="address-help" className="text-xs text-muted-foreground mt-1">
+              Enter the complete address including street, city, and country
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="user-description" className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              id="user-description"
+              rows={3}
+              autoComplete="off"
+              placeholder="Optional description about the user"
+              aria-describedby="description-help"
+              className="w-full px-3 py-2 border border-input bg-background rounded-md"
+              value={userFormData?.description || ''}
+              onChange={(e) => setUserFormData({ ...userFormData, description: e.target.value })}
+            />
+            <div id="description-help" className="text-xs text-muted-foreground mt-1">
+              Optional: Add any additional information about the user
+            </div>
+          </div>
+        </div>
+      </FormModal>
+
+      {/* Modal de gestion des permissions */}
+      {isPermissionModalOpen && selectedUserForPermissions && (
+        <UniversalModal
+          isOpen={isPermissionModalOpen}
+          onClose={() => setIsPermissionModalOpen(false)}
+          title={`Permissions pour ${selectedUserForPermissions.name}`}
+          size="xl"
+          actions={[
+            {
+              label: "Fermer",
+              onClick: () => setIsPermissionModalOpen(false),
+              variant: "outline"
+            }
+          ]}
+        >
+          <div className="space-y-6">
+            {/* Permission templates */}
+            <div>
+              <h4 className="text-sm font-medium mb-3">Modèles de permissions rapides</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {PERMISSION_TEMPLATES.map((template, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => applyPermissionTemplate(template)}
+                    className="justify-start text-left h-auto p-3"
+                  >
+                    <div>
+                      <div className="font-medium">{template.name}</div>
+                      <div className="text-xs text-muted-foreground">{template.description}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Custom permission form */}
+            <form onSubmit={handleSubmitPermission} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">Address *</label>
+                <label className="block text-sm font-medium mb-1">Nom de la permission *</label>
                 <input
                   type="text"
                   required
                   className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={userFormData.address}
-                  onChange={(e) => setUserFormData({ ...userFormData, address: e.target.value })}
+                  value={permissionFormData.name}
+                  onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={userFormData.description}
-                  onChange={(e) => setUserFormData({ ...userFormData, description: e.target.value })}
+                  value={permissionFormData.description}
+                  onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-3">Droits d&apos;accès</label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_create}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Créer</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_read}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_read: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Lire</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_update}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Modifier</span>
+                  </label>
+                  <label className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      checked={permissionFormData.can_delete}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span className="text-sm">Supprimer</span>
+                  </label>
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setIsUserModalOpen(false)}
+                  onClick={() => setIsPermissionModalOpen(false)}
                   disabled={isSubmitting}
                 >
-                  Cancel
+                  Fermer
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
                   {isSubmitting ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    <Save size={16} />
+                    <Shield size={16} />
                   )}
-                  {editingUser ? 'Update' : 'Create'}
+                  Ajouter la permission
                 </Button>
               </div>
             </form>
           </div>
-        </div>
-      )}
-
-      {/* Modal de gestion des permissions */}
-      {isPermissionModalOpen && selectedUserForPermissions && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-background rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b">
-              <h3 className="text-lg font-semibold">
-                Permissions pour {selectedUserForPermissions.name}
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsPermissionModalOpen(false)}
-                className="h-8 w-8 p-0"
-              >
-                <X size={16} />
-              </Button>
-            </div>
-
-            <div className="p-6 space-y-6">
-              {/* Permission templates */}
-              <div>
-                <h4 className="text-sm font-medium mb-3">Quick permission templates</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {PERMISSION_TEMPLATES.map((template, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => applyPermissionTemplate(template)}
-                      className="justify-start text-left h-auto p-3"
-                    >
-                      <div>
-                        <div className="font-medium">{template.name}</div>
-                        <div className="text-xs text-muted-foreground">{template.description}</div>
-                      </div>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Custom permission form */}
-              <form onSubmit={handleSubmitPermission} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Permission Name *</label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={permissionFormData.name}
-                    onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
-                  <textarea
-                    rows={2}
-                    className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                    value={permissionFormData.description}
-                    onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-3">Access Rights</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_create}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Create</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_read}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_read: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Lire</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_update}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Update</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={permissionFormData.can_delete}
-                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
-                        className="rounded"
-                      />
-                      <span className="text-sm">Delete</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsPermissionModalOpen(false)}
-                    disabled={isSubmitting}
-                  >
-                    Close
-                  </Button>
-                  <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
-                    {isSubmitting ? (
-                      <Loader2 size={16} className="animate-spin" />
-                    ) : (
-                      <Shield size={16} />
-                    )}
-                    Add Permission
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+        </UniversalModal>
       )}
 
       {/* View Modal */}
