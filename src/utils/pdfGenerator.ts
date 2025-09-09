@@ -35,7 +35,6 @@ export async function generateDashboardPDF(
   engagementMetrics: PDFEngagementMetrics | null,
   trends?: TrendData
 ): Promise<void> {
-  // If trends are not provided, use default values
   const finalTrends: TrendData = trends || {
     totalUsers: '+12%',
     activeProjects: '+8%',
