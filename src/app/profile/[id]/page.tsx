@@ -108,7 +108,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const handleStartConversation = () => {
     if (!user) return;
 
-    // Trigger the custom event that the ChatLauncher listens to
     const title = user.name && user.name.trim() ? user.name : `User #${user.id}`;
     window.dispatchEvent(new CustomEvent('chat:startConversation', {
       detail: { participantIds: [user.id], title }

@@ -43,7 +43,6 @@ export default function Dashboard() {
     return () => window.removeEventListener('resize', checkDesktop);
   }, []);
 
-  // Fetch user's investor or founder data based on role
   useEffect(() => {
     const fetchUserRoleData = async () => {
       if (!user || !isAuthenticated) {
@@ -69,8 +68,7 @@ export default function Dashboard() {
             setUserInvestor(response.data);
             console.log('Investor data loaded:', response.data);
           } else {
-            console.log('No investor data found for user, creating mock investor data');
-            // Create mock investor data for demonstration
+            console.log('No investor data found for user, creating mock investor data'); // TODO REMOVE
             const mockInvestor: InvestorApiResponse = {
               id: user.id,
               email: user.email || 'investor@example.com',

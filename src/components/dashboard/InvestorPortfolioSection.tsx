@@ -89,7 +89,7 @@ function Sparkline({ data, color = "#6610F2", height = 36 }: { data: number[]; c
 }
 
 // Mock data generator - In real app, this would come from API
-function generateMockPortfolioData(_investor: InvestorApiResponse | null): PortfolioData {
+function generateMockPortfolioData(): PortfolioData {
   const sectors = ['FinTech', 'HealthTech', 'EdTech', 'CleanTech', 'E-commerce', 'AI/ML', 'SaaS'];
   const maturities = ['Seed', 'Series A', 'Series B', 'Growth'];
   const statuses: ('active' | 'exited' | 'at_risk')[] = ['active', 'active', 'active', 'exited', 'at_risk'];
@@ -175,7 +175,7 @@ export default function InvestorPortfolioSection({ investor }: InvestorPortfolio
 
         // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 500));
-        const mockData = generateMockPortfolioData(investor);
+        const mockData = generateMockPortfolioData();
         setPortfolioData(mockData);
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
