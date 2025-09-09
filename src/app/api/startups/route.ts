@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { StartupService } from '../../../application/services/startups/StartupService';
 import { StartupRepositoryPrisma } from '../../../infrastructure/persistence/prisma/StartupRepositoryPrisma';
+import prisma from '../../../infrastructure/persistence/prisma/client';
+import { verifyJwt } from '../../../infrastructure/security/auth';
 
 const startupRepository = new StartupRepositoryPrisma();
 const startupService = new StartupService(startupRepository);
@@ -300,6 +302,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const startup = await startupService.createStartup(body);
+    const token = request.cookies.get('auth')?.value;
+    const secret = process.env.AUTH_SECRET || 'dev-secret';
+    const payload = verifyJwt(token, secret);
+    if (payload) {
+      const userId = payload.userId;
+      const existing = await prisma.s_FOUNDER.findFirst({
+        where: { user_id: userId, startup_id: startup.id },
+      });
+      if (!existing) {
+        await prisma.s_FOUNDER.create({
+          data: {
+            user_id: userId,
+            startup_id: startup.id,
+          },
+        });
+        const user = await prisma.s_USER.findUnique({ where: { id: userId } });
+        if (user && user.role !== 'founder') {
+          await prisma.s_USER.update({ where: { id: userId }, data: { role: 'founder' } });
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,

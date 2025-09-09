@@ -104,11 +104,12 @@ async function ensureMember(conversationId: number, userId: number): Promise<boo
   return !!link;
 }
 
-export async function POST(req: NextRequest, ctx: { params: { id: string; mid: string } }) {
+export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string; mid: string }> }) {
   const userId = getUserId(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const cid = parseIntParam(ctx.params.id);
-  const mid = parseIntParam(ctx.params.mid);
+  const { id, mid: midParam } = await ctx.params;
+  const cid = parseIntParam(id);
+  const mid = parseIntParam(midParam);
   if (!cid || !mid) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   if (!(await ensureMember(cid, userId))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const body = await req.json().catch(() => ({}));
@@ -205,11 +206,12 @@ export async function POST(req: NextRequest, ctx: { params: { id: string; mid: s
  *                   type: string
  *                   example: "Forbidden"
  */
-export async function DELETE(req: NextRequest, ctx: { params: { id: string; mid: string } }) {
+export async function DELETE(req: NextRequest, ctx: { params: Promise<{ id: string; mid: string }> }) {
   const userId = getUserId(req);
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const cid = parseIntParam(ctx.params.id);
-  const mid = parseIntParam(ctx.params.mid);
+  const { id, mid: midParam } = await ctx.params;
+  const cid = parseIntParam(id);
+  const mid = parseIntParam(midParam);
   if (!cid || !mid) return NextResponse.json({ error: 'Invalid id' }, { status: 400 });
   if (!(await ensureMember(cid, userId))) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   const { searchParams } = new URL(req.url);

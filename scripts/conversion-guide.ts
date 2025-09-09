@@ -24,7 +24,7 @@ BEFORE (apidoc format):
 
 AFTER (OpenAPI/Swagger format):
 /**
- * @swagger
+ * @openapi
  * /auth/logout:
  *   post:
  *     summary: User Logout
@@ -45,7 +45,7 @@ AFTER (OpenAPI/Swagger format):
  */
 
 KEY CHANGES:
-1. Replace @api with @swagger
+1. Replace @api with @openapi
 2. Use YAML-like structure for path and method
 3. Replace @apiGroup with tags array
 4. Replace @apiSuccess with responses object
@@ -57,7 +57,7 @@ For endpoints with parameters:
 
 Example with parameters:
 /**
- * @swagger
+ * @openapi
  * /auth/signup:
  *   post:
  *     summary: User Registration

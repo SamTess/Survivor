@@ -6,6 +6,7 @@ import { UserApiResponse } from '@/domain/interfaces/User';
 import { formatDate } from '@/utils/dateUtils';
 import { ProtectedRoute, useAuth } from '@/context/auth';
 import { apiService } from '@/infrastructure/services/ApiService';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -120,6 +121,16 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
+  const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => (
+    <div className="w-24 h-24">
+      {uid ? (
+        <UserAvatar uid={uid} name={name} size={96} />
+      ) : (
+        <div className="w-24 h-24 rounded-full bg-muted" />
+      )}
+    </div>
+  );
+
   if (!isAuthenticated) {
     return null;
   }
@@ -177,9 +188,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
                   {/* Avatar */}
-                  <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                    {user?.name ? user.name.split(' ').map(n => n[0]).join('') : '?'}
-                  </div>
+                  <ProfileAvatar uid={user?.id} name={user?.name || undefined} />
 
                   {/* Basic Info */}
                   <div>

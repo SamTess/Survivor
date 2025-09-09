@@ -78,16 +78,22 @@ export const useFollow = ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update follow status');
+        if (response.status === 409) {
+          setIsFollowing(true);
+          setFollowerCount((prev: number) => (newIsFollowing ? prev - 1 : prev + 1));
+          return;
+        }
+        setIsFollowing(!newIsFollowing);
+        setFollowerCount((prev: number) => (newIsFollowing ? prev - 1 : prev + 1));
+        return;
       }
 
       const data = await response.json();
       setFollowerCount(data.followerCount);
 
-    } catch (error) {
-      console.error('Error toggling follow:', error);
+  } catch {
       setIsFollowing(!newIsFollowing);
-      setFollowerCount((prev: number) => newIsFollowing ? prev - 1 : prev + 1);
+      setFollowerCount((prev: number) => (newIsFollowing ? prev - 1 : prev + 1));
     } finally {
       setIsLoading(false);
     }

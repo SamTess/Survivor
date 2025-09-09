@@ -3,6 +3,8 @@
 import React from 'react';
 import { useLike } from '@/hooks/useLike';
 import { ContentType } from '@/domain/enums/Analytics';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface LikeButtonProps {
   contentType: ContentType;
@@ -25,11 +27,14 @@ export default function LikeButton({
   variant = 'default',
   className = ''
 }: LikeButtonProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const effectiveUserId = userId ?? user?.id ?? null;
   const { isLiked, likeCount, toggleLike, isLoading } = useLike({
     contentType,
     contentId,
     initialLikeCount,
-    userId,
+    userId: effectiveUserId ?? undefined,
     sessionId
   });
 
@@ -47,8 +52,8 @@ export default function LikeButton({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!userId) {
-      // TODO: Show login modal or redirect to login
+  if (!effectiveUserId) {
+      router.push('/login');
       return;
     }
     toggleLike();

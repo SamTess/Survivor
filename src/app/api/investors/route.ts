@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InvestorService } from '../../../application/services/investors/InvestorService';
 import { InvestorRepositoryPrisma } from '../../../infrastructure/persistence/prisma/InvestorRepositoryPrisma';
+import { verifyJwt } from '../../../infrastructure/security/auth';
+import prisma from '../../../infrastructure/persistence/prisma/client';
 
 const investorRepository = new InvestorRepositoryPrisma();
 const investorService = new InvestorService(investorRepository);

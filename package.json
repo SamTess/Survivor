@@ -13,14 +13,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "health-check": "tsx scripts/health-check.ts",
-    "cleanup-tokens": "tsx scripts/cleanup-tokens.ts",
     "test-email": "tsx scripts/test-email.ts",
     "docs:generate": "tsx scripts/generate-swagger-docs.ts",
     "docs:serve": "npx http-server docs/api -p 8080 --cors",
     "docs:watch": "bash scripts/docs-watch.sh",
     "docs:build": "npm run docs:generate && echo '✅ API Documentation built successfully'",
     "docs:dev": "concurrently \"npm run docs:watch\" \"npm run docs:serve\"",
-    "docs:help": "tsx scripts/conversion-guide.ts"
+    "docs:help": "tsx scripts/conversion-guide.ts",
+    "cleanup-tokens": "tsx scripts/cleanup-tokens.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",

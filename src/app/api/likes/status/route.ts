@@ -68,12 +68,12 @@ import { ContentType } from '@prisma/client';
  *                   type: string
  *                   example: "Internal server error"
  */
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const userId = searchParams.get('userId');
-    const contentType = searchParams.get('contentType');
-    const contentId = searchParams.get('contentId');
+    const { searchParams } = new URL(request.url);
+    const userId = parseInt(searchParams.get('userId') || '0', 10);
+    const contentType = searchParams.get('contentType') as ContentType | null;
+    const contentId = parseInt(searchParams.get('contentId') || '0', 10);
 
     if (!userId || !contentType || !contentId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
@@ -82,9 +82,9 @@ export async function GET(req: NextRequest) {
     const like = await prisma.s_LIKE.findUnique({
       where: {
         userId_contentType_contentId: {
-          userId: parseInt(userId),
-          contentType: contentType as ContentType,
-          contentId: parseInt(contentId),
+          userId,
+          contentType,
+          contentId,
         },
       },
     });
@@ -92,6 +92,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ isLiked: !!like });
   } catch (error) {
     console.error('Error checking like status:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to check like status' }, { status: 500 });
   }
 }

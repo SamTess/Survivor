@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
@@ -128,20 +129,23 @@ export default function MobileMessagesPage(): React.ReactElement {
 	}, [loadConvs]);
 
 	const avatar = (u: UserLite, i: number) => {
-		const label = u.name && u.name.trim() ? u.name : `#${u.id}`;
-		const initials = label.slice(0, 2).toUpperCase();
-		const hue = (u.id * 47) % 360;
-		const style: React.CSSProperties = { backgroundColor: `hsl(${hue} 70% 45%)` };
-		return (
-			<div
-				key={`avu-${u.id}-${i}`}
-				className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-semibold ring-2 ring-white"
-				style={style}
-				title={label}
-			>
-				{initials}
-			</div>
-		);
+			const label = u.name && u.name.trim() ? u.name : `#${u.id}`;
+			const initials = label.slice(0, 2).toUpperCase();
+			return (
+				<div key={`avu-${u.id}-${i}`} className="relative inline-flex items-center justify-center w-6 h-6 rounded-full ring-2 ring-white overflow-hidden bg-muted text-white text-[10px] font-semibold" title={label}>
+					{u.id ? (
+						<Image
+							src={`/users/${u.id}/image`}
+							alt={label}
+							width={24}
+							height={24}
+							className="w-full h-full object-cover"
+							onError={(e) => { const t = e.currentTarget as unknown as HTMLImageElement; if (t) t.style.display = 'none'; }}
+						/>
+					) : null}
+					<span className="absolute">{initials}</span>
+				</div>
+			);
 	};
 
 	const list = (

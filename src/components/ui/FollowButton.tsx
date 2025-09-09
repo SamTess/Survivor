@@ -3,6 +3,8 @@
 import React from 'react';
 import { useFollow } from '@/hooks/useFollow';
 import { ContentType } from '@/domain/enums/Analytics';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface FollowButtonProps {
   contentType: ContentType;
@@ -25,11 +27,14 @@ export default function FollowButton({
   variant = 'default',
   className = ''
 }: FollowButtonProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const effectiveUserId = userId ?? user?.id ?? null;
   const { isFollowing, followerCount, toggleFollow, isLoading } = useFollow({
     contentType,
     contentId,
     initialFollowerCount,
-    userId,
+    userId: effectiveUserId ?? undefined,
     sessionId
   });
 
@@ -47,7 +52,8 @@ export default function FollowButton({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!userId) {
+    if (!effectiveUserId) {
+      router.push('/login');
       return;
     }
     toggleFollow();
@@ -117,9 +123,7 @@ export default function FollowButton({
           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
         />
       </svg>
-      <span className="font-medium">
-        {isFollowing ? `Following (${followerCount})` : `Follow (${followerCount})`}
-      </span>
+  <span className="font-medium whitespace-nowrap">{isFollowing ? 'Following' : 'Follow'}</span>
       {isLoading && (
         <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
       )}

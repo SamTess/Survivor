@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { verifyPassword, signJwt, getAuthSecret } from '../../../../infrastructure/security/auth';
 import { PasswordResetService } from '../../../../infrastructure/services/PasswordResetService';
 import { EmailService } from '../../../../infrastructure/services/EmailService';
+import { normalizeRole } from '../../../../utils/roleUtils';
 
 interface GlobalWithPrisma {
   prisma?: PrismaClient;
@@ -171,7 +172,8 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signJwt({ userId: user.id }, 60 * 60 * 24 * 7, getAuthSecret());
-    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+    const normalizedRole = normalizeRole(user.role);
+    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: normalizedRole });
     res.cookies.set('auth', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, sameSite: 'lax', path: '/' });
     return res;
   } catch (e) {

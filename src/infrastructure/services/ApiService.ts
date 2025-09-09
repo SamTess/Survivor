@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { SessionUser, LoginCredentials, SignupData, RequestResetData, ResetPasswordData, LoginErrorResponse } from '@/domain/interfaces';
+import { normalizeRole } from '@/utils/roleUtils';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -137,7 +138,25 @@ export class ApiService {
   }
 
   async signup(userData: SignupData): Promise<ApiResponse<SessionUser>> {
-    return this.post<SessionUser>('/auth/signup', userData);
+    try {
+      const response = await this.client.post<SessionUser>('/auth/signup', userData);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as { error?: string } | undefined;
+        return {
+          success: false,
+          error: apiError?.error || error.message,
+        };
+      }
+      return {
+        success: false,
+        error: 'An unexpected error occurred during signup',
+      };
+    }
   }
 
   async logout(): Promise<ApiResponse<{ ok: boolean }>> {
@@ -148,7 +167,9 @@ export class ApiService {
     try {
       const response = await this.client.get('/auth/me');
       const u = response.data as { id: number; name: string; email: string; role: string; permissions?: string[] };
-      const role = (u?.role === 'ADMIN') ? 'admin' : 'user';
+
+      const role = normalizeRole(u?.role);
+
       return {
         success: true,
         data: { id: u.id, name: u.name, email: u.email, role, permissions: u.permissions },
