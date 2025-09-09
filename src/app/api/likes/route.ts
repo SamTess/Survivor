@@ -8,29 +8,29 @@ import { ContentType } from '@prisma/client';
  * @apiGroup Likes
  * @apiVersion 0.1.0
  * @apiDescription Add a like to a specific content item
- * 
+ *
  * @apiParam {Number} userId User ID
  * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
  * @apiParam {Number} contentId Content ID
- * 
+ *
  * @apiParamExample {json} Request-Example:
  *     {
  *       "userId": 1,
  *       "contentType": "STARTUP",
  *       "contentId": 5
  *     }
- * 
+ *
  * @apiSuccess {Number} likeCount Total number of likes for this content
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *       "likeCount": 42
  *     }
- * 
+ *
  * @apiError (Error 400) {String} error Missing required fields
  * @apiError (Error 500) {String} error Internal server error
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {
@@ -98,29 +98,29 @@ export async function POST(req: NextRequest) {
  * @apiGroup Likes
  * @apiVersion 0.1.0
  * @apiDescription Remove a like from a specific content item
- * 
+ *
  * @apiParam {Number} userId User ID
  * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
  * @apiParam {Number} contentId Content ID
- * 
+ *
  * @apiParamExample {json} Request-Example:
  *     {
  *       "userId": 1,
  *       "contentType": "STARTUP",
  *       "contentId": 5
  *     }
- * 
+ *
  * @apiSuccess {Number} likeCount Total number of likes for this content
- * 
+ *
  * @apiSuccessExample {json} Success-Response:
  *     HTTP/1.1 200 OK
  *     {
  *       "likeCount": 41
  *     }
- * 
+ *
  * @apiError (Error 400) {String} error Missing required fields
  * @apiError (Error 500) {String} error Internal server error
- * 
+ *
  * @apiErrorExample {json} Error-Response:
  *     HTTP/1.1 400 Bad Request
  *     {

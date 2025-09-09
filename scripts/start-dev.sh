@@ -16,7 +16,7 @@ echo "Generating initial API documentation..."
 npx apidoc -i src/app/api -o docs/api
 
 echo "Starting documentation watcher and server in background..."
-bash scripts/docs-watch.sh &
+sh docs-watch.sh &
 npx http-server docs/api -p 8080 --cors -c-1 &
 
 echo "Starting development server..."

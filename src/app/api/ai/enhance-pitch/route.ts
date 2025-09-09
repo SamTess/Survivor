@@ -187,6 +187,56 @@ const enhanceWithRules = (content: string, type: string): string => {
   return enhanced;
 };
 
+/**
+ * @api {post} /ai/enhance-pitch Enhance Pitch Content with AI
+ * @apiName EnhancePitch
+ * @apiGroup AI
+ * @apiVersion 0.1.0
+ * @apiDescription Enhance pitch deck content using AI to make it more professional and engaging for investors
+ *
+ * @apiParam {String} content The content to be enhanced
+ * @apiParam {String} type Type of content to enhance (description, needs, title, general)
+ *
+ * @apiParamExample {json} Request-Example:
+ *     {
+ *       "content": "We are a tech startup that builds mobile apps",
+ *       "type": "description"
+ *     }
+ *
+ * @apiSuccess {String} enhancedContent The AI-enhanced content
+ * @apiSuccess {String} originalContent The original content provided
+ * @apiSuccess {String} type The type of enhancement performed
+ * @apiSuccess {Boolean} success Whether AI enhancement was successful
+ * @apiSuccess {String} [error] Error message if AI enhancement failed but fallback was used
+ *
+ * @apiSuccessExample {json} Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "enhancedContent": "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions.",
+ *       "originalContent": "We are a tech startup that builds mobile apps",
+ *       "type": "description",
+ *       "success": true
+ *     }
+ *
+ * @apiSuccessExample {json} Fallback-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "enhancedContent": "We are an innovative startup that builds mobile apps.",
+ *       "originalContent": "We are a tech startup that builds mobile apps",
+ *       "type": "description",
+ *       "success": false,
+ *       "error": "AI enhancement failed, used basic rules"
+ *     }
+ *
+ * @apiError (Error 400) {String} error Missing required fields
+ * @apiError (Error 500) {String} error Internal server error
+ *
+ * @apiErrorExample {json} Error-Response:
+ *     HTTP/1.1 400 Bad Request
+ *     {
+ *       "error": "Content and type are required"
+ *     }
+ */
 export async function POST(request: NextRequest) {
   let content = '';
   let type = '';
