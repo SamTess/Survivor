@@ -6,6 +6,7 @@ import FollowButton from '@/components/ui/FollowButton';
 import PitchDeckButton from '@/components/ui/PitchDeckButton';
 import { ContentType } from '@/domain/enums/Analytics';
 import ContactStartupButton from '@/components/chat/ContactStartupButton';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 interface ProjectPageProps {
   params: Promise<{
@@ -88,6 +89,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   };
 
   const coverImage = generateCoverImage(project.sector, project.id);
+
+  // FounderAvatar moved to a client component (UserAvatar) to avoid event handlers in a Server Component
 
   return (
     <div className="h-screen bg-background pt-14 overflow-y-auto">
@@ -243,9 +246,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       .map((founder: ProjectFounder) => (
                         <div key={founder.id} className="bg-gradient-to-br from-gray-50 to-indigo-50 border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-300">
                           <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                              {founder.user!.name.charAt(0).toUpperCase()}
-                            </div>
+                            <UserAvatar uid={founder.user!.id} name={founder.user!.name} size={56} />
                             <div>
                               <h3 className="font-bold text-gray-900 text-lg">{founder.user!.name}</h3>
                               <p className="text-indigo-600 font-medium">{founder.user!.email}</p>

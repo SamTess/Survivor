@@ -2,9 +2,10 @@
 
 import React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Search, Menu, X, Sparkles, User, LogOut } from "lucide-react"
+import { Search, Menu, X, Sparkles, CircleUser, LogOut } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
@@ -18,6 +19,7 @@ type NavItem = {
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [avatarFailed, setAvatarFailed] = useState(false)
   const pathname = usePathname()
   const { isAuthenticated, isAdmin, user, logout } = useAuth()
   const profileDropdownRef = useRef<HTMLDivElement>(null)
@@ -105,7 +107,20 @@ export function Navbar() {
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                 className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
               >
-                <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+                  {isAuthenticated && user?.id && !avatarFailed ? (
+                    <Image
+                      src={`/api/users/${user.id}/image`}
+                      alt={user?.name || "Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover rounded-full"
+                      onError={() => setAvatarFailed(true)}
+                    />
+                  ) : (
+                    <CircleUser className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                  )}
+                </div>
               </Button>
 
               {isProfileDropdownOpen && isAuthenticated && (
@@ -115,7 +130,7 @@ export function Navbar() {
                     onClick={() => setIsProfileDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200 rounded-t-2xl"
                   >
-                    <User className="h-4 w-4 text-muted-foreground" />
+                    <CircleUser className="h-4 w-4 text-muted-foreground" />
                     Profile
                   </Link>
                   <button
@@ -135,7 +150,7 @@ export function Navbar() {
                     onClick={() => setIsProfileDropdownOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
                   >
-                    <User className="h-4 w-4 text-muted-foreground" />
+                    <CircleUser className="h-4 w-4 text-muted-foreground" />
                     Login
                   </Link>
                 </div>
