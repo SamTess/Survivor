@@ -12,6 +12,66 @@ if (!globalForPrisma.prisma) globalForPrisma.prisma = prisma;
 
 const passwordResetService = new PasswordResetService();
 
+/**
+ * @openapi
+ * /auth/reset-password:
+ *   post:
+ *     summary: Reset Password
+ *     description: Reset user password using a valid reset token
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - password
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Password reset token
+ *                 example: "abc123def456"
+ *               password:
+ *                 type: string
+ *                 description: New password (minimum 8 characters)
+ *                 minLength: 8
+ *                 example: "newSecurePassword123"
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Password updated successfully"
+ *       400:
+ *         description: Missing token/password or invalid token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Token and password are required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -58,6 +118,55 @@ export async function POST(req: NextRequest) {
   }
 }
 
+/**
+ * @openapi
+ * /auth/reset-password:
+ *   get:
+ *     summary: Validate Reset Token
+ *     description: Validate if a password reset token is still valid
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - in: query
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Password reset token
+ *         example: "abc123def456"
+ *     responses:
+ *       200:
+ *         description: Token validation result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                   description: Whether the token is valid
+ *                   example: true
+ *       400:
+ *         description: Token is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Token is required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
