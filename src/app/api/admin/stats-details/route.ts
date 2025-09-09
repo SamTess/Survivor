@@ -75,24 +75,42 @@ export async function GET() {
       location: event.location || 'TBD'
     }));
 
-    // Generate user growth chart data (last 12 months)
+    // Generate user growth chart data (last 12 months) - Optimized single query
+    const thirteenMonthsAgo = new Date();
+    thirteenMonthsAgo.setMonth(thirteenMonthsAgo.getMonth() - 13);
+
+    // Single query to get all users from the last 13 months
+    const allUsersInPeriod = await userService.getByDateRange(thirteenMonthsAgo, new Date());
+
+    // Group users by month
+    const usersByMonth = allUsersInPeriod.reduce((acc, user) => {
+      const monthKey = user.created_at.toISOString().slice(0, 7); // YYYY-MM format
+      if (!acc[monthKey]) {
+        acc[monthKey] = [];
+      }
+      acc[monthKey].push(user);
+      return acc;
+    }, {} as Record<string, typeof allUsersInPeriod>);
+
+    // Generate chart data
     const userGrowthChart = [];
     for (let i = 11; i >= 0; i--) {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
-      const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-      const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+      const monthKey = date.toISOString().slice(0, 7);
+      const prevDate = new Date(date);
+      prevDate.setMonth(prevDate.getMonth() - 1);
+      const prevMonthKey = prevDate.toISOString().slice(0, 7);
 
-      const monthUsers = await userService.getByDateRange(monthStart, monthEnd);
-      const prevMonthStart = new Date(date.getFullYear(), date.getMonth() - 1, 1);
-      const prevMonthUsers = await userService.getByDateRange(prevMonthStart, monthStart);
+      const monthUsers = usersByMonth[monthKey] || [];
+      const prevMonthUsers = usersByMonth[prevMonthKey] || [];
 
       const growth = prevMonthUsers.length > 0
         ? ((monthUsers.length - prevMonthUsers.length) / prevMonthUsers.length) * 100
         : 0;
 
       userGrowthChart.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
         users: monthUsers.length,
         growth: Math.round(growth * 10) / 10
       });
