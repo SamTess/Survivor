@@ -29,60 +29,102 @@ const emailConfig = {
 const emailService = new EmailService(emailConfig);
 
 /**
- * @api {post} /auth/login User Login
- * @apiName LoginUser
- * @apiGroup Authentication
- * @apiVersion 0.1.0
- * @apiDescription Authenticate a user and return a JWT token
- *
- * @apiParam {String} email User's email address
- * @apiParam {String} password User's password
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "email": "user@example.com",
- *       "password": "securepassword123"
- *     }
- *
- * @apiSuccess {Number} id User ID
- * @apiSuccess {String} name User's full name
- * @apiSuccess {String} email User's email address
- * @apiSuccess {String} role User's role (admin, user, etc.)
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "id": 1,
- *       "name": "John Doe",
- *       "email": "user@example.com",
- *       "role": "user"
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 401) {String} error Invalid credentials or password reset required
- * @apiError (Error 401) {Boolean} [requiresPasswordReset] Indicates if password reset is needed
- * @apiError (Error 401) {Boolean} [devMode] Development mode indicator
- * @apiError (Error 401) {String} [resetUrl] Password reset URL (dev mode only)
- * @apiError (Error 500) {String} error Server error
- *
- * @apiErrorExample {json} Error-Response (Missing Fields):
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Missing fields"
- *     }
- *
- * @apiErrorExample {json} Error-Response (Invalid Credentials):
- *     HTTP/1.1 401 Unauthorized
- *     {
- *       "error": "Invalid credentials"
- *     }
- *
- * @apiErrorExample {json} Error-Response (Password Reset Required):
- *     HTTP/1.1 401 Unauthorized
- *     {
- *       "error": "No password set. A password creation email has been sent.",
- *       "requiresPasswordReset": true
- *     }
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     summary: User Login
+ *     description: Authenticate a user and return a JWT token
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *                 example: "user@example.com"
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *                 example: "securepassword123"
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: User ID
+ *                   example: 1
+ *                 name:
+ *                   type: string
+ *                   description: User's full name
+ *                   example: "John Doe"
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   description: User's email address
+ *                   example: "user@example.com"
+ *                 role:
+ *                   type: string
+ *                   description: User's role
+ *                   example: "user"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing fields"
+ *       401:
+ *         description: Invalid credentials or password reset required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     error:
+ *                       type: string
+ *                       example: "Invalid credentials"
+ *                 - type: object
+ *                   properties:
+ *                     error:
+ *                       type: string
+ *                       example: "No password set. A password creation email has been sent."
+ *                     requiresPasswordReset:
+ *                       type: boolean
+ *                       example: true
+ *                     devMode:
+ *                       type: boolean
+ *                       example: true
+ *                     resetUrl:
+ *                       type: string
+ *                       example: "http://localhost:3000/auth/reset-password?token=abc123"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Server error"
  */
 export async function POST(req: NextRequest) {
   try {

@@ -27,35 +27,58 @@ const emailConfig = {
 const emailService = new EmailService(emailConfig);
 
 /**
- * @api {post} /auth/request-reset Request Password Reset
- * @apiName RequestPasswordReset
- * @apiGroup Authentication
- * @apiVersion 0.1.0
- * @apiDescription Request a password reset link to be sent to the user's email
- *
- * @apiParam {String} email User's email address
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "email": "user@example.com"
- *     }
- *
- * @apiSuccess {String} message Confirmation message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "message": "Si cet email existe dans notre système, un lien de réinitialisation a été envoyé."
- *     }
- *
- * @apiError (Error 400) {String} error Email is required
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Email requis"
- *     }
+ * @openapi
+ * /auth/request-reset:
+ *   post:
+ *     summary: Request Password Reset
+ *     description: Request a password reset link to be sent to the user's email
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *                 example: "user@example.com"
+ *     responses:
+ *       200:
+ *         description: Reset link sent (or would be sent if email exists)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Si cet email existe dans notre système, un lien de réinitialisation a été envoyé."
+ *       400:
+ *         description: Email is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Email requis"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Erreur interne du serveur"
  */
 export async function POST(req: NextRequest) {
   try {

@@ -7,56 +7,92 @@ import { encryptText, decryptText } from '@/infrastructure/security/crypto';
 import { isNonEmptyString, parseIntParam } from '@/utils/validation';
 
 /**
- * @api {get} /messages/conversations/:id/messages Get Conversation Messages
- * @apiName GetConversationMessages
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all messages in a specific conversation
- *
- * @apiParam {Number} id Conversation ID
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiSuccess {Object[]} messages Array of message objects
- * @apiSuccess {Number} messages.id Message ID
- * @apiSuccess {Number} messages.sender_id Sender user ID
- * @apiSuccess {String} messages.content Decrypted message content
- * @apiSuccess {String} messages.sent_at Send timestamp
- * @apiSuccess {Object} [messages.reactions] Message reactions by emoji
- * @apiSuccess {Number} messages.reactions.emoji Count of reactions for each emoji
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "messages": [
- *         {
- *           "id": 1,
- *           "sender_id": 1,
- *           "content": "Hello everyone!",
- *           "sent_at": "2024-01-15T10:00:00.000Z",
- *           "reactions": {
- *             "👍": 2,
- *             "❤️": 1
- *           }
- *         },
- *         {
- *           "id": 2,
- *           "sender_id": 2,
- *           "content": "Hi there!",
- *           "sent_at": "2024-01-15T10:01:00.000Z"
- *         }
- *       ]
- *     }
- *
- * @apiError (Error 400) {String} error Invalid conversation ID
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 403 Forbidden
- *     {
- *       "error": "Forbidden"
- *     }
+ * @openapi
+ * /messages/conversations/{id}/messages:
+ *   get:
+ *     summary: Get Conversation Messages
+ *     description: Retrieve all messages in a specific conversation (only for conversation members)
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Conversation unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Messages retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 messages:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Message unique ID
+ *                         example: 1
+ *                       sender_id:
+ *                         type: integer
+ *                         description: Sender user ID
+ *                         example: 1
+ *                       content:
+ *                         type: string
+ *                         description: Decrypted message content
+ *                         example: "Hello everyone!"
+ *                       sent_at:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Send timestamp
+ *                         example: "2024-01-15T10:00:00.000Z"
+ *                       reactions:
+ *                         type: object
+ *                         description: Message reactions by emoji (optional)
+ *                         additionalProperties:
+ *                           type: integer
+ *                         example:
+ *                           "👍": 2
+ *                           "❤️": 1
+ *       400:
+ *         description: Invalid conversation ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid id"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Forbidden - not a member of this conversation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden"
  */
 
 function getUserId(req: NextRequest): number | null {
@@ -119,49 +155,109 @@ function safeDecrypt(payload: string): string {
 }
 
 /**
- * @api {post} /messages/conversations/:id/messages Send Message
- * @apiName SendMessage
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Send a new message to a conversation
- *
- * @apiParam {Number} id Conversation ID
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiParam {String} content Message content (max 5000 characters)
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "content": "Hello everyone! How are you doing today?"
- *     }
- *
- * @apiSuccess {Number} id Created message ID
- * @apiSuccess {String} sent_at Send timestamp
- * @apiSuccess {Number} sender_id Sender user ID
- * @apiSuccess {String} content Message content (echoed back)
- * @apiSuccess {Boolean} ok Success status
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "id": 15,
- *       "sent_at": "2024-01-15T15:30:00.000Z",
- *       "sender_id": 1,
- *       "content": "Hello everyone! How are you doing today?",
- *       "ok": true
- *     }
- *
- * @apiError (Error 400) {String} error Invalid conversation ID or message content
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
- * @apiError (Error 500) {String} error Encryption error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Invalid content"
- *     }
+ * @openapi
+ *   post:
+ *     summary: Send Message
+ *     description: Send a new message to a conversation (only for conversation members)
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Conversation unique ID
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 5000
+ *                 description: Message content (will be encrypted)
+ *                 example: "Hello everyone! How are you doing today?"
+ *           example:
+ *             content: "Hello everyone! How are you doing today?"
+ *     responses:
+ *       201:
+ *         description: Message sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: Created message ID
+ *                   example: 15
+ *                 sent_at:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Send timestamp
+ *                   example: "2024-01-15T15:30:00.000Z"
+ *                 sender_id:
+ *                   type: integer
+ *                   description: Sender user ID
+ *                   example: 1
+ *                 content:
+ *                   type: string
+ *                   description: Message content (echoed back)
+ *                   example: "Hello everyone! How are you doing today?"
+ *                 ok:
+ *                   type: boolean
+ *                   description: Success status
+ *                   example: true
+ *       400:
+ *         description: Invalid conversation ID or message content
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid content"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Forbidden - not a member of this conversation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden"
+ *       500:
+ *         description: Encryption error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Encryption error"
  */
 export async function POST(req: NextRequest, ctx: { params: { id: string } }) {
   const userId = getUserId(req);

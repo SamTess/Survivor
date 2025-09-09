@@ -3,39 +3,69 @@ import prisma from '@/infrastructure/persistence/prisma/client';
 import { ContentType } from '@prisma/client';
 
 /**
- * @api {post} /likes Create Like
- * @apiName CreateLike
- * @apiGroup Likes
- * @apiVersion 0.1.0
- * @apiDescription Add a like to a specific content item
- *
- * @apiParam {Number} userId User ID
- * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
- * @apiParam {Number} contentId Content ID
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "contentType": "STARTUP",
- *       "contentId": 5
- *     }
- *
- * @apiSuccess {Number} likeCount Total number of likes for this content
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "likeCount": 42
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Missing required fields"
- *     }
+ * @openapi
+ * /likes:
+ *   post:
+ *     summary: Create Like
+ *     description: Add a like to a specific content item
+ *     tags:
+ *       - Likes
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Like added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 likeCount:
+ *                   type: integer
+ *                   description: Total number of likes for this content
+ *                   example: 42
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function POST(req: NextRequest) {
   try {
@@ -93,39 +123,69 @@ export async function POST(req: NextRequest) {
 }
 
 /**
- * @api {delete} /likes Remove Like
- * @apiName RemoveLike
- * @apiGroup Likes
- * @apiVersion 0.1.0
- * @apiDescription Remove a like from a specific content item
- *
- * @apiParam {Number} userId User ID
- * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
- * @apiParam {Number} contentId Content ID
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "contentType": "STARTUP",
- *       "contentId": 5
- *     }
- *
- * @apiSuccess {Number} likeCount Total number of likes for this content
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "likeCount": 41
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Missing required fields"
- *     }
+ * @openapi
+ * /likes:
+ *   delete:
+ *     summary: Remove Like
+ *     description: Remove a like from a specific content item
+ *     tags:
+ *       - Likes
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Like removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 likeCount:
+ *                   type: integer
+ *                   description: Total number of likes for this content
+ *                   example: 41
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 export async function DELETE(req: NextRequest) {
   try {

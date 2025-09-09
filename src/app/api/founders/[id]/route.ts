@@ -6,43 +6,115 @@ const founderRepository = new FounderRepositoryPrisma();
 const founderService = new FounderService(founderRepository);
 
 /**
- * @api {get} /founders/:id Get Founder by ID
- * @apiName GetFounderById
- * @apiGroup Founders
- * @apiVersion 0.1.0
- * @apiDescription Retrieve a specific founder by their ID
- *
- * @apiParam {Number} id Founder ID
- *
- * @apiSuccess {Boolean} success Request success status
- * @apiSuccess {Object} data Founder object
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "John Doe",
- *         "role": "CEO",
- *         "startupId": 5,
- *         "bio": "Experienced entrepreneur"
- *       }
- *     }
- *
- * @apiError (Error 400) {Boolean} success false
- * @apiError (Error 400) {String} error Invalid founder ID
- * @apiError (Error 404) {Boolean} success false
- * @apiError (Error 404) {String} error Founder not found
- * @apiError (Error 500) {Boolean} success false
- * @apiError (Error 500) {String} error Failed to fetch founder
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "Founder not found"
- *     }
+ * @openapi
+ * /founders/{id}:
+ *   get:
+ *     summary: Get Founder by ID
+ *     description: Retrieve a specific founder by their ID
+ *     tags:
+ *       - Founders
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Founder ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Founder retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: "John Doe"
+ *                     role:
+ *                       type: string
+ *                       example: "CEO"
+ *                     startupId:
+ *                       type: integer
+ *                       example: 5
+ *                     userId:
+ *                       type: integer
+ *                       example: 10
+ *                     bio:
+ *                       type: string
+ *                       example: "Experienced entrepreneur"
+ *                     expertise:
+ *                       type: string
+ *                       example: "Product Development, Team Leadership"
+ *                     experience:
+ *                       type: string
+ *                       example: "15+ years in tech industry"
+ *                     linkedin:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://linkedin.com/in/johndoe"
+ *                     twitter:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://twitter.com/johndoe"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:00:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T14:00:00.000Z"
+ *       400:
+ *         description: Invalid founder ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid founder ID"
+ *       404:
+ *         description: Founder not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Founder not found"
+ *       500:
+ *         description: Failed to fetch founder
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch founder"
  */
 export async function GET(
   request: NextRequest,
@@ -83,74 +155,153 @@ export async function GET(
 }
 
 /**
- * @api {put} /founders/:id Update Founder
- * @apiName UpdateFounder
- * @apiGroup Founders
- * @apiVersion 0.1.0
- * @apiDescription Update an existing founder's information
- *
- * @apiParam {Number} id Founder unique ID
- * @apiParam {String} [name] Founder name
- * @apiParam {String} [role] Founder role/position
- * @apiParam {String} [bio] Founder biography
- * @apiParam {String} [expertise] Areas of expertise
- * @apiParam {String} [experience] Previous experience
- * @apiParam {String} [linkedin] LinkedIn profile URL
- * @apiParam {String} [twitter] Twitter profile URL
- * @apiParam {Number} [startupId] Associated startup ID
- * @apiParam {Number} [userId] Associated user ID
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "John Smith",
- *       "role": "CTO & Co-Founder",
- *       "bio": "Senior entrepreneur with 15+ years experience in tech",
- *       "expertise": "Product Development, Team Leadership, AI/ML",
- *       "linkedin": "https://linkedin.com/in/johnsmith"
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Updated founder object
- * @apiSuccess {Number} data.id Founder ID
- * @apiSuccess {String} data.name Founder name
- * @apiSuccess {String} data.role Founder role
- * @apiSuccess {String} data.bio Founder biography
- * @apiSuccess {String} data.expertise Areas of expertise
- * @apiSuccess {String} data.experience Previous experience
- * @apiSuccess {String} data.linkedin LinkedIn profile URL
- * @apiSuccess {String} data.twitter Twitter profile URL
- * @apiSuccess {String} data.updatedAt Last update timestamp
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "John Smith",
- *         "role": "CTO & Co-Founder",
- *         "bio": "Senior entrepreneur with 15+ years experience in tech",
- *         "expertise": "Product Development, Team Leadership, AI/ML",
- *         "linkedin": "https://linkedin.com/in/johnsmith",
- *         "updatedAt": "2024-01-15T14:00:00.000Z"
- *       },
- *       "message": "Founder updated successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid founder ID or validation error
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error Founder not found or update failed
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "Founder not found or update failed"
- *     }
+ * @openapi
+ * /founders/{id}:
+ *   put:
+ *     summary: Update Founder
+ *     description: Update an existing founder's information
+ *     tags:
+ *       - Founders
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Founder unique ID
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Founder name
+ *                 example: "John Smith"
+ *               role:
+ *                 type: string
+ *                 description: Founder role/position
+ *                 example: "CTO & Co-Founder"
+ *               bio:
+ *                 type: string
+ *                 description: Founder biography
+ *                 example: "Senior entrepreneur with 15+ years experience in tech"
+ *               expertise:
+ *                 type: string
+ *                 description: Areas of expertise
+ *                 example: "Product Development, Team Leadership, AI/ML"
+ *               experience:
+ *                 type: string
+ *                 description: Previous experience
+ *                 example: "Former CTO at TechCorp, 10+ years in software development"
+ *               linkedin:
+ *                 type: string
+ *                 format: uri
+ *                 description: LinkedIn profile URL
+ *                 example: "https://linkedin.com/in/johnsmith"
+ *               twitter:
+ *                 type: string
+ *                 format: uri
+ *                 description: Twitter profile URL
+ *                 example: "https://twitter.com/johnsmith"
+ *               startupId:
+ *                 type: integer
+ *                 description: Associated startup ID
+ *                 example: 5
+ *               userId:
+ *                 type: integer
+ *                 description: Associated user ID
+ *                 example: 10
+ *     responses:
+ *       200:
+ *         description: Founder updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: "John Smith"
+ *                     role:
+ *                       type: string
+ *                       example: "CTO & Co-Founder"
+ *                     bio:
+ *                       type: string
+ *                       example: "Senior entrepreneur with 15+ years experience in tech"
+ *                     expertise:
+ *                       type: string
+ *                       example: "Product Development, Team Leadership, AI/ML"
+ *                     experience:
+ *                       type: string
+ *                       example: "Former CTO at TechCorp, 10+ years in software development"
+ *                     linkedin:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://linkedin.com/in/johnsmith"
+ *                     twitter:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://twitter.com/johnsmith"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T14:00:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   example: "Founder updated successfully"
+ *       400:
+ *         description: Invalid founder ID or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid founder ID"
+ *       404:
+ *         description: Founder not found or update failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Founder not found or update failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to update founder"
  */
 export async function PUT(
   request: NextRequest,
@@ -197,37 +348,75 @@ export async function PUT(
 }
 
 /**
- * @api {delete} /founders/:id Delete Founder
- * @apiName DeleteFounder
- * @apiGroup Founders
- * @apiVersion 0.1.0
- * @apiDescription Delete a founder profile permanently
- *
- * @apiParam {Number} id Founder unique ID
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "message": "Founder deleted successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid founder ID
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error Founder not found or deletion failed
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "Founder not found or deletion failed"
- *     }
+ * @openapi
+ * /founders/{id}:
+ *   delete:
+ *     summary: Delete Founder
+ *     description: Delete a founder profile permanently
+ *     tags:
+ *       - Founders
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Founder unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Founder deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Founder deleted successfully"
+ *       400:
+ *         description: Invalid founder ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid founder ID"
+ *       404:
+ *         description: Founder not found or deletion failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Founder not found or deletion failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to delete founder"
  */
 export async function DELETE(
   request: NextRequest,

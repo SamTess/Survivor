@@ -6,69 +6,136 @@ const partnerRepository = new PartnerRepositoryPrisma();
 const partnerService = new PartnerService(partnerRepository);
 
 /**
- * @api {get} /partners Get All Partners
- * @apiName GetPartners
- * @apiGroup Partners
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all partners with optional filtering and pagination
- *
- * @apiQuery {Number} [page=1] Page number
- * @apiQuery {Number} [limit=10] Number of partners per page
- * @apiQuery {String} [partnerType] Filter by partner type
- * @apiQuery {String} [industry] Filter by industry
- * @apiQuery {String} [search] Search partners by name
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object[]} data Array of partner objects
- * @apiSuccess {Number} data.id Partner ID
- * @apiSuccess {String} data.name Partner name
- * @apiSuccess {String} data.email Partner email
- * @apiSuccess {String} data.companyName Company name
- * @apiSuccess {String} data.partnerType Partner type (STRATEGIC, TECHNOLOGY, VENDOR, etc.)
- * @apiSuccess {String} data.industry Industry sector
- * @apiSuccess {String} data.description Partner description
- * @apiSuccess {String} data.website Website URL
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
- * @apiSuccess {Number} pagination.page Current page number
- * @apiSuccess {Number} pagination.limit Items per page
- * @apiSuccess {Number} pagination.total Total number of partners
- * @apiSuccess {Number} pagination.totalPages Total number of pages
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "name": "TechCorp Solutions",
- *           "email": "contact@techcorp.com",
- *           "companyName": "TechCorp Inc.",
- *           "partnerType": "STRATEGIC",
- *           "industry": "Technology",
- *           "description": "Leading technology solutions provider",
- *           "website": "https://techcorp.com",
- *           "createdAt": "2024-01-01T00:00:00.000Z"
- *         }
- *       ],
- *       "pagination": {
- *         "page": 1,
- *         "limit": 10,
- *         "total": 15,
- *         "totalPages": 2
- *       }
- *     }
- *
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "success": false,
- *       "error": "Failed to fetch partners"
- *     }
+ * @openapi
+ * /partners:
+ *   get:
+ *     summary: Get All Partners
+ *     description: Retrieve all partners with optional filtering and pagination
+ *     tags:
+ *       - Partners
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of partners per page
+ *         example: 10
+ *       - in: query
+ *         name: partnershipType
+ *         schema:
+ *           type: string
+ *           enum: [STRATEGIC, TECHNOLOGY, VENDOR, DISTRIBUTION, FINANCIAL]
+ *         description: Filter by partnership type
+ *         example: TECHNOLOGY
+ *       - in: query
+ *         name: industry
+ *         schema:
+ *           type: string
+ *         description: Filter by industry sector
+ *         example: "Technology"
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search partners by name
+ *         example: "TechCorp"
+ *     responses:
+ *       200:
+ *         description: Partners retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Partner unique ID
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         description: Partner name
+ *                         example: "TechCorp Solutions"
+ *                       email:
+ *                         type: string
+ *                         description: Partner email
+ *                         example: "contact@techcorp.com"
+ *                       companyName:
+ *                         type: string
+ *                         description: Company name
+ *                         example: "TechCorp Inc."
+ *                       partnerType:
+ *                         type: string
+ *                         description: Partner type
+ *                         example: "STRATEGIC"
+ *                       industry:
+ *                         type: string
+ *                         description: Industry sector
+ *                         example: "Technology"
+ *                       description:
+ *                         type: string
+ *                         description: Partner description
+ *                         example: "Leading technology solutions provider"
+ *                       website:
+ *                         type: string
+ *                         description: Website URL
+ *                         example: "https://techcorp.com"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Creation timestamp
+ *                         example: "2024-01-01T00:00:00.000Z"
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination information (when using page/limit)
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       description: Items per page
+ *                       example: 10
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of partners
+ *                       example: 15
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                       example: 2
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch partners"
  */
 export async function GET(request: NextRequest) {
   try {
@@ -118,77 +185,151 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * @api {post} /partners Create New Partner
- * @apiName CreatePartner
- * @apiGroup Partners
- * @apiVersion 0.1.0
- * @apiDescription Create a new partnership
- *
- * @apiParam {String} name Partner name
- * @apiParam {String} email Partner email
- * @apiParam {String} companyName Company name
- * @apiParam {String} partnerType Partner type (STRATEGIC, TECHNOLOGY, VENDOR, DISTRIBUTION, etc.)
- * @apiParam {String} industry Industry sector
- * @apiParam {String} description Partner description
- * @apiParam {String} [website] Website URL
- * @apiParam {String} [contactPerson] Contact person name
- * @apiParam {String} [phone] Contact phone number
- * @apiParam {String[]} [services] Services offered
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "CloudTech Partners",
- *       "email": "partnerships@cloudtech.com",
- *       "companyName": "CloudTech Solutions Ltd.",
- *       "partnerType": "TECHNOLOGY",
- *       "industry": "Cloud Computing",
- *       "description": "Leading cloud infrastructure and services provider",
- *       "website": "https://cloudtech.com",
- *       "contactPerson": "Alex Johnson",
- *       "phone": "+1-555-0123",
- *       "services": ["Infrastructure", "Platform", "Software"]
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Created partner object
- * @apiSuccess {Number} data.id Partner ID
- * @apiSuccess {String} data.name Partner name
- * @apiSuccess {String} data.email Partner email
- * @apiSuccess {String} data.companyName Company name
- * @apiSuccess {String} data.partnerType Partner type
- * @apiSuccess {String} data.industry Industry sector
- * @apiSuccess {String} data.description Partner description
- * @apiSuccess {String} data.website Website URL
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 16,
- *         "name": "CloudTech Partners",
- *         "email": "partnerships@cloudtech.com",
- *         "companyName": "CloudTech Solutions Ltd.",
- *         "partnerType": "TECHNOLOGY",
- *         "industry": "Cloud Computing",
- *         "description": "Leading cloud infrastructure and services provider",
- *         "website": "https://cloudtech.com",
- *         "createdAt": "2024-01-15T15:00:00.000Z"
- *       },
- *       "message": "Partner created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Validation error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Partner with this email already exists"
- *     }
+ * @openapi
+ * /partners:
+ *   post:
+ *     summary: Create New Partner
+ *     description: Create a new partnership
+ *     tags:
+ *       - Partners
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - companyName
+ *               - partnerType
+ *               - industry
+ *               - description
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Partner name
+ *                 example: "CloudTech Partners"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Partner email
+ *                 example: "partnerships@cloudtech.com"
+ *               companyName:
+ *                 type: string
+ *                 description: Company name
+ *                 example: "CloudTech Solutions Ltd."
+ *               partnerType:
+ *                 type: string
+ *                 enum: [STRATEGIC, TECHNOLOGY, VENDOR, DISTRIBUTION, FINANCIAL]
+ *                 description: Partner type
+ *                 example: "TECHNOLOGY"
+ *               industry:
+ *                 type: string
+ *                 description: Industry sector
+ *                 example: "Cloud Computing"
+ *               description:
+ *                 type: string
+ *                 description: Partner description
+ *                 example: "Leading cloud infrastructure and services provider"
+ *               website:
+ *                 type: string
+ *                 format: uri
+ *                 description: Website URL
+ *                 example: "https://cloudtech.com"
+ *               contactPerson:
+ *                 type: string
+ *                 description: Contact person name
+ *                 example: "Alex Johnson"
+ *               phone:
+ *                 type: string
+ *                 description: Contact phone number
+ *                 example: "+1-555-0123"
+ *               services:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Services offered
+ *                 example: ["Infrastructure", "Platform", "Software"]
+ *           example:
+ *             name: "CloudTech Partners"
+ *             email: "partnerships@cloudtech.com"
+ *             companyName: "CloudTech Solutions Ltd."
+ *             partnerType: "TECHNOLOGY"
+ *             industry: "Cloud Computing"
+ *             description: "Leading cloud infrastructure and services provider"
+ *             website: "https://cloudtech.com"
+ *             contactPerson: "Alex Johnson"
+ *             phone: "+1-555-0123"
+ *             services: ["Infrastructure", "Platform", "Software"]
+ *     responses:
+ *       201:
+ *         description: Partner created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: Partner unique ID
+ *                       example: 16
+ *                     name:
+ *                       type: string
+ *                       description: Partner name
+ *                       example: "CloudTech Partners"
+ *                     email:
+ *                       type: string
+ *                       description: Partner email
+ *                       example: "partnerships@cloudtech.com"
+ *                     companyName:
+ *                       type: string
+ *                       description: Company name
+ *                       example: "CloudTech Solutions Ltd."
+ *                     partnerType:
+ *                       type: string
+ *                       description: Partner type
+ *                       example: "TECHNOLOGY"
+ *                     industry:
+ *                       type: string
+ *                       description: Industry sector
+ *                       example: "Cloud Computing"
+ *                     description:
+ *                       type: string
+ *                       description: Partner description
+ *                       example: "Leading cloud infrastructure and services provider"
+ *                     website:
+ *                       type: string
+ *                       description: Website URL
+ *                       example: "https://cloudtech.com"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Creation timestamp
+ *                       example: "2024-01-15T15:00:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "Partner created successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Partner with this email already exists"
  */
 export async function POST(request: NextRequest) {
   try {

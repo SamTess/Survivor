@@ -4,7 +4,7 @@ echo "🔍 Starting API documentation watcher..."
 
 regenerate_docs() {
     echo "🔄 Regenerating API documentation..."
-    npx apidoc -i src/app/api -o docs/api
+    npx tsx scripts/generate-swagger-docs.ts
     if [ $? -eq 0 ]; then
         echo "✅ Documentation regenerated at $(date)"
     else

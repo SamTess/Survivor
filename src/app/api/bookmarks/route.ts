@@ -5,40 +5,79 @@ import { ContentType } from '@/domain/enums/Analytics';
 const prisma = new PrismaClient();
 
 /**
- * @api {post} /bookmarks Create Bookmark
- * @apiName CreateBookmark
- * @apiGroup Bookmarks
- * @apiVersion 0.1.0
- * @apiDescription Add a bookmark for a specific content item
- *
- * @apiParam {Number} userId User ID
- * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
- * @apiParam {Number} contentId Content ID
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "contentType": "STARTUP",
- *       "contentId": 5
- *     }
- *
- * @apiSuccess {Number} bookmarkCount Total number of bookmarks for this content
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "bookmarkCount": 15
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 409) {String} error Already bookmarked
- * @apiError (Error 500) {String} error Failed to create bookmark
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 409 Conflict
- *     {
- *       "error": "Already bookmarked"
- *     }
+ * @openapi
+ * /bookmarks:
+ *   post:
+ *     summary: Create Bookmark
+ *     description: Add a bookmark for a specific content item
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Bookmark created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookmarkCount:
+ *                   type: integer
+ *                   description: Total number of bookmarks for this content
+ *                   example: 15
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       409:
+ *         description: Already bookmarked
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Already bookmarked"
+ *       500:
+ *         description: Failed to create bookmark
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to create bookmark"
  */
 export async function POST(request: NextRequest) {
   try {
@@ -108,39 +147,69 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * @api {delete} /bookmarks Remove Bookmark
- * @apiName RemoveBookmark
- * @apiGroup Bookmarks
- * @apiVersion 0.1.0
- * @apiDescription Remove a bookmark for a specific content item
- *
- * @apiParam {Number} userId User ID
- * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
- * @apiParam {Number} contentId Content ID
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "contentType": "STARTUP",
- *       "contentId": 5
- *     }
- *
- * @apiSuccess {Number} bookmarkCount Total number of bookmarks for this content
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "bookmarkCount": 14
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 500) {String} error Failed to delete bookmark
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Missing required fields"
- *     }
+ * @openapi
+ * /bookmarks:
+ *   delete:
+ *     summary: Remove Bookmark
+ *     description: Remove a bookmark for a specific content item
+ *     tags:
+ *       - Bookmarks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Bookmark removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bookmarkCount:
+ *                   type: integer
+ *                   description: Total number of bookmarks for this content
+ *                   example: 14
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       500:
+ *         description: Failed to delete bookmark
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to delete bookmark"
  */
 export async function DELETE(request: NextRequest) {
   try {

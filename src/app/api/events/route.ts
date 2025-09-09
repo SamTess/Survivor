@@ -6,51 +6,128 @@ const eventRepository = new EventRepositoryPrisma();
 const eventService = new EventService(eventRepository);
 
 /**
- * @api {get} /events Get Events
- * @apiName GetEvents
- * @apiGroup Events
- * @apiVersion 0.1.0
- * @apiDescription Retrieve a list of events with optional filtering and pagination
- *
- * @apiParam {Number} [page=1] Page number for pagination
- * @apiParam {Number} [limit=10] Number of items per page
- * @apiParam {String} [eventType] Filter by event type
- * @apiParam {String} [targetAudience] Filter by target audience
- * @apiParam {String} [location] Filter by location
- * @apiParam {String} [search] Search term for event name or description
- * @apiParam {String} [startDate] Start date filter (ISO format)
- * @apiParam {String} [endDate] End date filter (ISO format)
- * @apiParam {Boolean} [upcoming] Filter for upcoming events only
- *
- * @apiSuccess {Boolean} success Request success status
- * @apiSuccess {Object[]} data Array of event objects
- * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "name": "Tech Conference 2025",
- *           "eventType": "Conference",
- *           "location": "San Francisco",
- *           "startDate": "2025-10-15T09:00:00Z",
- *           "endDate": "2025-10-15T17:00:00Z"
- *         }
- *       ]
- *     }
- *
- * @apiError (Error 500) {Boolean} success false
- * @apiError (Error 500) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "success": false,
- *       "error": "Failed to fetch events"
- *     }
+ * @openapi
+ * /events:
+ *   get:
+ *     summary: Get Events
+ *     description: Retrieve a list of events with optional filtering and pagination
+ *     tags:
+ *       - Events
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: eventType
+ *         schema:
+ *           type: string
+ *         description: Filter by event type
+ *       - in: query
+ *         name: targetAudience
+ *         schema:
+ *           type: string
+ *         description: Filter by target audience
+ *       - in: query
+ *         name: location
+ *         schema:
+ *           type: string
+ *         description: Filter by location
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for event name or description
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Start date filter (ISO format)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: End date filter (ISO format)
+ *       - in: query
+ *         name: upcoming
+ *         schema:
+ *           type: boolean
+ *         description: Filter for upcoming events only
+ *     responses:
+ *       200:
+ *         description: Events retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "Tech Conference 2025"
+ *                       eventType:
+ *                         type: string
+ *                         example: "Conference"
+ *                       location:
+ *                         type: string
+ *                         example: "San Francisco"
+ *                       startDate:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-10-15T09:00:00Z"
+ *                       endDate:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2025-10-15T17:00:00Z"
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination information (when using page/limit)
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
+ *                     total:
+ *                       type: integer
+ *                       example: 25
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 3
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch events"
  */
 export async function GET(request: NextRequest) {
   try {
@@ -133,58 +210,98 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * @api {post} /events Create Event
- * @apiName CreateEvent
- * @apiGroup Events
- * @apiVersion 0.1.0
- * @apiDescription Create a new event
- *
- * @apiParam {String} name Event name
- * @apiParam {String} [description] Event description
- * @apiParam {String} [eventType] Event type
- * @apiParam {String} [targetAudience] Target audience
- * @apiParam {String} [location] Event location
- * @apiParam {String} [startDate] Event start date (ISO format)
- * @apiParam {String} [endDate] Event end date (ISO format)
- * @apiParam {String} [website] Event website URL
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "Tech Conference 2025",
- *       "description": "Annual technology conference",
- *       "eventType": "Conference",
- *       "targetAudience": "Developers",
- *       "location": "San Francisco",
- *       "startDate": "2025-10-15T09:00:00Z",
- *       "endDate": "2025-10-15T17:00:00Z"
- *     }
- *
- * @apiSuccess (Success 201) {Boolean} success Request success status
- * @apiSuccess (Success 201) {Object} data Created event object
- * @apiSuccess (Success 201) {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "Tech Conference 2025",
- *         "description": "Annual technology conference",
- *         "eventType": "Conference"
- *       },
- *       "message": "Event created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success false
- * @apiError (Error 400) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Failed to create event"
- *     }
+ * @openapi
+ * /events:
+ *   post:
+ *     summary: Create Event
+ *     description: Create a new event
+ *     tags:
+ *       - Events
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Event name
+ *                 example: "Tech Conference 2025"
+ *               description:
+ *                 type: string
+ *                 description: Event description
+ *                 example: "Annual technology conference"
+ *               eventType:
+ *                 type: string
+ *                 description: Event type
+ *                 example: "Conference"
+ *               targetAudience:
+ *                 type: string
+ *                 description: Target audience
+ *                 example: "Developers"
+ *               location:
+ *                 type: string
+ *                 description: Event location
+ *                 example: "San Francisco"
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Event start date (ISO format)
+ *                 example: "2025-10-15T09:00:00Z"
+ *               endDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Event end date (ISO format)
+ *                 example: "2025-10-15T17:00:00Z"
+ *               website:
+ *                 type: string
+ *                 format: uri
+ *                 description: Event website URL
+ *     responses:
+ *       201:
+ *         description: Event created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: "Tech Conference 2025"
+ *                     description:
+ *                       type: string
+ *                       example: "Annual technology conference"
+ *                     eventType:
+ *                       type: string
+ *                       example: "Conference"
+ *                 message:
+ *                   type: string
+ *                   example: "Event created successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to create event"
  */
 export async function POST(request: NextRequest) {
   try {

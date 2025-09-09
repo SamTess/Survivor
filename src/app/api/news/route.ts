@@ -6,68 +6,161 @@ const newsRepository = new NewsRepositoryPrisma();
 const newsService = new NewsService(newsRepository);
 
 /**
- * @api {get} /news Get All News
- * @apiName GetNews
- * @apiGroup News
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all news articles with optional filtering and pagination
- *
- * @apiQuery {Number} [page=1] Page number
- * @apiQuery {Number} [limit=10] Number of articles per page
- * @apiQuery {String} [category] Filter by news category
- * @apiQuery {String} [search] Search articles by title or content
- * @apiQuery {String} [sortBy=createdAt] Sort field (createdAt, title, author)
- * @apiQuery {String} [sortOrder=desc] Sort order (asc, desc)
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object[]} data Array of news articles
- * @apiSuccess {Number} data.id Article ID
- * @apiSuccess {String} data.title Article title
- * @apiSuccess {String} data.content Article content
- * @apiSuccess {String} data.author Article author
- * @apiSuccess {String} data.category Article category
- * @apiSuccess {String} data.imageUrl Article image URL
- * @apiSuccess {String} data.publishedAt Publication timestamp
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
- * @apiSuccess {Number} pagination.page Current page number
- * @apiSuccess {Number} pagination.limit Items per page
- * @apiSuccess {Number} pagination.total Total number of articles
- * @apiSuccess {Number} pagination.totalPages Total number of pages
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "title": "Tech Startup Raises $10M Series A",
- *           "content": "A promising tech startup has successfully raised...",
- *           "author": "John Journalist",
- *           "category": "FUNDING",
- *           "imageUrl": "https://example.com/image.jpg",
- *           "publishedAt": "2024-01-15T09:00:00.000Z",
- *           "createdAt": "2024-01-15T08:30:00.000Z"
- *         }
- *       ],
- *       "pagination": {
- *         "page": 1,
- *         "limit": 10,
- *         "total": 45,
- *         "totalPages": 5
- *       }
- *     }
- *
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "success": false,
- *       "error": "Failed to fetch news articles"
- *     }
+ * @openapi
+ * /news:
+ *   get:
+ *     summary: Get All News
+ *     description: Retrieve all news articles with optional filtering and pagination
+ *     tags:
+ *       - News
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of articles per page
+ *         example: 10
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [FUNDING, PRODUCT, MARKET, TEAM, INDUSTRY]
+ *         description: Filter by news category
+ *         example: FUNDING
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search articles by title or content
+ *         example: "AI startup"
+ *       - in: query
+ *         name: startupId
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Filter by startup ID
+ *         example: 12
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter articles from this date (used with endDate)
+ *         example: "2024-01-01"
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter articles until this date (used with startDate)
+ *         example: "2024-12-31"
+ *     responses:
+ *       200:
+ *         description: News articles retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Article unique ID
+ *                         example: 1
+ *                       title:
+ *                         type: string
+ *                         description: Article title
+ *                         example: "Tech Startup Raises $10M Series A"
+ *                       content:
+ *                         type: string
+ *                         description: Article content
+ *                         example: "A promising tech startup has successfully raised..."
+ *                       author:
+ *                         type: string
+ *                         description: Article author
+ *                         example: "John Journalist"
+ *                       category:
+ *                         type: string
+ *                         description: Article category
+ *                         example: "FUNDING"
+ *                       imageUrl:
+ *                         type: string
+ *                         description: Article image URL
+ *                         example: "https://example.com/image.jpg"
+ *                       publishedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Publication timestamp
+ *                         example: "2024-01-15T09:00:00.000Z"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Creation timestamp
+ *                         example: "2024-01-15T08:30:00.000Z"
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination information (when using page/limit)
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       description: Items per page
+ *                       example: 10
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of articles
+ *                       example: 45
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                       example: 5
+ *       400:
+ *         description: Invalid request parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid startup ID"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch news articles"
  */
 export async function GET(request: NextRequest) {
   try {
@@ -145,71 +238,135 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * @api {post} /news Create News Article
- * @apiName CreateNews
- * @apiGroup News
- * @apiVersion 0.1.0
- * @apiDescription Create a new news article
- *
- * @apiParam {String} title Article title
- * @apiParam {String} content Article content
- * @apiParam {String} author Article author
- * @apiParam {String} category Article category (FUNDING, PRODUCT, MARKET, etc.)
- * @apiParam {String} [imageUrl] Article image URL
- * @apiParam {String} [summary] Article summary
- * @apiParam {Number} [startupId] Related startup ID
- * @apiParam {String[]} [tags] Article tags
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "title": "Revolutionary AI Startup Secures $15M Funding",
- *       "content": "TechVenture AI, a cutting-edge artificial intelligence startup...",
- *       "author": "Sarah Tech Reporter",
- *       "category": "FUNDING",
- *       "imageUrl": "https://example.com/ai-startup.jpg",
- *       "summary": "AI startup raises significant Series A funding round",
- *       "startupId": 12,
- *       "tags": ["AI", "Funding", "Technology"]
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Created news article object
- * @apiSuccess {Number} data.id Article ID
- * @apiSuccess {String} data.title Article title
- * @apiSuccess {String} data.content Article content
- * @apiSuccess {String} data.author Article author
- * @apiSuccess {String} data.category Article category
- * @apiSuccess {String} data.imageUrl Article image URL
- * @apiSuccess {String} data.publishedAt Publication timestamp
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 46,
- *         "title": "Revolutionary AI Startup Secures $15M Funding",
- *         "content": "TechVenture AI, a cutting-edge artificial intelligence startup...",
- *         "author": "Sarah Tech Reporter",
- *         "category": "FUNDING",
- *         "imageUrl": "https://example.com/ai-startup.jpg",
- *         "publishedAt": "2024-01-15T14:30:00.000Z",
- *         "createdAt": "2024-01-15T14:30:00.000Z"
- *       },
- *       "message": "News created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Validation error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Title and content are required"
- *     }
+ * @openapi
+ * /news:
+ *   post:
+ *     summary: Create News Article
+ *     description: Create a new news article
+ *     tags:
+ *       - News
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - content
+ *               - author
+ *               - category
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Article title
+ *                 example: "Revolutionary AI Startup Secures $15M Funding"
+ *               content:
+ *                 type: string
+ *                 description: Article content
+ *                 example: "TechVenture AI, a cutting-edge artificial intelligence startup..."
+ *               author:
+ *                 type: string
+ *                 description: Article author
+ *                 example: "Sarah Tech Reporter"
+ *               category:
+ *                 type: string
+ *                 enum: [FUNDING, PRODUCT, MARKET, TEAM, INDUSTRY]
+ *                 description: Article category
+ *                 example: "FUNDING"
+ *               imageUrl:
+ *                 type: string
+ *                 description: Article image URL
+ *                 example: "https://example.com/ai-startup.jpg"
+ *               summary:
+ *                 type: string
+ *                 description: Article summary
+ *                 example: "AI startup raises significant Series A funding round"
+ *               startupId:
+ *                 type: integer
+ *                 minimum: 1
+ *                 description: Related startup ID
+ *                 example: 12
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Article tags
+ *                 example: ["AI", "Funding", "Technology"]
+ *           example:
+ *             title: "Revolutionary AI Startup Secures $15M Funding"
+ *             content: "TechVenture AI, a cutting-edge artificial intelligence startup..."
+ *             author: "Sarah Tech Reporter"
+ *             category: "FUNDING"
+ *             imageUrl: "https://example.com/ai-startup.jpg"
+ *             summary: "AI startup raises significant Series A funding round"
+ *             startupId: 12
+ *             tags: ["AI", "Funding", "Technology"]
+ *     responses:
+ *       201:
+ *         description: News article created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: Article unique ID
+ *                       example: 46
+ *                     title:
+ *                       type: string
+ *                       description: Article title
+ *                       example: "Revolutionary AI Startup Secures $15M Funding"
+ *                     content:
+ *                       type: string
+ *                       description: Article content
+ *                       example: "TechVenture AI, a cutting-edge artificial intelligence startup..."
+ *                     author:
+ *                       type: string
+ *                       description: Article author
+ *                       example: "Sarah Tech Reporter"
+ *                     category:
+ *                       type: string
+ *                       description: Article category
+ *                       example: "FUNDING"
+ *                     imageUrl:
+ *                       type: string
+ *                       description: Article image URL
+ *                       example: "https://example.com/ai-startup.jpg"
+ *                     publishedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Publication timestamp
+ *                       example: "2024-01-15T14:30:00.000Z"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Creation timestamp
+ *                       example: "2024-01-15T14:30:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "News created successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Title and content are required"
  */
 export async function POST(request: NextRequest) {
   try {

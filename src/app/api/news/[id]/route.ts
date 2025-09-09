@@ -6,64 +6,130 @@ const newsRepository = new NewsRepositoryPrisma();
 const newsService = new NewsService(newsRepository);
 
 /**
- * @api {get} /news/:id Get News Article by ID
- * @apiName GetNewsById
- * @apiGroup News
- * @apiVersion 0.1.0
- * @apiDescription Retrieve a specific news article by its ID
- *
- * @apiParam {Number} id News article unique ID
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data News article object
- * @apiSuccess {Number} data.id News article ID
- * @apiSuccess {String} data.title Article title
- * @apiSuccess {String} data.content Article content
- * @apiSuccess {String} data.author Article author
- * @apiSuccess {String} data.category Article category
- * @apiSuccess {String} data.imageUrl Article image URL
- * @apiSuccess {Number} data.startup_id Associated startup ID
- * @apiSuccess {Number} data.viewsCount Number of views
- * @apiSuccess {Number} data.likesCount Number of likes
- * @apiSuccess {Number} data.bookmarksCount Number of bookmarks
- * @apiSuccess {String} data.publishedAt Publication timestamp
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} data.updatedAt Last update timestamp
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "title": "Tech Startup Raises $10M Series A",
- *         "content": "A promising tech startup has successfully raised $10M in Series A funding...",
- *         "author": "John Journalist",
- *         "category": "FUNDING",
- *         "imageUrl": "https://example.com/image.jpg",
- *         "startup_id": 5,
- *         "viewsCount": 1250,
- *         "likesCount": 87,
- *         "bookmarksCount": 23,
- *         "publishedAt": "2024-01-15T09:00:00.000Z",
- *         "createdAt": "2024-01-15T08:30:00.000Z",
- *         "updatedAt": "2024-01-15T12:00:00.000Z"
- *       }
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid news ID
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error News not found
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "News not found"
- *     }
+ * @openapi
+ * /news/{id}:
+ *   get:
+ *     summary: Get News Article by ID
+ *     description: Retrieve a specific news article by its ID
+ *     tags:
+ *       - News
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: News article unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: News article retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: News article ID
+ *                       example: 1
+ *                     title:
+ *                       type: string
+ *                       description: Article title
+ *                       example: "Tech Startup Raises $10M Series A"
+ *                     content:
+ *                       type: string
+ *                       description: Article content
+ *                       example: "A promising tech startup has successfully raised $10M in Series A funding..."
+ *                     author:
+ *                       type: string
+ *                       description: Article author
+ *                       example: "John Journalist"
+ *                     category:
+ *                       type: string
+ *                       description: Article category
+ *                       example: "FUNDING"
+ *                     imageUrl:
+ *                       type: string
+ *                       description: Article image URL
+ *                       example: "https://example.com/image.jpg"
+ *                     startup_id:
+ *                       type: integer
+ *                       description: Associated startup ID
+ *                       example: 5
+ *                     viewsCount:
+ *                       type: integer
+ *                       description: Number of views
+ *                       example: 1250
+ *                     likesCount:
+ *                       type: integer
+ *                       description: Number of likes
+ *                       example: 87
+ *                     bookmarksCount:
+ *                       type: integer
+ *                       description: Number of bookmarks
+ *                       example: 23
+ *                     publishedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Publication timestamp
+ *                       example: "2024-01-15T09:00:00.000Z"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Creation timestamp
+ *                       example: "2024-01-15T08:30:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Last update timestamp
+ *                       example: "2024-01-15T12:00:00.000Z"
+ *       400:
+ *         description: Invalid news ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid news ID"
+ *       404:
+ *         description: News article not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "News not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch news"
  */
 export async function GET(
   request: NextRequest,
@@ -104,61 +170,141 @@ export async function GET(
 }
 
 /**
- * @api {put} /news/:id Update News Article
- * @apiName UpdateNews
- * @apiGroup News
- * @apiVersion 0.1.0
- * @apiDescription Update an existing news article
- *
- * @apiParam {Number} id News article unique ID
- * @apiParam {String} [title] Article title
- * @apiParam {String} [content] Article content
- * @apiParam {String} [author] Article author
- * @apiParam {String} [category] Article category (FUNDING, PRODUCT, TEAM, INDUSTRY, etc.)
- * @apiParam {String} [imageUrl] Article image URL
- * @apiParam {Number} [startup_id] Associated startup ID
- * @apiParam {String} [publishedAt] Publication timestamp
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "title": "Tech Startup Successfully Closes $15M Series A",
- *       "content": "The startup has successfully raised $15M in Series A funding, exceeding initial goals...",
- *       "category": "FUNDING",
- *       "author": "Jane Reporter"
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Updated news article object
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "title": "Tech Startup Successfully Closes $15M Series A",
- *         "content": "The startup has successfully raised $15M in Series A funding, exceeding initial goals...",
- *         "author": "Jane Reporter",
- *         "category": "FUNDING",
- *         "updatedAt": "2024-01-15T14:00:00.000Z"
- *       },
- *       "message": "News updated successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid news ID or validation error
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error News not found or update failed
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "News not found or update failed"
- *     }
+ * @openapi
+ * /news/{id}:
+ *   put:
+ *     summary: Update News Article
+ *     description: Update an existing news article
+ *     tags:
+ *       - News
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: News article unique ID
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Article title
+ *                 example: "Tech Startup Successfully Closes $15M Series A"
+ *               content:
+ *                 type: string
+ *                 description: Article content
+ *                 example: "The startup has successfully raised $15M in Series A funding, exceeding initial goals..."
+ *               author:
+ *                 type: string
+ *                 description: Article author
+ *                 example: "Jane Reporter"
+ *               category:
+ *                 type: string
+ *                 enum: [FUNDING, PRODUCT, MARKET, TEAM, INDUSTRY]
+ *                 description: Article category
+ *                 example: "FUNDING"
+ *               imageUrl:
+ *                 type: string
+ *                 description: Article image URL
+ *                 example: "https://example.com/updated-image.jpg"
+ *               startup_id:
+ *                 type: integer
+ *                 minimum: 1
+ *                 description: Associated startup ID
+ *                 example: 5
+ *               publishedAt:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Publication timestamp
+ *                 example: "2024-01-15T09:00:00.000Z"
+ *           example:
+ *             title: "Tech Startup Successfully Closes $15M Series A"
+ *             content: "The startup has successfully raised $15M in Series A funding, exceeding initial goals..."
+ *             category: "FUNDING"
+ *             author: "Jane Reporter"
+ *     responses:
+ *       200:
+ *         description: News article updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     title:
+ *                       type: string
+ *                       example: "Tech Startup Successfully Closes $15M Series A"
+ *                     content:
+ *                       type: string
+ *                       example: "The startup has successfully raised $15M in Series A funding, exceeding initial goals..."
+ *                     author:
+ *                       type: string
+ *                       example: "Jane Reporter"
+ *                     category:
+ *                       type: string
+ *                       example: "FUNDING"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T14:00:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "News updated successfully"
+ *       400:
+ *         description: Invalid news ID or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid news ID"
+ *       404:
+ *         description: News article not found or update failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "News not found or update failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to update news"
  */
 export async function PUT(
   request: NextRequest,
@@ -205,37 +351,76 @@ export async function PUT(
 }
 
 /**
- * @api {delete} /news/:id Delete News Article
- * @apiName DeleteNews
- * @apiGroup News
- * @apiVersion 0.1.0
- * @apiDescription Delete a news article permanently
- *
- * @apiParam {Number} id News article unique ID
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "message": "News deleted successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid news ID
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error News not found or deletion failed
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "News not found or deletion failed"
- *     }
+ * @openapi
+ * /news/{id}:
+ *   delete:
+ *     summary: Delete News Article
+ *     description: Delete a news article permanently
+ *     tags:
+ *       - News
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: News article unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: News article deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "News deleted successfully"
+ *       400:
+ *         description: Invalid news ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid news ID"
+ *       404:
+ *         description: News article not found or deletion failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "News not found or deletion failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to delete news"
  */
 export async function DELETE(
   request: NextRequest,

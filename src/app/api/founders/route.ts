@@ -6,47 +6,113 @@ const founderRepository = new FounderRepositoryPrisma();
 const founderService = new FounderService(founderRepository);
 
 /**
- * @api {get} /founders Get Founders
- * @apiName GetFounders
- * @apiGroup Founders
- * @apiVersion 0.1.0
- * @apiDescription Retrieve a list of founders with optional filtering
- *
- * @apiParam {Number} [startupId] Filter by startup ID
- * @apiParam {Number} [userId] Filter by user ID
- *
- * @apiParamExample {url} Request-Example:
- *     /founders?startupId=5
- *
- * @apiSuccess {Boolean} success Request success status
- * @apiSuccess {Object[]} data Array of founder objects
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "name": "John Doe",
- *           "role": "CEO",
- *           "startupId": 5,
- *           "userId": 10
- *         }
- *       ]
- *     }
- *
- * @apiError (Error 400) {Boolean} success false
- * @apiError (Error 400) {String} error Invalid startup ID or user ID
- * @apiError (Error 500) {Boolean} success false
- * @apiError (Error 500) {String} error Failed to fetch founders
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Invalid startup ID"
- *     }
+ * @openapi
+ * /founders:
+ *   get:
+ *     summary: Get Founders
+ *     description: Retrieve a list of founders with optional filtering
+ *     tags:
+ *       - Founders
+ *     parameters:
+ *       - in: query
+ *         name: startupId
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Filter by startup ID
+ *         example: 5
+ *       - in: query
+ *         name: userId
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Filter by user ID
+ *         example: 10
+ *     responses:
+ *       200:
+ *         description: Founders retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *                       role:
+ *                         type: string
+ *                         example: "CEO"
+ *                       startupId:
+ *                         type: integer
+ *                         example: 5
+ *                       userId:
+ *                         type: integer
+ *                         example: 10
+ *                       bio:
+ *                         type: string
+ *                         example: "Experienced entrepreneur"
+ *                       expertise:
+ *                         type: string
+ *                         example: "Product Development, Leadership"
+ *                       experience:
+ *                         type: string
+ *                         example: "15+ years in tech industry"
+ *                       linkedin:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://linkedin.com/in/johndoe"
+ *                       twitter:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://twitter.com/johndoe"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-15T10:00:00.000Z"
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-15T14:00:00.000Z"
+ *       400:
+ *         description: Invalid startup ID or user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   enum: ["Invalid startup ID", "Invalid user ID"]
+ *                   example: "Invalid startup ID"
+ *       500:
+ *         description: Failed to fetch founders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch founders"
  */
 export async function GET(request: NextRequest) {
   try {
@@ -94,54 +160,131 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * @api {post} /founders Create Founder
- * @apiName CreateFounder
- * @apiGroup Founders
- * @apiVersion 0.1.0
- * @apiDescription Create a new founder record
- *
- * @apiParam {String} name Founder's name
- * @apiParam {String} [role] Founder's role
- * @apiParam {Number} startupId Associated startup ID
- * @apiParam {Number} [userId] Associated user ID
- * @apiParam {String} [bio] Founder's biography
- * @apiParam {String} [linkedin] LinkedIn profile URL
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "Jane Smith",
- *       "role": "CTO",
- *       "startupId": 5,
- *       "userId": 15,
- *       "bio": "Experienced technology leader"
- *     }
- *
- * @apiSuccess (Success 201) {Boolean} success Request success status
- * @apiSuccess (Success 201) {Object} data Created founder object
- * @apiSuccess (Success 201) {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "Jane Smith",
- *         "role": "CTO",
- *         "startupId": 5
- *       },
- *       "message": "Founder created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success false
- * @apiError (Error 400) {String} error Failed to create founder
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Failed to create founder"
- *     }
+ * @openapi
+ * /founders:
+ *   post:
+ *     summary: Create Founder
+ *     description: Create a new founder record
+ *     tags:
+ *       - Founders
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - startupId
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Founder's name
+ *                 example: "Jane Smith"
+ *               role:
+ *                 type: string
+ *                 description: Founder's role
+ *                 example: "CTO"
+ *               startupId:
+ *                 type: integer
+ *                 description: Associated startup ID
+ *                 example: 5
+ *               userId:
+ *                 type: integer
+ *                 description: Associated user ID
+ *                 example: 15
+ *               bio:
+ *                 type: string
+ *                 description: Founder's biography
+ *                 example: "Experienced technology leader with 10+ years in software development"
+ *               expertise:
+ *                 type: string
+ *                 description: Areas of expertise
+ *                 example: "Full-stack development, DevOps, Team leadership"
+ *               experience:
+ *                 type: string
+ *                 description: Previous experience
+ *                 example: "Former Senior Engineer at Google, Tech Lead at Microsoft"
+ *               linkedin:
+ *                 type: string
+ *                 format: uri
+ *                 description: LinkedIn profile URL
+ *                 example: "https://linkedin.com/in/janesmith"
+ *               twitter:
+ *                 type: string
+ *                 format: uri
+ *                 description: Twitter profile URL
+ *                 example: "https://twitter.com/janesmith"
+ *     responses:
+ *       201:
+ *         description: Founder created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: "Jane Smith"
+ *                     role:
+ *                       type: string
+ *                       example: "CTO"
+ *                     startupId:
+ *                       type: integer
+ *                       example: 5
+ *                     userId:
+ *                       type: integer
+ *                       example: 15
+ *                     bio:
+ *                       type: string
+ *                       example: "Experienced technology leader with 10+ years in software development"
+ *                     expertise:
+ *                       type: string
+ *                       example: "Full-stack development, DevOps, Team leadership"
+ *                     experience:
+ *                       type: string
+ *                       example: "Former Senior Engineer at Google, Tech Lead at Microsoft"
+ *                     linkedin:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://linkedin.com/in/janesmith"
+ *                     twitter:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://twitter.com/janesmith"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:00:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:00:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   example: "Founder created successfully"
+ *       400:
+ *         description: Failed to create founder
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to create founder"
  */
 export async function POST(request: NextRequest) {
   try {

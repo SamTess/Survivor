@@ -6,54 +6,96 @@ const groq = new Groq({
 });
 
 /**
- * @api {post} /ai/enhance-pitch Enhance Pitch Content with AI
- * @apiName EnhancePitch
- * @apiGroup AI
- * @apiVersion 0.1.0
- * @apiDescription Enhance pitch deck content using AI to make it more professional and engaging for investors
- *
- * @apiParam {String} content The content to be enhanced
- * @apiParam {String} type Type of content to enhance (description, needs, title, general)
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "content": "We are a tech startup that builds mobile apps",
- *       "type": "description"
- *     }
- *
- * @apiSuccess {String} enhancedContent The AI-enhanced content
- * @apiSuccess {String} originalContent The original content provided
- * @apiSuccess {String} type The type of enhancement performed
- * @apiSuccess {Boolean} success Whether AI enhancement was successful
- * @apiSuccess {String} [error] Error message if AI enhancement failed but fallback was used
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "enhancedContent": "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions.",
- *       "originalContent": "We are a tech startup that builds mobile apps",
- *       "type": "description",
- *       "success": true
- *     }
- *
- * @apiSuccessExample {json} Fallback-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "enhancedContent": "We are an innovative startup that builds mobile apps.",
- *       "originalContent": "We are a tech startup that builds mobile apps",
- *       "type": "description",
- *       "success": false,
- *       "error": "AI enhancement failed, used basic rules"
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Content and type are required"
- *     }
+ * @openapi
+ * /ai/enhance-pitch:
+ *   post:
+ *     summary: Enhance Pitch Content with AI
+ *     description: Enhance pitch deck content using AI to make it more professional and engaging for investors
+ *     tags:
+ *       - AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *               - type
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 description: The content to be enhanced
+ *                 example: "We are a tech startup that builds mobile apps"
+ *               type:
+ *                 type: string
+ *                 description: Type of content to enhance
+ *                 enum: [description, needs, title, general]
+ *                 example: "description"
+ *     responses:
+ *       200:
+ *         description: Content enhanced successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 enhancedContent:
+ *                   type: string
+ *                   description: The AI-enhanced content
+ *                   example: "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions."
+ *                 originalContent:
+ *                   type: string
+ *                   description: The original content provided
+ *                   example: "We are a tech startup that builds mobile apps"
+ *                 type:
+ *                   type: string
+ *                   description: The type of enhancement performed
+ *                   example: "description"
+ *                 success:
+ *                   type: boolean
+ *                   description: Whether AI enhancement was successful
+ *                   example: true
+ *                 error:
+ *                   type: string
+ *                   description: Error message if AI enhancement failed but fallback was used
+ *                   example: "AI enhancement failed, used basic rules"
+ *             examples:
+ *               success:
+ *                 summary: Successful AI enhancement
+ *                 value:
+ *                   enhancedContent: "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions."
+ *                   originalContent: "We are a tech startup that builds mobile apps"
+ *                   type: "description"
+ *                   success: true
+ *               fallback:
+ *                 summary: Fallback enhancement when AI fails
+ *                 value:
+ *                   enhancedContent: "We are an innovative startup that builds mobile apps."
+ *                   originalContent: "We are a tech startup that builds mobile apps"
+ *                   type: "description"
+ *                   success: false
+ *                   error: "AI enhancement failed, used basic rules"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Content and type are required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
  */
 
 const getPromptForType = (content: string, type: string): string => {
@@ -187,56 +229,6 @@ const enhanceWithRules = (content: string, type: string): string => {
   return enhanced;
 };
 
-/**
- * @api {post} /ai/enhance-pitch Enhance Pitch Content with AI
- * @apiName EnhancePitch
- * @apiGroup AI
- * @apiVersion 0.1.0
- * @apiDescription Enhance pitch deck content using AI to make it more professional and engaging for investors
- *
- * @apiParam {String} content The content to be enhanced
- * @apiParam {String} type Type of content to enhance (description, needs, title, general)
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "content": "We are a tech startup that builds mobile apps",
- *       "type": "description"
- *     }
- *
- * @apiSuccess {String} enhancedContent The AI-enhanced content
- * @apiSuccess {String} originalContent The original content provided
- * @apiSuccess {String} type The type of enhancement performed
- * @apiSuccess {Boolean} success Whether AI enhancement was successful
- * @apiSuccess {String} [error] Error message if AI enhancement failed but fallback was used
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "enhancedContent": "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions.",
- *       "originalContent": "We are a tech startup that builds mobile apps",
- *       "type": "description",
- *       "success": true
- *     }
- *
- * @apiSuccessExample {json} Fallback-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "enhancedContent": "We are an innovative startup that builds mobile apps.",
- *       "originalContent": "We are a tech startup that builds mobile apps",
- *       "type": "description",
- *       "success": false,
- *       "error": "AI enhancement failed, used basic rules"
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Content and type are required"
- *     }
- */
 export async function POST(request: NextRequest) {
   let content = '';
   let type = '';

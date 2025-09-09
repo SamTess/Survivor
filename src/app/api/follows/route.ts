@@ -5,40 +5,79 @@ import { ContentType } from '@/domain/enums/Analytics';
 const prisma = new PrismaClient();
 
 /**
- * @api {post} /follows Create Follow
- * @apiName CreateFollow
- * @apiGroup Follows
- * @apiVersion 0.1.0
- * @apiDescription Follow a specific content item or user
- *
- * @apiParam {Number} userId User ID (follower)
- * @apiParam {String} contentType Content type (STARTUP, USER)
- * @apiParam {Number} contentId Content ID (target)
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "contentType": "STARTUP",
- *       "contentId": 5
- *     }
- *
- * @apiSuccess {Number} followerCount Total number of followers for this content
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "followerCount": 25
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 409) {String} error Already following
- * @apiError (Error 500) {String} error Failed to create follow
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 409 Conflict
- *     {
- *       "error": "Already following"
- *     }
+ * @openapi
+ * /follows:
+ *   post:
+ *     summary: Create Follow
+ *     description: Follow a specific content item or user
+ *     tags:
+ *       - Follows
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID (follower)
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID (target)
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Follow created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 followerCount:
+ *                   type: integer
+ *                   description: Total number of followers for this content
+ *                   example: 25
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       409:
+ *         description: Already following
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Already following"
+ *       500:
+ *         description: Failed to create follow
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to create follow"
  */
 export async function POST(request: NextRequest) {
   try {
@@ -102,39 +141,69 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * @api {delete} /follows Remove Follow
- * @apiName RemoveFollow
- * @apiGroup Follows
- * @apiVersion 0.1.0
- * @apiDescription Unfollow a specific content item or user
- *
- * @apiParam {Number} userId User ID (follower)
- * @apiParam {String} contentType Content type (STARTUP, USER)
- * @apiParam {Number} contentId Content ID (target)
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "contentType": "STARTUP",
- *       "contentId": 5
- *     }
- *
- * @apiSuccess {Number} followerCount Total number of followers for this content
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "followerCount": 24
- *     }
- *
- * @apiError (Error 400) {String} error Missing required fields
- * @apiError (Error 500) {String} error Failed to delete follow
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Missing required fields"
- *     }
+ * @openapi
+ * /follows:
+ *   delete:
+ *     summary: Remove Follow
+ *     description: Unfollow a specific content item or user
+ *     tags:
+ *       - Follows
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - contentType
+ *               - contentId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID (follower)
+ *                 example: 1
+ *               contentType:
+ *                 type: string
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 description: Content type
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID (target)
+ *                 example: 5
+ *     responses:
+ *       200:
+ *         description: Follow removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 followerCount:
+ *                   type: integer
+ *                   description: Total number of followers for this content
+ *                   example: 24
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required fields"
+ *       500:
+ *         description: Failed to delete follow
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to delete follow"
  */
 export async function DELETE(request: NextRequest) {
   try {

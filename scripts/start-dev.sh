@@ -13,10 +13,10 @@ echo "Pushing database schema..."
 npx prisma db push --accept-data-loss
 
 echo "Generating initial API documentation..."
-npx apidoc -i src/app/api -o docs/api
+npx tsx scripts/generate-swagger-docs.ts
 
 echo "Starting documentation watcher and server in background..."
-sh docs-watch.sh &
+sh scripts/docs-watch.sh &
 npx http-server docs/api -p 8080 --cors -c-1 &
 
 echo "Starting development server..."

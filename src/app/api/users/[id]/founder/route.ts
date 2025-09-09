@@ -6,60 +6,123 @@ const founderRepository = new FounderRepositoryPrisma();
 const founderService = new FounderService(founderRepository);
 
 /**
- * @api {get} /users/:id/founder Get User's Founder Profiles
- * @apiName GetUserFounders
- * @apiGroup Users
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all founder profiles associated with a specific user
- *
- * @apiParam {Number} id User unique ID
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object[]} data Array of founder profile objects
- * @apiSuccess {Number} data.id Founder profile ID
- * @apiSuccess {Number} data.userId Associated user ID
- * @apiSuccess {String} data.name Founder name
- * @apiSuccess {String} data.role Founder role/position
- * @apiSuccess {String} data.bio Founder biography
- * @apiSuccess {String} data.expertise Areas of expertise
- * @apiSuccess {String} data.experience Previous experience
- * @apiSuccess {String} data.linkedin LinkedIn profile URL
- * @apiSuccess {String} data.twitter Twitter profile URL
- * @apiSuccess {String} data.createdAt Creation timestamp
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "userId": 5,
- *           "name": "John Doe",
- *           "role": "CEO & Founder",
- *           "bio": "Experienced entrepreneur with 10+ years in tech",
- *           "expertise": "Product Development, Team Leadership",
- *           "experience": "Former CTO at TechCorp, Founded 2 previous startups",
- *           "linkedin": "https://linkedin.com/in/johndoe",
- *           "twitter": "https://twitter.com/johndoe",
- *           "createdAt": "2024-01-01T00:00:00.000Z"
- *         }
- *       ]
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid user ID
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error No founders found for this user
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "No founders found for this user"
- *     }
+ * @openapi
+ * /api/users/{id}/founder:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get user's founder profiles
+ *     description: Retrieve all founder profiles associated with a specific user
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User unique ID
+ *     responses:
+ *       200:
+ *         description: Founder profiles retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       userId:
+ *                         type: integer
+ *                         example: 5
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *                       role:
+ *                         type: string
+ *                         example: "CEO & Founder"
+ *                       bio:
+ *                         type: string
+ *                         example: "Experienced entrepreneur with 10+ years in tech"
+ *                       expertise:
+ *                         type: string
+ *                         example: "Product Development, Team Leadership"
+ *                       experience:
+ *                         type: string
+ *                         example: "Former CTO at TechCorp, Founded 2 previous startups"
+ *                       linkedin:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://linkedin.com/in/johndoe"
+ *                       twitter:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://twitter.com/johndoe"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-01T00:00:00.000Z"
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   userId: 5
+ *                   name: "John Doe"
+ *                   role: "CEO & Founder"
+ *                   bio: "Experienced entrepreneur with 10+ years in tech"
+ *                   expertise: "Product Development, Team Leadership"
+ *                   experience: "Former CTO at TechCorp, Founded 2 previous startups"
+ *                   linkedin: "https://linkedin.com/in/johndoe"
+ *                   twitter: "https://twitter.com/johndoe"
+ *                   createdAt: "2024-01-01T00:00:00.000Z"
+ *       400:
+ *         description: Bad request - Invalid user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid user ID"
+ *       404:
+ *         description: No founders found for this user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "No founders found for this user"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch founders"
  */
 export async function GET(
   request: NextRequest,

@@ -15,11 +15,12 @@
     "health-check": "tsx scripts/health-check.ts",
     "cleanup-tokens": "tsx scripts/cleanup-tokens.ts",
     "test-email": "tsx scripts/test-email.ts",
-    "docs:generate": "apidoc -i src/app/api -o docs/api",
+    "docs:generate": "tsx scripts/generate-swagger-docs.ts",
     "docs:serve": "npx http-server docs/api -p 8080 --cors",
     "docs:watch": "bash scripts/docs-watch.sh",
     "docs:build": "npm run docs:generate && echo '✅ API Documentation built successfully'",
-    "docs:dev": "concurrently \"npm run docs:watch\" \"npm run docs:serve\""
+    "docs:dev": "concurrently \"npm run docs:watch\" \"npm run docs:serve\"",
+    "docs:help": "tsx scripts/conversion-guide.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
@@ -29,7 +30,6 @@
     "@types/marked": "^6.0.0",
     "@types/nodemailer": "^7.0.1",
     "@use-gesture/react": "^10.3.1",
-    "apidoc": "^1.2.0",
     "axios": "^1.11.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -51,8 +51,7 @@
     "remark-gfm": "^4.0.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "tailwindcss": "^4"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -60,6 +59,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/supertest": "^6.0.2",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
     "concurrently": "^8.2.2",
     "env-cmd": "^11.0.0",
     "eslint": "^9",
@@ -67,16 +68,11 @@
     "http-server": "^14.1.1",
     "prisma": "^6.15.0",
     "supertest": "^7.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.19.2",
-    "typescript": "^5",
+    "typescript": "5.9.2",
     "vitest": "^3.2.4"
-  },
-  "apidoc": {
-    "name": "Survivor API Documentation",
-    "version": "0.1.0",
-    "description": "API documentation for the Survivor application",
-    "title": "Survivor API",
-    "url": "http://localhost:3000/api"
   }
 }

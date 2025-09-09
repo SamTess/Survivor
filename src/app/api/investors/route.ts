@@ -6,67 +6,140 @@ const investorRepository = new InvestorRepositoryPrisma();
 const investorService = new InvestorService(investorRepository);
 
 /**
- * @api {get} /investors Get All Investors
- * @apiName GetInvestors
- * @apiGroup Investors
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all investors with pagination support
- *
- * @apiQuery {Number} [page=1] Page number
- * @apiQuery {Number} [limit=10] Number of investors per page
- * @apiQuery {String} [investorType] Filter by investor type
- * @apiQuery {String} [investmentFocus] Filter by investment focus
- * @apiQuery {String} [search] Search investors by name
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object[]} data Array of investor objects
- * @apiSuccess {Number} data.id Investor ID
- * @apiSuccess {String} data.name Investor name
- * @apiSuccess {String} data.email Investor email
- * @apiSuccess {String} data.companyName Company name
- * @apiSuccess {String} data.role Investor role
- * @apiSuccess {Number} data.investmentCapacity Investment capacity
- * @apiSuccess {String[]} data.areasOfInterest Areas of interest
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
- * @apiSuccess {Number} pagination.page Current page number
- * @apiSuccess {Number} pagination.limit Items per page
- * @apiSuccess {Number} pagination.total Total number of investors
- * @apiSuccess {Number} pagination.totalPages Total number of pages
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "name": "John Doe",
- *           "email": "john@example.com",
- *           "companyName": "Tech Ventures",
- *           "role": "ANGEL_INVESTOR",
- *           "investmentCapacity": 100000,
- *           "areasOfInterest": ["Technology", "Healthcare"],
- *           "createdAt": "2024-01-01T00:00:00.000Z"
- *         }
- *       ],
- *       "pagination": {
- *         "page": 1,
- *         "limit": 10,
- *         "total": 25,
- *         "totalPages": 3
- *       }
- *     }
- *
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "success": false,
- *       "error": "Failed to fetch investors"
- *     }
+ * @openapi
+ * /investors:
+ *   get:
+ *     summary: Get All Investors
+ *     description: Retrieve all investors with pagination support and filtering options
+ *     tags:
+ *       - Investors
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *         example: 1
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of investors per page
+ *         example: 10
+ *       - in: query
+ *         name: investorType
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [ANGEL_INVESTOR, VENTURE_CAPITALIST, PRIVATE_EQUITY, INSTITUTIONAL]
+ *         description: Filter by investor type
+ *         example: "ANGEL_INVESTOR"
+ *       - in: query
+ *         name: investmentFocus
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Filter by investment focus
+ *         example: "Technology"
+ *       - in: query
+ *         name: search
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Search investors by name
+ *         example: "John"
+ *     responses:
+ *       200:
+ *         description: Investors retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                         example: "john@example.com"
+ *                       companyName:
+ *                         type: string
+ *                         example: "Tech Ventures"
+ *                       role:
+ *                         type: string
+ *                         enum: [ANGEL_INVESTOR, VENTURE_CAPITALIST, PRIVATE_EQUITY, INSTITUTIONAL]
+ *                         example: "ANGEL_INVESTOR"
+ *                       investmentCapacity:
+ *                         type: number
+ *                         example: 100000
+ *                       areasOfInterest:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["Technology", "Healthcare"]
+ *                       bio:
+ *                         type: string
+ *                         example: "Experienced investor in tech startups"
+ *                       linkedin:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://linkedin.com/in/johndoe"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-01T00:00:00.000Z"
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination information (when using page/limit)
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       description: Current page number
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       description: Items per page
+ *                       example: 10
+ *                     total:
+ *                       type: integer
+ *                       description: Total number of investors
+ *                       example: 25
+ *                     totalPages:
+ *                       type: integer
+ *                       description: Total number of pages
+ *                       example: 3
+ *       500:
+ *         description: Failed to fetch investors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch investors"
  */
 export async function GET(req: NextRequest) {
   try {
@@ -122,71 +195,143 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * @api {post} /investors Create New Investor
- * @apiName CreateInvestor
- * @apiGroup Investors
- * @apiVersion 0.1.0
- * @apiDescription Create a new investor profile
- *
- * @apiParam {String} name Investor name
- * @apiParam {String} email Investor email
- * @apiParam {String} companyName Company name
- * @apiParam {String} role Investor role (ANGEL_INVESTOR, VENTURE_CAPITALIST, etc.)
- * @apiParam {Number} investmentCapacity Investment capacity
- * @apiParam {String[]} areasOfInterest Areas of interest
- * @apiParam {String} [bio] Investor biography
- * @apiParam {String} [linkedin] LinkedIn profile URL
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "Jane Smith",
- *       "email": "jane@techventures.com",
- *       "companyName": "Tech Ventures Fund",
- *       "role": "VENTURE_CAPITALIST",
- *       "investmentCapacity": 500000,
- *       "areasOfInterest": ["Technology", "Healthcare", "Fintech"],
- *       "bio": "Experienced VC with 10+ years in tech investments",
- *       "linkedin": "https://linkedin.com/in/janesmith"
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Created investor object
- * @apiSuccess {Number} data.id Investor ID
- * @apiSuccess {String} data.name Investor name
- * @apiSuccess {String} data.email Investor email
- * @apiSuccess {String} data.companyName Company name
- * @apiSuccess {String} data.role Investor role
- * @apiSuccess {Number} data.investmentCapacity Investment capacity
- * @apiSuccess {String[]} data.areasOfInterest Areas of interest
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 26,
- *         "name": "Jane Smith",
- *         "email": "jane@techventures.com",
- *         "companyName": "Tech Ventures Fund",
- *         "role": "VENTURE_CAPITALIST",
- *         "investmentCapacity": 500000,
- *         "areasOfInterest": ["Technology", "Healthcare", "Fintech"],
- *         "createdAt": "2024-01-15T10:30:00.000Z"
- *       },
- *       "message": "Investor created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Validation error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Email already exists"
- *     }
+ * @openapi
+ * /investors:
+ *   post:
+ *     summary: Create New Investor
+ *     description: Create a new investor profile
+ *     tags:
+ *       - Investors
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - companyName
+ *               - role
+ *               - investmentCapacity
+ *               - areasOfInterest
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Investor name
+ *                 example: "Jane Smith"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Investor email
+ *                 example: "jane@techventures.com"
+ *               companyName:
+ *                 type: string
+ *                 description: Company name
+ *                 example: "Tech Ventures Fund"
+ *               role:
+ *                 type: string
+ *                 enum: [ANGEL_INVESTOR, VENTURE_CAPITALIST, PRIVATE_EQUITY, INSTITUTIONAL]
+ *                 description: Investor role
+ *                 example: "VENTURE_CAPITALIST"
+ *               investmentCapacity:
+ *                 type: number
+ *                 minimum: 0
+ *                 description: Investment capacity
+ *                 example: 500000
+ *               areasOfInterest:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Areas of interest
+ *                 example: ["Technology", "Healthcare", "Fintech"]
+ *               bio:
+ *                 type: string
+ *                 description: Investor biography
+ *                 example: "Experienced VC with 10+ years in tech investments"
+ *               linkedin:
+ *                 type: string
+ *                 format: uri
+ *                 description: LinkedIn profile URL
+ *                 example: "https://linkedin.com/in/janesmith"
+ *               website:
+ *                 type: string
+ *                 format: uri
+ *                 description: Company website
+ *                 example: "https://techventures.com"
+ *               phone:
+ *                 type: string
+ *                 description: Contact phone number
+ *                 example: "+1-555-0123"
+ *               location:
+ *                 type: string
+ *                 description: Investor location
+ *                 example: "San Francisco, CA"
+ *     responses:
+ *       201:
+ *         description: Investor created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 26
+ *                     name:
+ *                       type: string
+ *                       example: "Jane Smith"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "jane@techventures.com"
+ *                     companyName:
+ *                       type: string
+ *                       example: "Tech Ventures Fund"
+ *                     role:
+ *                       type: string
+ *                       example: "VENTURE_CAPITALIST"
+ *                     investmentCapacity:
+ *                       type: number
+ *                       example: 500000
+ *                     areasOfInterest:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["Technology", "Healthcare", "Fintech"]
+ *                     bio:
+ *                       type: string
+ *                       example: "Experienced VC with 10+ years in tech investments"
+ *                     linkedin:
+ *                       type: string
+ *                       format: uri
+ *                       example: "https://linkedin.com/in/janesmith"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T10:30:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   example: "Investor created successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Email already exists"
  */
 export async function POST(request: NextRequest) {
   try {

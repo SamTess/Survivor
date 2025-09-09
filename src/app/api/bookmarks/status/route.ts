@@ -5,35 +5,68 @@ import { ContentType } from '@/domain/enums/Analytics';
 const prisma = new PrismaClient();
 
 /**
- * @api {get} /bookmarks/status Check Bookmark Status
- * @apiName CheckBookmarkStatus
- * @apiGroup Bookmarks
- * @apiVersion 0.1.0
- * @apiDescription Check if a specific content item is bookmarked by a user
- *
- * @apiParam {Number} userId User ID
- * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT)
- * @apiParam {Number} contentId Content ID
- *
- * @apiParamExample {url} Request-Example:
- *     /bookmarks/status?userId=1&contentType=STARTUP&contentId=5
- *
- * @apiSuccess {Boolean} isBookmarked Whether the content is bookmarked
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "isBookmarked": true
- *     }
- *
- * @apiError (Error 400) {String} error Missing required parameters
- * @apiError (Error 500) {String} error Failed to check bookmark status
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Missing required parameters"
- *     }
+ * @openapi
+ * /bookmarks/status:
+ *   get:
+ *     summary: Check Bookmark Status
+ *     description: Check if a specific content item is bookmarked by a user
+ *     tags:
+ *       - Bookmarks
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: User ID
+ *         example: 1
+ *       - in: query
+ *         name: contentType
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *         description: Content type
+ *         example: "STARTUP"
+ *       - in: query
+ *         name: contentId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Content ID
+ *         example: 5
+ *     responses:
+ *       200:
+ *         description: Bookmark status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isBookmarked:
+ *                   type: boolean
+ *                   description: Whether the content is bookmarked
+ *                   example: true
+ *       400:
+ *         description: Missing required parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing required parameters"
+ *       500:
+ *         description: Failed to check bookmark status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to check bookmark status"
  */
 export async function GET(request: NextRequest) {
   try {

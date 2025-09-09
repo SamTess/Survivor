@@ -3,51 +3,94 @@ import { analyticsService } from "../../../../composition/container";
 import { ContentType, EventType } from "../../../../domain/enums/Analytics";
 
 /**
- * @api {post} /analytics/interaction Record User Interaction
- * @apiName RecordInteraction
- * @apiGroup Analytics
- * @apiVersion 0.1.0
- * @apiDescription Record a user interaction event for analytics tracking
- *
- * @apiParam {Number} [userId] User ID (optional for anonymous tracking)
- * @apiParam {String} [sessionId] Session ID (optional)
- * @apiParam {String} eventType Event type (e.g., CLICK, VIEW, DOWNLOAD)
- * @apiParam {String} contentType Content type (STARTUP, NEWS, EVENT, etc.)
- * @apiParam {Number} [contentId] Content ID (optional)
- * @apiParam {Object} [metadata] Additional metadata (optional)
- * @apiParam {String} [referrerHost] Referrer host (optional)
- * @apiParam {String} [utmSource] UTM source parameter (optional)
- * @apiParam {String} [utmMedium] UTM medium parameter (optional)
- * @apiParam {String} [utmCampaign] UTM campaign parameter (optional)
- * @apiParam {String} [utmTerm] UTM term parameter (optional)
- * @apiParam {String} [utmContent] UTM content parameter (optional)
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "userId": 1,
- *       "sessionId": "sess_123",
- *       "eventType": "CLICK",
- *       "contentType": "STARTUP",
- *       "contentId": 5,
- *       "metadata": {"button": "like"},
- *       "utmSource": "google"
- *     }
- *
- * @apiSuccess {Boolean} ok Success status
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "ok": true
- *     }
- *
- * @apiError (Error 400) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Invalid event type"
- *     }
+ * @openapi
+ * /analytics/interaction:
+ *   post:
+ *     summary: Record User Interaction
+ *     description: Record a user interaction event for analytics tracking
+ *     tags:
+ *       - Analytics
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - eventType
+ *               - contentType
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: User ID (optional for anonymous tracking)
+ *                 example: 1
+ *               sessionId:
+ *                 type: string
+ *                 description: Session ID (optional)
+ *                 example: "sess_123"
+ *               eventType:
+ *                 type: string
+ *                 description: Event type
+ *                 enum: [CLICK, VIEW, DOWNLOAD, LIKE, SHARE, COMMENT]
+ *                 example: "CLICK"
+ *               contentType:
+ *                 type: string
+ *                 description: Content type
+ *                 enum: [STARTUP, NEWS, EVENT, USER, FOUNDER, PARTNER]
+ *                 example: "STARTUP"
+ *               contentId:
+ *                 type: integer
+ *                 description: Content ID (optional)
+ *                 example: 5
+ *               metadata:
+ *                 type: object
+ *                 description: Additional metadata (optional)
+ *                 example: {"button": "like"}
+ *               referrerHost:
+ *                 type: string
+ *                 description: Referrer host (optional)
+ *                 example: "google.com"
+ *               utmSource:
+ *                 type: string
+ *                 description: UTM source parameter (optional)
+ *                 example: "google"
+ *               utmMedium:
+ *                 type: string
+ *                 description: UTM medium parameter (optional)
+ *                 example: "cpc"
+ *               utmCampaign:
+ *                 type: string
+ *                 description: UTM campaign parameter (optional)
+ *                 example: "spring_sale"
+ *               utmTerm:
+ *                 type: string
+ *                 description: UTM term parameter (optional)
+ *                 example: "startup"
+ *               utmContent:
+ *                 type: string
+ *                 description: UTM content parameter (optional)
+ *                 example: "logolink"
+ *     responses:
+ *       200:
+ *         description: Interaction recorded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid request data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid event type"
  */
 export async function POST(req: NextRequest) {
   try {

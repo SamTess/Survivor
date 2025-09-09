@@ -5,27 +5,97 @@ import { detectMime } from '@/utils/image';
 const prisma = new PrismaClient();
 
 /**
- * @api {get} /events/:id/image Get Event Image
- * @apiName GetEventImage
- * @apiGroup Events
- * @apiVersion 0.1.0
- * @apiDescription Retrieve the image data for a specific event
- *
- * @apiParam {Number} id Event ID
- *
- * @apiSuccess {Binary} image Event image data
- * @apiSuccess {String} Content-Type Image MIME type (image/jpeg, image/png, etc.)
- *
- * @apiError (Error 400) {String} error Invalid event ID
- * @apiError (Error 404) {String} error Event not found or no image available
- * @apiError (Error 500) {String} error Failed to fetch image
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "No image available for this event"
- *     }
+ * @openapi
+ * /events/{id}/image:
+ *   get:
+ *     summary: Get Event Image
+ *     description: Retrieve the image data for a specific event
+ *     tags:
+ *       - Events
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Event ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Event image data retrieved successfully
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: Event image data
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: Event image data
+ *           image/gif:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: Event image data
+ *           image/webp:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: Event image data
+ *         headers:
+ *           Content-Type:
+ *             description: Image MIME type
+ *             schema:
+ *               type: string
+ *               enum: [image/jpeg, image/png, image/gif, image/webp]
+ *           Cache-Control:
+ *             description: Cache control header
+ *             schema:
+ *               type: string
+ *               example: "public, max-age=604800, stale-while-revalidate=86400"
+ *       400:
+ *         description: Invalid event ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid event ID"
+ *       404:
+ *         description: Event not found or no image available
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   enum: ["Event not found", "No image available for this event"]
+ *                   example: "No image available for this event"
+ *       500:
+ *         description: Failed to fetch image
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch image"
  */
 export async function GET(
   request: NextRequest,

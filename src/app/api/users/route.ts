@@ -6,69 +6,122 @@ const userRepository = new UserRepositoryPrisma();
 const userService = new UserService(userRepository);
 
 /**
- * @api {get} /users Get All Users
- * @apiName GetUsers
- * @apiGroup Users
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all users with optional filtering and pagination
- *
- * @apiQuery {Number} [page=1] Page number for pagination
- * @apiQuery {Number} [limit=10] Number of items per page
- * @apiQuery {String} [role] Filter by user role
- * @apiQuery {String} [search] Search term for user name or email
- * @apiQuery {Boolean} [founders] Get only founders (true/false)
- * @apiQuery {Boolean} [investors] Get only investors (true/false)
- *
- * @apiSuccess {Boolean} success Request success status
- * @apiSuccess {Object[]} data Array of user objects
- * @apiSuccess {Number} data.id User ID
- * @apiSuccess {String} data.name User full name
- * @apiSuccess {String} data.email User email
- * @apiSuccess {String} data.role User role
- * @apiSuccess {String} data.status User status
- * @apiSuccess {String} data.avatar Avatar URL
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} data.lastLoginAt Last login timestamp
- * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
- * @apiSuccess {Number} pagination.page Current page number
- * @apiSuccess {Number} pagination.limit Items per page
- * @apiSuccess {Number} pagination.total Total number of users
- * @apiSuccess {Number} pagination.totalPages Total number of pages
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "name": "John Doe",
- *           "email": "john@example.com",
- *           "role": "ENTREPRENEUR",
- *           "status": "ACTIVE",
- *           "avatar": "https://example.com/avatar.jpg",
- *           "createdAt": "2024-01-01T00:00:00.000Z",
- *           "lastLoginAt": "2024-01-15T09:30:00.000Z"
- *         }
- *       ],
- *       "pagination": {
- *         "page": 1,
- *         "limit": 10,
- *         "total": 25,
- *         "totalPages": 3
- *       }
- *     }
- *
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "success": false,
- *       "error": "Failed to fetch users"
- *     }
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get All Users
+ *     description: Retrieve all users with optional filtering and pagination
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [USER, ENTREPRENEUR, INVESTOR, ADMIN]
+ *         description: Filter by user role
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for user name or email
+ *       - in: query
+ *         name: founders
+ *         schema:
+ *           type: boolean
+ *         description: Get only founders
+ *       - in: query
+ *         name: investors
+ *         schema:
+ *           type: boolean
+ *         description: Get only investors
+ *     responses:
+ *       200:
+ *         description: Users retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "John Doe"
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                         example: "john@example.com"
+ *                       role:
+ *                         type: string
+ *                         example: "ENTREPRENEUR"
+ *                       status:
+ *                         type: string
+ *                         example: "ACTIVE"
+ *                       avatar:
+ *                         type: string
+ *                         format: uri
+ *                         example: "https://example.com/avatar.jpg"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-01T00:00:00.000Z"
+ *                       lastLoginAt:
+ *                         type: string
+ *                         format: date-time
+ *                         example: "2024-01-15T09:30:00.000Z"
+ *                 pagination:
+ *                   type: object
+ *                   description: Pagination information (when using page/limit)
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
+ *                     total:
+ *                       type: integer
+ *                       example: 25
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 3
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch users"
  */
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -129,69 +182,119 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * @api {post} /users Create New User
- * @apiName CreateUser
- * @apiGroup Users
- * @apiVersion 0.1.0
- * @apiDescription Create a new user account
- *
- * @apiParam {String} name User full name
- * @apiParam {String} email User email address
- * @apiParam {String} password User password
- * @apiParam {String} [role=USER] User role (USER, ENTREPRENEUR, INVESTOR, ADMIN)
- * @apiParam {String} [avatar] Avatar image URL
- * @apiParam {String} [bio] User biography
- * @apiParam {String} [company] Company name
- * @apiParam {String} [position] Job position
- * @apiParam {String} [linkedin] LinkedIn profile URL
- * @apiParam {String} [twitter] Twitter profile URL
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "Jane Smith",
- *       "email": "jane@startup.com",
- *       "password": "securePassword123",
- *       "role": "ENTREPRENEUR",
- *       "bio": "Experienced entrepreneur in tech industry",
- *       "company": "Tech Startup Inc.",
- *       "position": "CEO & Founder",
- *       "linkedin": "https://linkedin.com/in/janesmith"
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Created user object
- * @apiSuccess {Number} data.id User ID
- * @apiSuccess {String} data.name User full name
- * @apiSuccess {String} data.email User email
- * @apiSuccess {String} data.role User role
- * @apiSuccess {String} data.status User status
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 151,
- *         "name": "Jane Smith",
- *         "email": "jane@startup.com",
- *         "role": "ENTREPRENEUR",
- *         "status": "ACTIVE",
- *         "createdAt": "2024-01-15T16:00:00.000Z"
- *       },
- *       "message": "User created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Validation error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Email already exists"
- *     }
+ * @openapi
+ * /users:
+ *   post:
+ *     summary: Create New User
+ *     description: Create a new user account
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: User full name
+ *                 example: "Jane Smith"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User email address
+ *                 example: "jane@startup.com"
+ *               password:
+ *                 type: string
+ *                 description: User password
+ *                 minLength: 6
+ *                 example: "securePassword123"
+ *               role:
+ *                 type: string
+ *                 enum: [USER, ENTREPRENEUR, INVESTOR, ADMIN]
+ *                 default: USER
+ *                 description: User role
+ *                 example: "ENTREPRENEUR"
+ *               avatar:
+ *                 type: string
+ *                 format: uri
+ *                 description: Avatar image URL
+ *               bio:
+ *                 type: string
+ *                 description: User biography
+ *                 example: "Experienced entrepreneur in tech industry"
+ *               company:
+ *                 type: string
+ *                 description: Company name
+ *                 example: "Tech Startup Inc."
+ *               position:
+ *                 type: string
+ *                 description: Job position
+ *                 example: "CEO & Founder"
+ *               linkedin:
+ *                 type: string
+ *                 format: uri
+ *                 description: LinkedIn profile URL
+ *                 example: "https://linkedin.com/in/janesmith"
+ *               twitter:
+ *                 type: string
+ *                 format: uri
+ *                 description: Twitter profile URL
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 151
+ *                     name:
+ *                       type: string
+ *                       example: "Jane Smith"
+ *                     email:
+ *                       type: string
+ *                       format: email
+ *                       example: "jane@startup.com"
+ *                     role:
+ *                       type: string
+ *                       example: "ENTREPRENEUR"
+ *                     status:
+ *                       type: string
+ *                       example: "ACTIVE"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T16:00:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   example: "User created successfully"
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Email already exists"
  */
 export async function POST(request: NextRequest) {
   try {

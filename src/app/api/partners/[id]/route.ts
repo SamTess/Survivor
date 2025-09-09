@@ -6,64 +6,131 @@ const partnerRepository = new PartnerRepositoryPrisma();
 const partnerService = new PartnerService(partnerRepository);
 
 /**
- * @api {get} /partners/:id Get Partner by ID
- * @apiName GetPartnerById
- * @apiGroup Partners
- * @apiVersion 0.1.0
- * @apiDescription Retrieve a specific partner by their ID
- *
- * @apiParam {Number} id Partner unique ID
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Partner object
- * @apiSuccess {Number} data.id Partner ID
- * @apiSuccess {String} data.name Partner name
- * @apiSuccess {String} data.email Partner email
- * @apiSuccess {String} data.companyName Company name
- * @apiSuccess {String} data.partnerType Partner type (STRATEGIC, TECHNOLOGY, VENDOR, etc.)
- * @apiSuccess {String} data.industry Industry sector
- * @apiSuccess {String} data.description Partner description
- * @apiSuccess {String} data.website Website URL
- * @apiSuccess {String} data.contactPerson Contact person name
- * @apiSuccess {String} data.phone Contact phone number
- * @apiSuccess {String[]} data.services Services offered
- * @apiSuccess {String} data.createdAt Creation timestamp
- * @apiSuccess {String} data.updatedAt Last update timestamp
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "TechCorp Solutions",
- *         "email": "contact@techcorp.com",
- *         "companyName": "TechCorp Inc.",
- *         "partnerType": "STRATEGIC",
- *         "industry": "Technology",
- *         "description": "Leading technology solutions provider",
- *         "website": "https://techcorp.com",
- *         "contactPerson": "John Manager",
- *         "phone": "+1-555-0123",
- *         "services": ["Consulting", "Development", "Support"],
- *         "createdAt": "2024-01-01T00:00:00.000Z",
- *         "updatedAt": "2024-01-15T12:00:00.000Z"
- *       }
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid partner ID
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error Partner not found
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "Partner not found"
- *     }
+ * @openapi
+ * /partners/{id}:
+ *   get:
+ *     summary: Get Partner by ID
+ *     description: Retrieve a specific partner by their ID
+ *     tags:
+ *       - Partners
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Partner unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Partner retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: Partner unique ID
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       description: Partner name
+ *                       example: "TechCorp Solutions"
+ *                     email:
+ *                       type: string
+ *                       description: Partner email
+ *                       example: "contact@techcorp.com"
+ *                     companyName:
+ *                       type: string
+ *                       description: Company name
+ *                       example: "TechCorp Inc."
+ *                     partnerType:
+ *                       type: string
+ *                       description: Partner type
+ *                       example: "STRATEGIC"
+ *                     industry:
+ *                       type: string
+ *                       description: Industry sector
+ *                       example: "Technology"
+ *                     description:
+ *                       type: string
+ *                       description: Partner description
+ *                       example: "Leading technology solutions provider"
+ *                     website:
+ *                       type: string
+ *                       description: Website URL
+ *                       example: "https://techcorp.com"
+ *                     contactPerson:
+ *                       type: string
+ *                       description: Contact person name
+ *                       example: "John Manager"
+ *                     phone:
+ *                       type: string
+ *                       description: Contact phone number
+ *                       example: "+1-555-0123"
+ *                     services:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Services offered
+ *                       example: ["Consulting", "Development", "Support"]
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Creation timestamp
+ *                       example: "2024-01-01T00:00:00.000Z"
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Last update timestamp
+ *                       example: "2024-01-15T12:00:00.000Z"
+ *       400:
+ *         description: Invalid partner ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid partner ID"
+ *       404:
+ *         description: Partner not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Partner not found"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch partner"
  */
 export async function GET(
   request: NextRequest,
@@ -104,65 +171,160 @@ export async function GET(
 }
 
 /**
- * @api {put} /partners/:id Update Partner
- * @apiName UpdatePartner
- * @apiGroup Partners
- * @apiVersion 0.1.0
- * @apiDescription Update an existing partner's information
- *
- * @apiParam {Number} id Partner unique ID
- * @apiParam {String} [name] Partner name
- * @apiParam {String} [email] Partner email
- * @apiParam {String} [companyName] Company name
- * @apiParam {String} [partnerType] Partner type (STRATEGIC, TECHNOLOGY, VENDOR, etc.)
- * @apiParam {String} [industry] Industry sector
- * @apiParam {String} [description] Partner description
- * @apiParam {String} [website] Website URL
- * @apiParam {String} [contactPerson] Contact person name
- * @apiParam {String} [phone] Contact phone number
- * @apiParam {String[]} [services] Services offered
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "TechCorp Advanced Solutions",
- *       "description": "Leading advanced technology solutions provider",
- *       "partnerType": "TECHNOLOGY",
- *       "services": ["AI Consulting", "Cloud Development", "24/7 Support"]
- *     }
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {Object} data Updated partner object
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "TechCorp Advanced Solutions",
- *         "email": "contact@techcorp.com",
- *         "description": "Leading advanced technology solutions provider",
- *         "partnerType": "TECHNOLOGY",
- *         "services": ["AI Consulting", "Cloud Development", "24/7 Support"],
- *         "updatedAt": "2024-01-15T14:00:00.000Z"
- *       },
- *       "message": "Partner updated successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid partner ID or validation error
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error Partner not found or update failed
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "Partner not found or update failed"
- *     }
+ * @openapi
+ * /partners/{id}:
+ *   put:
+ *     summary: Update Partner
+ *     description: Update an existing partner's information
+ *     tags:
+ *       - Partners
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Partner unique ID
+ *         example: 1
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Partner name
+ *                 example: "TechCorp Advanced Solutions"
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Partner email
+ *                 example: "contact@techcorp.com"
+ *               companyName:
+ *                 type: string
+ *                 description: Company name
+ *                 example: "TechCorp Inc."
+ *               partnerType:
+ *                 type: string
+ *                 enum: [STRATEGIC, TECHNOLOGY, VENDOR, DISTRIBUTION, FINANCIAL]
+ *                 description: Partner type
+ *                 example: "TECHNOLOGY"
+ *               industry:
+ *                 type: string
+ *                 description: Industry sector
+ *                 example: "Technology"
+ *               description:
+ *                 type: string
+ *                 description: Partner description
+ *                 example: "Leading advanced technology solutions provider"
+ *               website:
+ *                 type: string
+ *                 format: uri
+ *                 description: Website URL
+ *                 example: "https://techcorp.com"
+ *               contactPerson:
+ *                 type: string
+ *                 description: Contact person name
+ *                 example: "John Manager"
+ *               phone:
+ *                 type: string
+ *                 description: Contact phone number
+ *                 example: "+1-555-0123"
+ *               services:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Services offered
+ *                 example: ["AI Consulting", "Cloud Development", "24/7 Support"]
+ *           example:
+ *             name: "TechCorp Advanced Solutions"
+ *             description: "Leading advanced technology solutions provider"
+ *             partnerType: "TECHNOLOGY"
+ *             services: ["AI Consulting", "Cloud Development", "24/7 Support"]
+ *     responses:
+ *       200:
+ *         description: Partner updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: "TechCorp Advanced Solutions"
+ *                     email:
+ *                       type: string
+ *                       example: "contact@techcorp.com"
+ *                     description:
+ *                       type: string
+ *                       example: "Leading advanced technology solutions provider"
+ *                     partnerType:
+ *                       type: string
+ *                       example: "TECHNOLOGY"
+ *                     services:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       example: ["AI Consulting", "Cloud Development", "24/7 Support"]
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                       example: "2024-01-15T14:00:00.000Z"
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "Partner updated successfully"
+ *       400:
+ *         description: Invalid partner ID or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid partner ID"
+ *       404:
+ *         description: Partner not found or update failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Partner not found or update failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to update partner"
  */
 export async function PUT(
   request: NextRequest,
@@ -209,37 +371,76 @@ export async function PUT(
 }
 
 /**
- * @api {delete} /partners/:id Delete Partner
- * @apiName DeletePartner
- * @apiGroup Partners
- * @apiVersion 0.1.0
- * @apiDescription Delete a partner permanently
- *
- * @apiParam {Number} id Partner unique ID
- *
- * @apiSuccess {Boolean} success Operation success status
- * @apiSuccess {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "message": "Partner deleted successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success False
- * @apiError (Error 400) {String} error Invalid partner ID
- * @apiError (Error 404) {Boolean} success False
- * @apiError (Error 404) {String} error Partner not found or deletion failed
- * @apiError (Error 500) {Boolean} success False
- * @apiError (Error 500) {String} error Internal server error
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "success": false,
- *       "error": "Partner not found or deletion failed"
- *     }
+ * @openapi
+ * /partners/{id}:
+ *   delete:
+ *     summary: Delete Partner
+ *     description: Delete a partner permanently
+ *     tags:
+ *       - Partners
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Partner unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Partner deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   description: Success message
+ *                   example: "Partner deleted successfully"
+ *       400:
+ *         description: Invalid partner ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid partner ID"
+ *       404:
+ *         description: Partner not found or deletion failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Partner not found or deletion failed"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to delete partner"
  */
 export async function DELETE(
   request: NextRequest,

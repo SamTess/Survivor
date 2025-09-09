@@ -2,35 +2,63 @@ import { NextResponse } from "next/server";
 import { userService } from "../../../../composition/container";
 
 /**
- * @api {get} /client/:id Get User by ID
- * @apiName GetUserById
- * @apiGroup Client
- * @apiVersion 0.1.0
- * @apiDescription Get user information by user ID (public client endpoint)
- *
- * @apiParam {Number} id User ID
- *
- * @apiSuccess {Object} user User object
- * @apiSuccess {Number} user.id User ID
- * @apiSuccess {String} user.name User's name
- * @apiSuccess {String} user.email User's email
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "id": 1,
- *       "name": "John Doe",
- *       "email": "john@example.com"
- *     }
- *
- * @apiError (Error 404) {String} error User not found
- * @apiError (Error 400) {String} error Invalid request
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 404 Not Found
- *     {
- *       "error": "Not found"
- *     }
+ * @openapi
+ * /client/{id}:
+ *   get:
+ *     summary: Get User by ID
+ *     description: Get user information by user ID (public client endpoint)
+ *     tags:
+ *       - Client
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: User ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: User information retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: User ID
+ *                   example: 1
+ *                 name:
+ *                   type: string
+ *                   description: User's name
+ *                   example: "John Doe"
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   description: User's email
+ *                   example: "john@example.com"
+ *       400:
+ *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid request"
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Not found"
  */
 export async function GET(
   _req: Request,

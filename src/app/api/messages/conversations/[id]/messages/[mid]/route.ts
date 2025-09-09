@@ -5,35 +5,83 @@ import { verifyJwt } from '@/infrastructure/security/auth';
 import { parseIntParam } from '@/utils/validation';
 
 /**
- * @api {delete} /messages/conversations/:id/messages/:mid Delete Message
- * @apiName DeleteMessage
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Delete a specific message (only by the message sender)
- *
- * @apiParam {Number} id Conversation ID
- * @apiParam {Number} mid Message ID
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiSuccess {Boolean} ok Operation success status
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "ok": true
- *     }
- *
- * @apiError (Error 400) {String} error Invalid conversation or message ID
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- * @apiError (Error 403) {String} error Forbidden - not a member of conversation or not message sender
- * @apiError (Error 404) {String} error Message not found
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 403 Forbidden
- *     {
- *       "error": "Not allowed"
- *     }
+ * @openapi
+ * /messages/conversations/{id}/messages/{mid}:
+ *   delete:
+ *     summary: Delete Message
+ *     description: Delete a specific message (only by the message sender)
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Conversation unique ID
+ *         example: 1
+ *       - in: path
+ *         name: mid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Message unique ID
+ *         example: 15
+ *     responses:
+ *       200:
+ *         description: Message deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid conversation or message ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid id"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Forbidden - not a member of conversation or not message sender
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Not allowed"
+ *       404:
+ *         description: Message not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Not found"
  */
 
 function getUserId(req: NextRequest): number | null {

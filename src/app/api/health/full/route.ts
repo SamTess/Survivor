@@ -2,34 +2,56 @@ import { NextResponse } from 'next/server';
 import prisma from '@/infrastructure/persistence/prisma/client';
 
 /**
- * @api {get} /health/full Full Health Check
- * @apiName FullHealthCheck
- * @apiGroup System
- * @apiVersion 0.1.0
- * @apiDescription Comprehensive health check including database connectivity
- *
- * @apiSuccess {String} status Service status (healthy/unhealthy)
- * @apiSuccess {String} timestamp ISO timestamp of the check
- * @apiSuccess {String} service Service state description
- * @apiSuccess {String} database Database connection status (connected/disconnected)
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "status": "healthy",
- *       "timestamp": "2025-09-08T12:00:00.000Z",
- *       "service": "running",
- *       "database": "connected"
- *     }
- *
- * @apiSuccessExample {json} Success-Response (DB Disconnected):
- *     HTTP/1.1 200 OK
- *     {
- *       "status": "healthy",
- *       "timestamp": "2025-09-08T12:00:00.000Z",
- *       "service": "running",
- *       "database": "disconnected"
- *     }
+ * @openapi
+ * /health/full:
+ *   get:
+ *     summary: Full Health Check
+ *     description: Comprehensive health check including database connectivity
+ *     tags:
+ *       - System
+ *     responses:
+ *       200:
+ *         description: Health check completed (always returns 200, check status field for actual health)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   enum: [healthy, unhealthy]
+ *                   description: Service status
+ *                   example: "healthy"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   description: ISO timestamp of the check
+ *                   example: "2025-09-08T12:00:00.000Z"
+ *                 service:
+ *                   type: string
+ *                   enum: [running, stopped, error]
+ *                   description: Service state description
+ *                   example: "running"
+ *                 database:
+ *                   type: string
+ *                   enum: [connected, disconnected, unknown]
+ *                   description: Database connection status
+ *                   example: "connected"
+ *             examples:
+ *               healthy_with_db:
+ *                 summary: Healthy service with database connected
+ *                 value:
+ *                   status: "healthy"
+ *                   timestamp: "2025-09-08T12:00:00.000Z"
+ *                   service: "running"
+ *                   database: "connected"
+ *               healthy_without_db:
+ *                 summary: Healthy service with database disconnected
+ *                 value:
+ *                   status: "healthy"
+ *                   timestamp: "2025-09-08T12:00:00.000Z"
+ *                   service: "running"
+ *                   database: "disconnected"
  */
 export async function GET() {
   const healthStatus = {

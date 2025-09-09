@@ -6,56 +6,127 @@ const startupRepository = new StartupRepositoryPrisma();
 const startupService = new StartupService(startupRepository);
 
 /**
- * @api {get} /startups Get Startups
- * @apiName GetStartups
- * @apiGroup Startups
- * @apiVersion 0.1.0
- * @apiDescription Retrieve a list of startups with optional filtering and pagination
- *
- * @apiParam {Number} [page=1] Page number for pagination
- * @apiParam {Number} [limit=10] Number of items per page
- * @apiParam {String} [sector] Filter by startup sector
- * @apiParam {String} [maturity] Filter by startup maturity stage
- * @apiParam {String} [search] Search term for startup name or description
- *
- * @apiSuccess {Boolean} success Request success status
- * @apiSuccess {Object[]} data Array of startup objects
- * @apiSuccess {Object} [pagination] Pagination information (when using page/limit)
- * @apiSuccess {Number} pagination.page Current page number
- * @apiSuccess {Number} pagination.limit Items per page
- * @apiSuccess {Number} pagination.total Total number of startups
- * @apiSuccess {Number} pagination.totalPages Total number of pages
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "success": true,
- *       "data": [
- *         {
- *           "id": 1,
- *           "name": "TechStartup Inc",
- *           "sector": "Technology",
- *           "maturity": "Seed",
- *           "description": "A revolutionary tech startup"
- *         }
- *       ],
- *       "pagination": {
- *         "page": 1,
- *         "limit": 10,
- *         "total": 50,
- *         "totalPages": 5
- *       }
- *     }
- *
- * @apiError (Error 500) {Boolean} success false
- * @apiError (Error 500) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 500 Internal Server Error
- *     {
- *       "success": false,
- *       "error": "Failed to fetch startups"
- *     }
+ * @openapi
+ * /api/startups:
+ *   get:
+ *     tags:
+ *       - Startups
+ *     summary: Get startups
+ *     description: Retrieve a list of startups with optional filtering and pagination
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: sector
+ *         schema:
+ *           type: string
+ *         description: Filter by startup sector
+ *       - in: query
+ *         name: maturity
+ *         schema:
+ *           type: string
+ *         description: Filter by startup maturity stage
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for startup name or description
+ *     responses:
+ *       200:
+ *         description: Startups retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         example: "TechStartup Inc"
+ *                       sector:
+ *                         type: string
+ *                         example: "Technology"
+ *                       maturity:
+ *                         type: string
+ *                         example: "Seed"
+ *                       description:
+ *                         type: string
+ *                         example: "A revolutionary tech startup"
+ *                       website:
+ *                         type: string
+ *                         example: "https://techstartup.com"
+ *                       location:
+ *                         type: string
+ *                         example: "San Francisco, CA"
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                       updatedAt:
+ *                         type: string
+ *                         format: date-time
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
+ *                     total:
+ *                       type: integer
+ *                       example: 50
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *             example:
+ *               success: true
+ *               data:
+ *                 - id: 1
+ *                   name: "TechStartup Inc"
+ *                   sector: "Technology"
+ *                   maturity: "Seed"
+ *                   description: "A revolutionary tech startup"
+ *               pagination:
+ *                 page: 1
+ *                 limit: 10
+ *                 total: 50
+ *                 totalPages: 5
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch startups"
  */
 export async function GET(request: NextRequest) {
   try {
@@ -111,58 +182,118 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * @api {post} /startups Create Startup
- * @apiName CreateStartup
- * @apiGroup Startups
- * @apiVersion 0.1.0
- * @apiDescription Create a new startup
- *
- * @apiParam {String} name Startup name
- * @apiParam {String} [description] Startup description
- * @apiParam {String} [sector] Startup sector/industry
- * @apiParam {String} [maturity] Startup maturity stage
- * @apiParam {String} [website] Startup website URL
- * @apiParam {String} [location] Startup location
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "name": "TechStartup Inc",
- *       "description": "A revolutionary tech startup",
- *       "sector": "Technology",
- *       "maturity": "Seed",
- *       "website": "https://techstartup.com",
- *       "location": "San Francisco, CA"
- *     }
- *
- * @apiSuccess (Success 201) {Boolean} success Request success status
- * @apiSuccess (Success 201) {Object} data Created startup object
- * @apiSuccess (Success 201) {String} message Success message
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "success": true,
- *       "data": {
- *         "id": 1,
- *         "name": "TechStartup Inc",
- *         "description": "A revolutionary tech startup",
- *         "sector": "Technology",
- *         "maturity": "Seed",
- *         "website": "https://techstartup.com",
- *         "location": "San Francisco, CA"
- *       },
- *       "message": "Startup created successfully"
- *     }
- *
- * @apiError (Error 400) {Boolean} success false
- * @apiError (Error 400) {String} error Error message
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "success": false,
- *       "error": "Failed to create startup"
- *     }
+ * @openapi
+ * /api/startups:
+ *   post:
+ *     tags:
+ *       - Startups
+ *     summary: Create startup
+ *     description: Create a new startup
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "TechStartup Inc"
+ *               description:
+ *                 type: string
+ *                 example: "A revolutionary tech startup"
+ *               sector:
+ *                 type: string
+ *                 example: "Technology"
+ *               maturity:
+ *                 type: string
+ *                 example: "Seed"
+ *               website:
+ *                 type: string
+ *                 format: uri
+ *                 example: "https://techstartup.com"
+ *               location:
+ *                 type: string
+ *                 example: "San Francisco, CA"
+ *           example:
+ *             name: "TechStartup Inc"
+ *             description: "A revolutionary tech startup"
+ *             sector: "Technology"
+ *             maturity: "Seed"
+ *             website: "https://techstartup.com"
+ *             location: "San Francisco, CA"
+ *     responses:
+ *       201:
+ *         description: Startup created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       example: 1
+ *                     name:
+ *                       type: string
+ *                       example: "TechStartup Inc"
+ *                     description:
+ *                       type: string
+ *                       example: "A revolutionary tech startup"
+ *                     sector:
+ *                       type: string
+ *                       example: "Technology"
+ *                     maturity:
+ *                       type: string
+ *                       example: "Seed"
+ *                     website:
+ *                       type: string
+ *                       example: "https://techstartup.com"
+ *                     location:
+ *                       type: string
+ *                       example: "San Francisco, CA"
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *                 message:
+ *                   type: string
+ *                   example: "Startup created successfully"
+ *             example:
+ *               success: true
+ *               data:
+ *                 id: 1
+ *                 name: "TechStartup Inc"
+ *                 description: "A revolutionary tech startup"
+ *                 sector: "Technology"
+ *                 maturity: "Seed"
+ *                 website: "https://techstartup.com"
+ *                 location: "San Francisco, CA"
+ *               message: "Startup created successfully"
+ *       400:
+ *         description: Bad request - Invalid input data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to create startup"
  */
 export async function POST(request: NextRequest) {
   try {

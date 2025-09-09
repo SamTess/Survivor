@@ -6,46 +6,105 @@ import { eventBus } from '@/infrastructure/realtime/eventBus';
 import { ensurePgListener } from '@/infrastructure/realtime/pgPubSub';
 
 /**
- * @api {get} /messages/stream Real-time Message Stream
- * @apiName MessageStream
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Establish a Server-Sent Events (SSE) connection for real-time message updates
+ * @openapi
+ * /messages/stream:
+ *   get:
+ *     summary: Real-time Message Stream
+ *     description: |
+ *       Establish a Server-Sent Events (SSE) connection for real-time message updates.
  *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
+ *       This endpoint provides a persistent SSE connection that streams real-time updates for:
+ *       - New messages in user's conversations
+ *       - Message deletions
+ *       - Reaction additions/removals
+ *       - Connection health checks (ping every 25 seconds)
  *
- * @apiSuccess {Stream} data Server-Sent Events stream
- * @apiSuccess {Object} event Event data object
- * @apiSuccess {String} event.type Event type (ready, message:new, message:deleted, reaction:update, ping)
- * @apiSuccess {Number} [event.conversationId] Conversation ID (for message events)
- * @apiSuccess {Number} [event.messageId] Message ID (for message/reaction events)
- * @apiSuccess {String} [event.emoji] Emoji (for reaction events)
- * @apiSuccess {Boolean} [event.removed] Whether reaction was removed (for reaction events)
- * @apiSuccess {Number} [event.at] Event timestamp
- * @apiSuccess {Number} [event.t] Ping timestamp
+ *       The stream automatically filters events to only include conversations the user is a member of.
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Server-Sent Events stream established successfully
+ *         content:
+ *           text/event-stream:
+ *             schema:
+ *               type: string
+ *               description: |
+ *                 Server-Sent Events stream with JSON data objects.
  *
- * @apiSuccessExample {text/event-stream} Success-Response:
- *     data: {"type":"ready"}
+ *                 Event types:
+ *                 - `ready`: Connection established
+ *                 - `message:new`: New message posted
+ *                 - `message:deleted`: Message was deleted
+ *                 - `reaction:update`: Reaction added or removed
+ *                 - `ping`: Keepalive ping (every 25 seconds)
+ *             examples:
+ *               ready:
+ *                 summary: Connection ready
+ *                 value: 'data: {"type":"ready"}'
+ *               new_message:
+ *                 summary: New message event
+ *                 value: 'data: {"type":"message:new","conversationId":1,"messageId":123,"at":1642600000000}'
+ *               reaction_update:
+ *                 summary: Reaction update event
+ *                 value: 'data: {"type":"reaction:update","conversationId":1,"messageId":123,"emoji":"👍","at":1642600000000}'
+ *               message_deleted:
+ *                 summary: Message deleted event
+ *                 value: 'data: {"type":"message:deleted","conversationId":1,"messageId":123,"at":1642600000000}'
+ *               ping:
+ *                 summary: Keepalive ping
+ *                 value: 'data: {"type":"ping","t":1642600000000}'
+ *         headers:
+ *           Content-Type:
+ *             schema:
+ *               type: string
+ *               example: "text/event-stream"
+ *           Cache-Control:
+ *             schema:
+ *               type: string
+ *               example: "no-cache, no-transform"
+ *           Connection:
+ *             schema:
+ *               type: string
+ *               example: "keep-alive"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           text/plain:
+ *             schema:
+ *               type: string
+ *               example: "unauthorized"
+ *     x-codeSamples:
+ *       - lang: JavaScript
+ *         label: EventSource Connection
+ *         source: |
+ *           const eventSource = new EventSource('/messages/stream');
  *
- *     data: {"type":"message:new","conversationId":1,"messageId":123,"at":1642600000000}
+ *           eventSource.onmessage = function(event) {
+ *             const data = JSON.parse(event.data);
+ *             console.log('Received event:', data);
  *
- *     data: {"type":"reaction:update","conversationId":1,"messageId":123,"emoji":"👍","at":1642600000000}
+ *             switch(data.type) {
+ *               case 'ready':
+ *                 console.log('Stream connection ready');
+ *                 break;
+ *               case 'message:new':
+ *                 console.log('New message in conversation', data.conversationId);
+ *                 break;
+ *               case 'reaction:update':
+ *                 console.log('Reaction update:', data.emoji, data.removed ? 'removed' : 'added');
+ *                 break;
+ *               case 'ping':
+ *                 console.log('Keepalive ping received');
+ *                 break;
+ *             }
+ *           };
  *
- *     data: {"type":"ping","t":1642600000000}
- *
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- *
- * @apiErrorExample {text/plain} Error-Response:
- *     HTTP/1.1 401 Unauthorized
- *     unauthorized
- *
- * @apiDescription This endpoint establishes a persistent SSE connection that streams real-time updates for:
- * - New messages in user's conversations
- * - Message deletions
- * - Reaction additions/removals
- * - Connection health checks (ping every 25 seconds)
- *
- * The stream automatically filters events to only include conversations the user is a member of.
+ *           eventSource.onerror = function(event) {
+ *             console.error('EventSource error:', event);
+ *           };
  */
 
 function getUserId(req: NextRequest): number | null {

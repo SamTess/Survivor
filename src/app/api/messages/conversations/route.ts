@@ -5,68 +5,86 @@ import { verifyJwt } from '@/infrastructure/security/auth';
 import { isNonEmptyString } from '@/utils/validation';
 
 /**
- * @api {get} /messages/conversations Get User Conversations
- * @apiName GetConversations
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Retrieve all conversations for the authenticated user
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiSuccess {Object[]} conversations Array of conversation objects
- * @apiSuccess {Number} conversations.id Conversation ID
- * @apiSuccess {String} conversations.name Conversation name (optional)
- * @apiSuccess {String} conversations.created_at Creation timestamp
- * @apiSuccess {Object[]} conversations.users Array of conversation participants
- * @apiSuccess {Number} conversations.users.user_id User ID
- * @apiSuccess {Object} conversations.users.user User object
- * @apiSuccess {Number} conversations.users.user.id User ID
- * @apiSuccess {String} conversations.users.user.name User name
- * @apiSuccess {Object[]} conversations.messages Array of last message (if any)
- * @apiSuccess {Number} conversations.messages.id Message ID
- * @apiSuccess {String} conversations.messages.sent_at Send timestamp
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "conversations": [
- *         {
- *           "id": 1,
- *           "name": "Project Discussion",
- *           "created_at": "2024-01-15T10:00:00.000Z",
- *           "users": [
- *             {
- *               "user_id": 1,
- *               "user": {
- *                 "id": 1,
- *                 "name": "John Doe"
- *               }
- *             },
- *             {
- *               "user_id": 2,
- *               "user": {
- *                 "id": 2,
- *                 "name": "Jane Smith"
- *               }
- *             }
- *           ],
- *           "messages": [
- *             {
- *               "id": 5,
- *               "sent_at": "2024-01-15T10:30:00.000Z"
- *             }
- *           ]
- *         }
- *       ]
- *     }
- *
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 401 Unauthorized
- *     {
- *       "error": "Unauthorized"
- *     }
+ * @openapi
+ * /messages/conversations:
+ *   get:
+ *     summary: Get User Conversations
+ *     description: Retrieve all conversations for the authenticated user
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Conversations retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 conversations:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: Conversation ID
+ *                         example: 1
+ *                       name:
+ *                         type: string
+ *                         nullable: true
+ *                         description: Conversation name (optional)
+ *                         example: "Project Discussion"
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Creation timestamp
+ *                         example: "2024-01-15T10:00:00.000Z"
+ *                       users:
+ *                         type: array
+ *                         description: Array of conversation participants
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             user_id:
+ *                               type: integer
+ *                               description: User ID
+ *                               example: 1
+ *                             user:
+ *                               type: object
+ *                               properties:
+ *                                 id:
+ *                                   type: integer
+ *                                   example: 1
+ *                                 name:
+ *                                   type: string
+ *                                   example: "John Doe"
+ *                       messages:
+ *                         type: array
+ *                         description: Array of last message (if any)
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id:
+ *                               type: integer
+ *                               description: Message ID
+ *                               example: 5
+ *                             sent_at:
+ *                               type: string
+ *                               format: date-time
+ *                               description: Send timestamp
+ *                               example: "2024-01-15T10:30:00.000Z"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
  */
 
 function getUserId(req: NextRequest): number | null {
@@ -91,69 +109,105 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * @api {post} /messages/conversations Create New Conversation
- * @apiName CreateConversation
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Create a new conversation with specified participants
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiParam {Number[]} participantIds Array of user IDs to include in conversation
- * @apiParam {String} [name] Optional conversation name
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "participantIds": [2, 3, 5],
- *       "name": "Project Team Discussion"
- *     }
- *
- * @apiSuccess {Object} conversation Created conversation object
- * @apiSuccess {Number} conversation.id Conversation ID
- * @apiSuccess {String} conversation.name Conversation name (if provided)
- * @apiSuccess {String} conversation.created_at Creation timestamp
- * @apiSuccess {Object[]} conversation.users Array of conversation participants
- * @apiSuccess {Number} conversation.users.user_id User ID
- * @apiSuccess {Object} conversation.users.user User object
- * @apiSuccess {Number} conversation.users.user.id User ID
- * @apiSuccess {String} conversation.users.user.name User name
- * @apiSuccess {Object[]} conversation.messages Array of messages (empty for new conversation)
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 201 Created
- *     {
- *       "conversation": {
- *         "id": 15,
- *         "name": "Project Team Discussion",
- *         "created_at": "2024-01-15T15:00:00.000Z",
- *         "users": [
- *           {
- *             "user_id": 1,
- *             "user": {
- *               "id": 1,
- *               "name": "Current User"
- *             }
- *           },
- *           {
- *             "user_id": 2,
- *             "user": {
- *               "id": 2,
- *               "name": "John Doe"
- *             }
- *           }
- *         ],
- *         "messages": []
- *       }
- *     }
- *
- * @apiError (Error 400) {String} error Missing or invalid participant IDs
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "participantIds required"
- *     }
+ * @openapi
+ * /messages/conversations:
+ *   post:
+ *     summary: Create New Conversation
+ *     description: Create a new conversation with specified participants
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - participantIds
+ *             properties:
+ *               participantIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of user IDs to include in conversation
+ *                 example: [2, 3, 5]
+ *               name:
+ *                 type: string
+ *                 description: Optional conversation name
+ *                 example: "Project Team Discussion"
+ *     responses:
+ *       201:
+ *         description: Conversation created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 conversation:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: Conversation ID
+ *                       example: 15
+ *                     name:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Conversation name (if provided)
+ *                       example: "Project Team Discussion"
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Creation timestamp
+ *                       example: "2024-01-15T15:00:00.000Z"
+ *                     users:
+ *                       type: array
+ *                       description: Array of conversation participants
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           user_id:
+ *                             type: integer
+ *                             description: User ID
+ *                             example: 1
+ *                           user:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: integer
+ *                                 example: 1
+ *                               name:
+ *                                 type: string
+ *                                 example: "Current User"
+ *                     messages:
+ *                       type: array
+ *                       description: Array of messages (empty for new conversation)
+ *                       items:
+ *                         type: object
+ *                       example: []
+ *       400:
+ *         description: Missing or invalid participant IDs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   enum: ["participantIds required", "Need at least 2 participants"]
+ *                   example: "participantIds required"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
  */
 export async function POST(req: NextRequest) {
   const userId = getUserId(req);

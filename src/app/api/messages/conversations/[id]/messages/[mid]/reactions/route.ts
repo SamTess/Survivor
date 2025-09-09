@@ -5,40 +5,89 @@ import { verifyJwt } from '@/infrastructure/security/auth';
 import { parseIntParam } from '@/utils/validation';
 
 /**
- * @api {post} /messages/conversations/:id/messages/:mid/reactions Add Message Reaction
- * @apiName AddMessageReaction
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Add an emoji reaction to a message
- *
- * @apiParam {Number} id Conversation ID
- * @apiParam {Number} mid Message ID
- * @apiParam {String} emoji Emoji reaction (max 16 characters)
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiParamExample {json} Request-Example:
- *     {
- *       "emoji": "👍"
- *     }
- *
- * @apiSuccess {Boolean} ok Operation success status
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "ok": true
- *     }
- *
- * @apiError (Error 400) {String} error Invalid ID or emoji
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Invalid emoji"
- *     }
+ * @openapi
+ * /messages/conversations/{id}/messages/{mid}/reactions:
+ *   post:
+ *     summary: Add Message Reaction
+ *     description: Add an emoji reaction to a message (only for conversation members)
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Conversation unique ID
+ *         example: 1
+ *       - in: path
+ *         name: mid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Message unique ID
+ *         example: 15
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - emoji
+ *             properties:
+ *               emoji:
+ *                 type: string
+ *                 maxLength: 16
+ *                 description: Emoji reaction
+ *                 example: "👍"
+ *           example:
+ *             emoji: "👍"
+ *     responses:
+ *       200:
+ *         description: Reaction added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid ID or emoji
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid emoji"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Forbidden - not a member of this conversation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden"
  */
 
 function getUserId(req: NextRequest): number | null {
@@ -81,35 +130,80 @@ export async function POST(req: NextRequest, ctx: { params: { id: string; mid: s
 }
 
 /**
- * @api {delete} /messages/conversations/:id/messages/:mid/reactions Remove Message Reaction
- * @apiName RemoveMessageReaction
- * @apiGroup Messages
- * @apiVersion 0.1.0
- * @apiDescription Remove an emoji reaction from a message
- *
- * @apiParam {Number} id Conversation ID
- * @apiParam {Number} mid Message ID
- * @apiQuery {String} emoji Emoji reaction to remove
- *
- * @apiHeader {String} Cookie Authentication cookie with JWT token
- *
- * @apiSuccess {Boolean} ok Operation success status
- *
- * @apiSuccessExample {json} Success-Response:
- *     HTTP/1.1 200 OK
- *     {
- *       "ok": true
- *     }
- *
- * @apiError (Error 400) {String} error Invalid ID or emoji
- * @apiError (Error 401) {String} error Unauthorized - authentication required
- * @apiError (Error 403) {String} error Forbidden - not a member of this conversation
- *
- * @apiErrorExample {json} Error-Response:
- *     HTTP/1.1 400 Bad Request
- *     {
- *       "error": "Invalid emoji"
- *     }
+ * @openapi
+ *   delete:
+ *     summary: Remove Message Reaction
+ *     description: Remove an emoji reaction from a message (only for conversation members)
+ *     tags:
+ *       - Messages
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Conversation unique ID
+ *         example: 1
+ *       - in: path
+ *         name: mid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Message unique ID
+ *         example: 15
+ *       - in: query
+ *         name: emoji
+ *         required: true
+ *         schema:
+ *           type: string
+ *           maxLength: 16
+ *         description: Emoji reaction to remove
+ *         example: "👍"
+ *     responses:
+ *       200:
+ *         description: Reaction removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid ID or emoji
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid emoji"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Forbidden - not a member of this conversation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Forbidden"
  */
 export async function DELETE(req: NextRequest, ctx: { params: { id: string; mid: string } }) {
   const userId = getUserId(req);
