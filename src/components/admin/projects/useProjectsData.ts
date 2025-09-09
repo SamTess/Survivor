@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Project } from './types.ts'
+import type { Project } from './types'
 
 export const useProjectsData = () => {
   const [projects, setProjects] = useState<Project[]>([])
