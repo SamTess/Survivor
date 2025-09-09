@@ -307,7 +307,7 @@ export async function GET(request: NextRequest) {
       scope,
       contentType,
       userId: payload.userId,
-      startDate: startDate || undefined
+      startDate: startDate ?? undefined
     };
 
     const statisticsData = await statisticsService.getStatistics(filters);

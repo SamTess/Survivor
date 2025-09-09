@@ -132,6 +132,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
 /**
  * @openapi
+ * /messages/conversations/{id}/messages/{mid}/reactions:
  *   delete:
  *     summary: Remove Message Reaction
  *     description: Remove an emoji reaction from a message (only for conversation members)

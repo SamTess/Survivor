@@ -189,7 +189,7 @@ export class StatisticsRepositoryPrisma implements StatisticsRepository {
     } else if (filters.contentType === 'event') {
       return { ...baseFilter, contentType: 'EVENT', contentId: { in: targetIds } };
     } else {
-      return this.buildAllContentFilter(baseFilter);
+      return baseFilter;
     }
   }
 
@@ -203,7 +203,7 @@ export class StatisticsRepositoryPrisma implements StatisticsRepository {
     } else if (filters.contentType === 'event') {
       return { ...baseFilter, contentType: 'EVENT', contentId: { in: targetIds } };
     } else {
-      return this.buildAllContentFilter(baseFilter);
+      return baseFilter;
     }
   }
 
@@ -217,11 +217,7 @@ export class StatisticsRepositoryPrisma implements StatisticsRepository {
     } else if (filters.contentType === 'event') {
       return { ...baseFilter, contentType: 'EVENT', contentId: { in: targetIds } };
     } else {
-      return this.buildAllContentFilter(baseFilter);
+      return baseFilter;
     }
-  }
-
-  private buildAllContentFilter(baseFilter: Record<string, unknown>): Record<string, unknown> {
-    return baseFilter;
   }
 }

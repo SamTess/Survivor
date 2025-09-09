@@ -157,6 +157,7 @@ function safeDecrypt(payload: string): string {
 
 /**
  * @openapi
+ * /messages/conversations/{id}/messages:
  *   post:
  *     summary: Send Message
  *     description: Send a new message to a conversation (only for conversation members)
