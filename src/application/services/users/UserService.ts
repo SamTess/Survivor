@@ -74,6 +74,26 @@ export class UserService {
     return this.userRepository.search(query.trim());
   }
 
+  async searchUsersWithFilters(query: string, filters: { role?: string; limit?: number }): Promise<User[]> {
+    if (!query || query.trim().length < 2) {
+      throw new Error("Search query must be at least 2 characters long");
+    }
+
+    let users = await this.userRepository.search(query.trim());
+
+    if (filters.role) {
+      users = users.filter(user =>
+        user.role.toLowerCase() === filters.role!.toLowerCase()
+      );
+    }
+
+    if (filters.limit && filters.limit > 0) {
+      users = users.slice(0, filters.limit);
+    }
+
+    return users;
+  }
+
   async updateUser(id: number, updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): Promise<User | null> {
     if (!Number.isInteger(id) || id <= 0) {
       throw new Error("Invalid user ID");

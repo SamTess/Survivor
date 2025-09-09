@@ -34,7 +34,6 @@ export class UserRepositoryPrisma implements UserRepository {
   }
 
   async create(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): Promise<User> {
-    // Check if user already exists
     const existingUser = await prisma.s_USER.findFirst({
       where: { email: user.email }
     });
@@ -173,6 +172,8 @@ export class UserRepositoryPrisma implements UserRepository {
           { name: { contains: query, mode: 'insensitive' } },
           { email: { contains: query, mode: 'insensitive' } },
           { role: { contains: query, mode: 'insensitive' } },
+          { description: { contains: query, mode: 'insensitive' } },
+          { legal_status: { contains: query, mode: 'insensitive' } },
         ],
       },
       include: {
@@ -182,7 +183,26 @@ export class UserRepositoryPrisma implements UserRepository {
       orderBy: { created_at: 'desc' },
     });
 
-    return users.map(user => this.mapPrismaToUser(user));
+    return users
+      .map(user => this.mapPrismaToUser(user))
+      .sort((a, b) => {
+        const queryLower = query.toLowerCase();
+        const aNameLower = a.name.toLowerCase();
+        const bNameLower = b.name.toLowerCase();
+        const aEmailLower = a.email.toLowerCase();
+        const bEmailLower = b.email.toLowerCase();
+
+        if (aNameLower === queryLower && bNameLower !== queryLower) return -1;
+        if (bNameLower === queryLower && aNameLower !== queryLower) return 1;
+
+        if (aNameLower.startsWith(queryLower) && !bNameLower.startsWith(queryLower)) return -1;
+        if (bNameLower.startsWith(queryLower) && !aNameLower.startsWith(queryLower)) return 1;
+
+        if (aEmailLower.startsWith(queryLower) && !bEmailLower.startsWith(queryLower)) return -1;
+        if (bEmailLower.startsWith(queryLower) && !aEmailLower.startsWith(queryLower)) return 1;
+
+        return aNameLower.localeCompare(bNameLower);
+      });
   }
 
   async update(id: number, user: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): Promise<User | null> {

@@ -36,7 +36,12 @@ const userService = new UserService(userRepository);
  *         name: search
  *         schema:
  *           type: string
- *         description: Search term for user name or email
+ *         description: Search term for user name, email, or role
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         description: Alternative search parameter (same as search)
  *       - in: query
  *         name: founders
  *         schema:
@@ -107,6 +112,17 @@ const userService = new UserService(userRepository);
  *                     totalPages:
  *                       type: integer
  *                       example: 3
+ *                 searchTerm:
+ *                   type: string
+ *                   description: The search term used (only present when searching)
+ *                   example: "john"
+ *                 filter:
+ *                   type: object
+ *                   description: Applied filters (only present when filtering)
+ *                   properties:
+ *                     role:
+ *                       type: string
+ *                       example: "ENTREPRENEUR"
  *       500:
  *         description: Server error
  *         content:
@@ -129,14 +145,43 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const role = searchParams.get('role');
     const search = searchParams.get('search');
+    const query = searchParams.get('query');
     const founders = searchParams.get('founders') === 'true';
     const investors = searchParams.get('investors') === 'true';
 
-    if (search) {
-      const users = await userService.searchUsers(search);
-      return NextResponse.json({ success: true, data: users });
-    }
+    const searchTerm = search || query;
 
+    if (searchTerm) {
+      const users = role
+        ? await userService.searchUsersWithFilters(searchTerm, { role })
+        : await userService.searchUsers(searchTerm);
+
+      if (page > 1 || limit !== 10) {
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedUsers = users.slice(startIndex, endIndex);
+
+        return NextResponse.json({
+          success: true,
+          data: paginatedUsers,
+          pagination: {
+            page,
+            limit,
+            total: users.length,
+            totalPages: Math.ceil(users.length / limit)
+          },
+          searchTerm,
+          ...(role && { filter: { role } })
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: users,
+        searchTerm,
+        ...(role && { filter: { role } })
+      });
+    }
     if (founders) {
       const users = await userService.getFounders();
       return NextResponse.json({ success: true, data: users });
@@ -149,7 +194,30 @@ export async function GET(request: NextRequest) {
 
     if (role) {
       const users = await userService.getUsersByRole(role);
-      return NextResponse.json({ success: true, data: users });
+
+      if (page > 1 || limit !== 10) {
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
+        const paginatedUsers = users.slice(startIndex, endIndex);
+
+        return NextResponse.json({
+          success: true,
+          data: paginatedUsers,
+          pagination: {
+            page,
+            limit,
+            total: users.length,
+            totalPages: Math.ceil(users.length / limit)
+          },
+          filter: { role }
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: users,
+        filter: { role }
+      });
     }
 
     if (page > 1 || limit !== 10) {

@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from "react"
 import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
 import DarkModeToggle from "../layout/DarkModeToggle"
+import { SearchUser } from "@/components/ui/SearchUser"
 
 type NavItem = {
   href: string
@@ -19,10 +20,12 @@ type NavItem = {
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [avatarFailed, setAvatarFailed] = useState(false)
   const pathname = usePathname()
   const { isAuthenticated, isAdmin, user, logout } = useAuth()
   const profileDropdownRef = useRef<HTMLDivElement>(null)
+  const searchDropdownRef = useRef<HTMLDivElement>(null)
 
   const navItems: NavItem[] = [
     { href: '/', label: 'Home' },
@@ -38,6 +41,9 @@ export function Navbar() {
       if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
         setIsProfileDropdownOpen(false)
       }
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false)
+      }
     }
 
     document.addEventListener('mousedown', handleClickOutside)
@@ -49,6 +55,10 @@ export function Navbar() {
   const handleLogout = async () => {
     setIsProfileDropdownOpen(false)
     await logout()
+  }
+
+  const handleUserSelect = () => {
+    setIsSearchOpen(false)
   }
 
   return (
@@ -93,12 +103,28 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button
-              size="sm"
-              className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
-            >
-              <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </Button>
+            {/* Search Dropdown */}
+            <div className="relative" ref={searchDropdownRef}>
+              <Button
+                size="sm"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
+              >
+                <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Button>
+
+              {isSearchOpen && (
+                <div className="absolute overflow-visible right-0 top-12 w-96 bg-background/80 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg px-4 pt-3 pb-5 z-50 animate-in slide-in-from-top-2 duration-200">
+                  <SearchUser
+                    onUserSelect={handleUserSelect}
+                    placeholder="Search for users..."
+                    showRoleFilter={false}
+                    maxResults={10}
+                    cardSize="sm"
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Profile Dropdown */}
             <div className="relative" ref={profileDropdownRef}>
@@ -107,7 +133,7 @@ export function Navbar() {
                 onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
                 className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
               >
-                <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center">
                   {isAuthenticated && user?.id && !avatarFailed ? (
                     <Image
                       src={`/api/users/${user.id}/image`}
