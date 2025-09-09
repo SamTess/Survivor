@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FounderService } from '../../../application/services/founders/FounderService';
 import { FounderRepositoryPrisma } from '../../../infrastructure/persistence/prisma/FounderRepositoryPrisma';
+import { verifyJwt } from '../../../infrastructure/security/auth';
+import prisma from '../../../infrastructure/persistence/prisma/client';
 
 const founderRepository = new FounderRepositoryPrisma();
 const founderService = new FounderService(founderRepository);
@@ -41,9 +43,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching founders:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch founders' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch founders'
       },
       { status: 500 }
     );
@@ -53,11 +55,29 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+    const token = request.cookies.get('auth')?.value;
+    const secret = process.env.AUTH_SECRET || 'dev-secret';
+    const payload = verifyJwt(token, secret);
+    if (payload) {
+      const user = await prisma.s_USER.findUnique({ where: { id: payload.userId } });
+      if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 401 });
+      body.name = body.name || user.name;
+      if (user.role !== 'founder') {
+        await prisma.s_USER.update({ where: { id: user.id }, data: { role: 'founder' } });
+      }
+      if (body.startup_id) {
+        const existing = await prisma.s_FOUNDER.findFirst({ where: { user_id: user.id, startup_id: body.startup_id }, include: { user: true } });
+        if (existing) {
+          const mapped = { id: existing.id, name: existing.user?.name || '', startup_id: existing.startup_id, created_at: existing.user?.created_at || new Date(0), updated_at: existing.user?.created_at || new Date(0) };
+          return NextResponse.json({ success: true, data: mapped, message: 'Founder link already exists' }, { status: 200 });
+        }
+      }
+    }
+
     const founder = await founderService.createFounder(body);
-    
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       data: founder,
       message: 'Founder created successfully'
     }, { status: 201 });
@@ -65,9 +85,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating founder:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create founder' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create founder'
       },
       { status: 400 }
     );

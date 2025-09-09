@@ -14,7 +14,7 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
-  const [nextPath, setNextPath] = useState<string>('/');
+  const [nextPath, setNextPath] = useState<string>('/onboarding/role');
   const router = useRouter();
   const { signup, loading, error, clearError, isAuthenticated } = useAuth();
 

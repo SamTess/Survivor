@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { Trash2, MessageCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import UserAvatar from "@/components/ui/UserAvatar";
 
 const ConversationClient = dynamic<{
   cid: number;
@@ -195,22 +196,9 @@ export function ChatLauncher(): React.ReactElement {
     return () => window.removeEventListener("chat:startConversation", handler as EventListener);
   }, [loadConvs, currentUserId]);
 
-  const avatar = (u: UserLite, i: number) => {
-    const label = u.name && u.name.trim() ? u.name : `#${u.id}`;
-    const initials = label.slice(0, 2).toUpperCase();
-    const hue = (u.id * 47) % 360;
-    const style: React.CSSProperties = { backgroundColor: `hsl(${hue} 70% 45%)` };
-    return (
-      <div
-        key={`avu-${u.id}-${i}`}
-        className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-semibold ring-2 ring-white"
-        style={style}
-        title={label}
-      >
-        {initials}
-      </div>
-    );
-  };
+  const AvatarBubble: React.FC<{ user: UserLite }> = ({ user: u }) => (
+    <UserAvatar uid={u.id} name={u.name} size={24} className="ring-2 ring-white" />
+  );
 
   const totalUnread = Object.values(unread).reduce((a, b) => a + (b || 0), 0);
   const convItems = convs.map((c) => {
@@ -231,7 +219,11 @@ export function ChatLauncher(): React.ReactElement {
           className="flex items-center gap-3 min-w-0 flex-1 text-left"
           onClick={(e) => { e.preventDefault(); setActiveId(c.id); setTitleOverride(null); setUnread((prev) => ({ ...prev, [c.id]: 0 })); }}
         >
-          <div className="flex -space-x-2">{c.users.slice(0, 4).map(avatar)}</div>
+          <div className="flex -space-x-2">{c.users.slice(0, 4).map((u, i) => (
+            <div key={`avu-${u.id}-${i}`} className="inline-block">
+              <AvatarBubble user={u} />
+            </div>
+          ))}</div>
           <div className="min-w-0">
             <div className="truncate text-sm font-semibold text-foreground">{title}</div>
             <div className="truncate text-xs text-muted-foreground">{last}</div>

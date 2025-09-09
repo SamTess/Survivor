@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 768); // md breakpoint
+      setIsDesktop(window.innerWidth >= 768);
     };
 
     checkDesktop();
@@ -96,7 +96,7 @@ export default function Dashboard() {
           } else {
             console.log('No founder data found for user');
           }
-        }
+        } else if (user.role === 'visitor' || user.role === 'user') { /* Ignore */ }
       } catch (error) {
         console.error('Error fetching user role data:', error);
         setError('Failed to fetch user role data');

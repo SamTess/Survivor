@@ -6,6 +6,7 @@ import FollowButton from '@/components/ui/FollowButton';
 import PitchDeckButton from '@/components/ui/PitchDeckButton';
 import { ContentType } from '@/domain/enums/Analytics';
 import ContactStartupButton from '@/components/chat/ContactStartupButton';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 interface ProjectPageProps {
   params: Promise<{
@@ -126,68 +127,66 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 </div>
 
                 {/* Action buttons */}
-                <div className="flex flex-wrap gap-3">
-                  <LikeButton
-                    contentType={ContentType.STARTUP}
-                    contentId={project.id}
-                    initialLikeCount={project.likesCount || 0}
-                    userId={null}
-                    sessionId={null}
-                    size="large"
-                    variant="default"
-                  />
-                  <BookmarkButton
-                    contentType={ContentType.STARTUP}
-                    contentId={project.id}
-                    initialBookmarkCount={project.bookmarksCount || 0}
-                    userId={null}
-                    sessionId={null}
-                    size="large"
-                    variant="default"
-                  />
-                  <FollowButton
-                    contentType={ContentType.STARTUP}
-                    contentId={project.id}
-                    initialFollowerCount={project.followersCount || 0}
-                    userId={null}
-                    sessionId={null}
-                    size="large"
-                    variant="default"
-                  />
-                  <PitchDeckButton
-                    project={{
-                      id: project.id,
-                      name: project.name,
-                      sector: project.sector,
-                      maturity: project.maturity,
-                      description: project.description,
-                      address: project.address,
-                      phone: project.phone,
-                      email: project.email,
-                      legal_status: project.legal_status,
-                      created_at: project.created_at,
-                      likesCount: project.likesCount || 0,
-                      bookmarksCount: project.bookmarksCount || 0,
-                      followersCount: project.followersCount || 0,
-                      details: project.details.map((detail: ProjectDetail) => ({
-                        description: detail.description || undefined,
-                        website_url: detail.website_url || undefined,
-                        social_media_url: detail.social_media_url || undefined,
-                        project_status: detail.project_status || undefined,
-                        needs: detail.needs || undefined,
-                      })),
-                      founders: (project.founders || [])
-                        .filter((founder: ProjectFounder) => founder.user !== null)
-                        .map((founder: ProjectFounder) => ({
-                          user: {
-                            name: founder.user!.name,
-                            email: founder.user!.email,
-                            phone: founder.user!.phone || undefined,
-                          },
+                <div className="flex flex-wrap items-end gap-3 self-end w-full lg:w-auto">
+                  <div className="flex flex-wrap items-end gap-3 self-end">
+                    <LikeButton
+                      contentType={ContentType.STARTUP}
+                      contentId={project.id}
+                      initialLikeCount={project.likesCount || 0}
+                      size="large"
+                      variant="default"
+                    />
+                    <BookmarkButton
+                      contentType={ContentType.STARTUP}
+                      contentId={project.id}
+                      initialBookmarkCount={project.bookmarksCount || 0}
+                      size="large"
+                      variant="default"
+                    />
+                    <FollowButton
+                      contentType={ContentType.STARTUP}
+                      contentId={project.id}
+                      initialFollowerCount={project.followersCount || 0}
+                      size="large"
+                      variant="default"
+                    />
+                  </div>
+                  <div className="ml-auto self-end">
+                    <PitchDeckButton
+                      project={{
+                        id: project.id,
+                        name: project.name,
+                        sector: project.sector,
+                        maturity: project.maturity,
+                        description: project.description,
+                        address: project.address,
+                        phone: project.phone,
+                        email: project.email,
+                        legal_status: project.legal_status,
+                        created_at: project.created_at,
+                        likesCount: project.likesCount || 0,
+                        bookmarksCount: project.bookmarksCount || 0,
+                        followersCount: project.followersCount || 0,
+                        details: project.details.map((detail: ProjectDetail) => ({
+                          description: detail.description || undefined,
+                          website_url: detail.website_url || undefined,
+                          social_media_url: detail.social_media_url || undefined,
+                          project_status: detail.project_status || undefined,
+                          needs: detail.needs || undefined,
                         })),
-                    }}
-                    className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
-                  />
+                        founders: (project.founders || [])
+                          .filter((founder: ProjectFounder) => founder.user !== null)
+                          .map((founder: ProjectFounder) => ({
+                            user: {
+                              name: founder.user!.name,
+                              email: founder.user!.email,
+                              phone: founder.user!.phone || undefined,
+                            },
+                          })),
+                      }}
+                      className="bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 whitespace-nowrap"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -245,9 +244,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       .map((founder: ProjectFounder) => (
                         <div key={founder.id} className="bg-gradient-to-br from-gray-50 to-indigo-50 border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-300">
                           <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                              {founder.user!.name.charAt(0).toUpperCase()}
-                            </div>
+                            <UserAvatar uid={founder.user!.id} name={founder.user!.name} size={56} />
                             <div>
                               <h3 className="font-bold text-gray-900 text-lg">{founder.user!.name}</h3>
                               <p className="text-indigo-600 font-medium">{founder.user!.email}</p>

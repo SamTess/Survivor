@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { InvestorService } from '../../../application/services/investors/InvestorService';
 import { InvestorRepositoryPrisma } from '../../../infrastructure/persistence/prisma/InvestorRepositoryPrisma';
+import { verifyJwt } from '../../../infrastructure/security/auth';
+import prisma from '../../../infrastructure/persistence/prisma/client';
 
 const investorRepository = new InvestorRepositoryPrisma();
 const investorService = new InvestorService(investorRepository);
@@ -31,8 +33,8 @@ export async function GET(request: NextRequest) {
 
     if (page > 1 || limit !== 10) {
       const result = await investorService.getInvestorsPaginated(page, limit);
-      return NextResponse.json({ 
-        success: true, 
+      return NextResponse.json({
+        success: true,
         data: result.investors,
         pagination: {
           page,
@@ -49,9 +51,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error fetching investors:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch investors' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch investors'
       },
       { status: 500 }
     );
@@ -61,11 +63,23 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+    const token = request.cookies.get('auth')?.value;
+    const secret = process.env.AUTH_SECRET || 'dev-secret';
+    const payload = verifyJwt(token, secret);
+    if (payload) {
+      const user = await prisma.s_USER.findUnique({ where: { id: payload.userId } });
+      if (!user) return NextResponse.json({ success: false, error: 'User not found' }, { status: 401 });
+      body.email = user.email;
+      body.name = body.name || user.name;
+      if (user.role !== 'investor') {
+        await prisma.s_USER.update({ where: { id: user.id }, data: { role: 'investor' } });
+      }
+    }
+
     const investor = await investorService.createInvestor(body);
-    
-    return NextResponse.json({ 
-      success: true, 
+
+    return NextResponse.json({
+      success: true,
       data: investor,
       message: 'Investor created successfully'
     }, { status: 201 });
@@ -73,9 +87,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating investor:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to create investor' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create investor'
       },
       { status: 400 }
     );

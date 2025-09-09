@@ -3,6 +3,8 @@
 import React from 'react';
 import { useBookmark } from '@/hooks/useBookmark';
 import { ContentType } from '@/domain/enums/Analytics';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 interface BookmarkButtonProps {
   contentType: ContentType;
@@ -25,11 +27,14 @@ export default function BookmarkButton({
   variant = 'default',
   className = ''
 }: BookmarkButtonProps) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const effectiveUserId = userId ?? user?.id ?? null;
   const { isBookmarked, bookmarkCount, toggleBookmark, isLoading } = useBookmark({
     contentType,
     contentId,
     initialBookmarkCount,
-    userId,
+    userId: effectiveUserId ?? undefined,
     sessionId
   });
 
@@ -47,7 +52,8 @@ export default function BookmarkButton({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!userId) {
+    if (!effectiveUserId) {
+      router.push('/login');
       return;
     }
     toggleBookmark();

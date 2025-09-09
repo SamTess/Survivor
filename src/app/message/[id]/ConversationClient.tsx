@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Image from 'next/image';
 import { Trash2, Reply, MoreHorizontal, Mail, X, Plus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -275,18 +276,18 @@ export default function ConversationClient({ cid, embedded }: { cid: number; emb
     : <div className="fixed bottom-4 right-4 z-50 bg-card border border-border rounded-lg shadow-xl p-4 w-96 max-w-[95vw] text-destructive">{error}</div>;
 
   const avatarEl = (p: Participant, idx: number) => {
-    const initials = p.label?.trim()?.slice(0, 2).toUpperCase();
-    const hue = (p.id * 47) % 360;
-    const bg = `hsl(${hue} 70% 45%)`;
-    const style: React.CSSProperties = { backgroundColor: bg };
+    const initials = p.label?.trim()?.slice(0, 2).toUpperCase() || 'U';
     return (
-      <div
-        key={`av-${p.id}-${idx}`}
-        className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-semibold ring-2 ring-white"
-        style={style}
-        title={p.label}
-      >
-        {initials || 'U'}
+      <div key={`av-${p.id}-${idx}`} className="relative inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-semibold ring-2 ring-white overflow-hidden bg-muted" title={p.label}>
+        <Image
+          src={`/users/${p.id}/image`}
+          alt={p.label}
+          width={24}
+          height={24}
+          className="w-full h-full object-cover"
+          onError={(e) => { const t = e.currentTarget as unknown as HTMLImageElement; if (t) t.style.display = 'none'; }}
+        />
+        <span className="absolute">{initials}</span>
       </div>
     );
   };
@@ -294,16 +295,18 @@ export default function ConversationClient({ cid, embedded }: { cid: number; emb
   const avatarForId = (uid: number): React.ReactElement => {
     const p = participants.find(pp => pp.id === uid);
     const label = p?.label ?? `#${uid}`;
-    const initials = label.trim().slice(0, 2).toUpperCase();
-    const hue = (uid * 47) % 360;
-    const bg = `hsl(${hue} 70% 45%)`;
+    const initials = label.trim().slice(0, 2).toUpperCase() || 'U';
     return (
-      <div
-        className="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-semibold"
-        style={{ backgroundColor: bg }}
-        title={label}
-      >
-        {initials || 'U'}
+      <div className="relative inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-xs font-semibold overflow-hidden bg-muted" title={label}>
+        <Image
+          src={`/users/${uid}/image`}
+          alt={label}
+          width={32}
+          height={32}
+          className="w-full h-full object-cover"
+          onError={(e) => { const t = e.currentTarget as unknown as HTMLImageElement; if (t) t.style.display = 'none'; }}
+        />
+        <span className="absolute">{initials}</span>
       </div>
     );
   };

@@ -82,8 +82,6 @@ export default function ProjectCard({ startup }: ProjectCardProps) {
                 contentType={ContentType.STARTUP}
                 contentId={startup.id}
                 initialLikeCount={startup.likesCount || 0}
-                userId={null} // TODO: Get from auth context
-                sessionId={null} // TODO: Get from session context
                 size="small"
                 variant="minimal"
                 className="text-white"
