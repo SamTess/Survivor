@@ -78,16 +78,25 @@ export const useBookmark = ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update bookmark status');
+        if (response.status === 409) {
+          // Already bookmarked
+          setIsBookmarked(true);
+          setBookmarkCount((prev: number) => (newIsBookmarked ? prev - 1 : prev + 1));
+          return;
+        }
+        // Revert optimistic update silently
+        setIsBookmarked(!newIsBookmarked);
+        setBookmarkCount((prev: number) => (newIsBookmarked ? prev - 1 : prev + 1));
+        return;
       }
 
       const data = await response.json();
       setBookmarkCount(data.bookmarkCount);
 
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
+  } catch {
+      // Network or unexpected error: revert silently
       setIsBookmarked(!newIsBookmarked);
-      setBookmarkCount((prev: number) => newIsBookmarked ? prev - 1 : prev + 1);
+      setBookmarkCount((prev: number) => (newIsBookmarked ? prev - 1 : prev + 1));
     } finally {
       setIsLoading(false);
     }

@@ -78,16 +78,19 @@ export const useLike = ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update like status');
+        // Revert optimistic update silently
+        setIsLiked(!newIsLiked);
+        setLikeCount((prev: number) => (newIsLiked ? prev - 1 : prev + 1));
+        return;
       }
 
       const data = await response.json();
       setLikeCount(data.likeCount);
 
-    } catch (error) {
-      console.error('Error toggling like:', error);
+  } catch {
+      // Network or unexpected error: revert silently
       setIsLiked(!newIsLiked);
-      setLikeCount((prev: number) => newIsLiked ? prev - 1 : prev + 1);
+      setLikeCount((prev: number) => (newIsLiked ? prev - 1 : prev + 1));
     } finally {
       setIsLoading(false);
     }
