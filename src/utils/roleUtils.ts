@@ -3,7 +3,7 @@
  */
 
 export type UserRole = 'user' | 'admin' | 'investor' | 'founder';
-export type DatabaseRole = 'USER' | 'ADMIN' | 'MODERATOR' | 'FOUNDER';
+export type DatabaseRole = 'USER' | 'ADMIN' | 'INVESTOR' | 'FOUNDER';
 
 /**
  * Normalizes a database role to the frontend UserRole format
@@ -18,7 +18,7 @@ export function normalizeRole(dbRole: string | null | undefined): UserRole {
   switch (upperRole) {
     case 'ADMIN':
       return 'admin';
-    case 'MODERATOR':
+    case 'INVESTOR':
       return 'investor';
     case 'FOUNDER':
       return 'founder';
@@ -38,7 +38,7 @@ export function denormalizeRole(normalizedRole: UserRole): DatabaseRole {
     case 'admin':
       return 'ADMIN';
     case 'investor':
-      return 'MODERATOR';
+      return 'INVESTOR';
     case 'founder':
       return 'FOUNDER';
     case 'user':
