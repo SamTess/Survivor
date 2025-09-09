@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
-  const existing = await prisma.s_USER.findFirst({ where: { email } });
+    const existing = await prisma.s_USER.findFirst({ where: { email } });
     if (existing) return NextResponse.json({ error: 'Email already used' }, { status: 409 });
     const password_hash = hashPassword(password);
     const user = await prisma.s_USER.create({ data: { name, email, password_hash, address: '', role: 'visitor' } });
