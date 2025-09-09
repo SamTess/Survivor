@@ -15,6 +15,8 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, loading, error, clearError, isAuthenticated } = useAuth();
 
+  const isFormValid = email.trim() && password.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length >= 8;
+
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
@@ -284,7 +286,7 @@ export default function LoginPage() {
             <div className="space-y-2">
               <button
                 type="submit"
-                disabled={loading || !email.trim() || !password.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8}
+                disabled={loading || !isFormValid}
                 className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 aria-describedby={loading ? "loading-status" : "submit-help"}
               >
@@ -302,7 +304,7 @@ export default function LoginPage() {
                 )}
               </button>
               <p id="submit-help" className="text-xs text-center text-gray-500">
-                {!email.trim() || !password.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || password.length < 8
+                {!isFormValid
                   ? "Please fill in all required fields correctly to enable sign in"
                   : "All fields are valid. Click to sign in."
                 }
