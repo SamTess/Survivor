@@ -40,7 +40,7 @@ export default function AdminDashboardSection() {
         totalUsers: stats.totalUsers?.value || 0,
         activeProjects: stats.activeProjects?.value || 0,
         NewsArticle: stats.newsArticles?.value || 0,
-        UpcommingEvents: stats.upcomingEvents?.value || 0
+        UpcomingEvents: stats.upcomingEvents?.value || 0
       } : null
 
       const pdfActivity = activityData?.activities?.map(activity => ({
@@ -55,7 +55,7 @@ export default function AdminDashboardSection() {
         totalUsers: trendsResult.data.totalUsers,
         activeProjects: trendsResult.data.activeProjects,
         NewsArticle: trendsResult.data.NewsArticle,
-        UpcommingEvents: trendsResult.data.UpcommingEvents
+        UpcomingEvents: trendsResult.data.UpcommingEvents || trendsResult.data.UpcomingEvents
       } : undefined
 
       await generateDashboardPDF(pdfStats, pdfActivity, null, trends)
