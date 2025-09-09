@@ -106,7 +106,7 @@ function generateMockPortfolioData(): PortfolioData {
       currentValue,
       returnRate,
       sector: sectors[Math.floor(Math.random() * sectors.length)],
-      investmentDate: new Date(2022 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 12), Math.floor(Math.random() * 28)).toISOString(),
+      investmentDate: new Date(2022 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 28)).toISOString(),
       status: statuses[Math.floor(Math.random() * statuses.length)],
       maturity: maturities[Math.floor(Math.random() * maturities.length)]
     };

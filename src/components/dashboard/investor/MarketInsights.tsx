@@ -99,10 +99,33 @@ function getEventTypeIcon(type: string) {
   }
 }
 
+// Helper function to get current quarter and year
+function getCurrentQuarter(): string {
+  const now = new Date();
+  const quarter = Math.floor((now.getMonth() + 3) / 3);
+  const year = now.getFullYear();
+  return `Q${quarter} ${year}`;
+}
+
+// Helper function to get dynamic timeframes
+function getDynamicTimeframes() {
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentQuarter = getCurrentQuarter();
+  
+  return {
+    currentQuarter,
+    last3Months: 'Last 3 months',
+    ytd: `YTD ${currentYear}`,
+    previousQuarter: `Q${Math.floor((now.getMonth() + 3) / 3) - 1 || 4} ${Math.floor((now.getMonth() + 3) / 3) - 1 ? currentYear : currentYear - 1}`
+  };
+}
+
 // Mock data generator
 function generateMockMarketInsights(investor: InvestorApiResponse | null): MarketInsight {
   const sectors = ['FinTech', 'HealthTech', 'EdTech', 'CleanTech', 'E-commerce', 'AI/ML', 'SaaS'];
   const focusSector = investor?.investment_focus || 'FinTech';
+  const timeframes = getDynamicTimeframes();
 
   const trends: MarketTrend[] = [
     {
@@ -111,7 +134,7 @@ function generateMockMarketInsights(investor: InvestorApiResponse | null): Marke
       category: 'sector',
       description: `Investment in ${focusSector} startups has increased significantly this quarter, driven by innovation and market demand.`,
       changePercent: 25.3,
-      timeframe: 'Q3 2024',
+      timeframe: timeframes.currentQuarter,
       relevanceScore: 95
     },
     {
@@ -120,7 +143,7 @@ function generateMockMarketInsights(investor: InvestorApiResponse | null): Marke
       category: 'funding',
       description: 'Early-stage funding shows strong growth with more investors entering the market.',
       changePercent: 15.7,
-      timeframe: 'Last 3 months',
+      timeframe: timeframes.last3Months,
       relevanceScore: 78
     },
     {
@@ -129,7 +152,7 @@ function generateMockMarketInsights(investor: InvestorApiResponse | null): Marke
       category: 'valuation',
       description: 'After a period of correction, startup valuations are finding more realistic levels.',
       changePercent: -5.2,
-      timeframe: 'YTD 2024',
+      timeframe: timeframes.ytd,
       relevanceScore: 82
     },
     {
@@ -138,7 +161,7 @@ function generateMockMarketInsights(investor: InvestorApiResponse | null): Marke
       category: 'exits',
       description: 'M&A activity and IPO filings show increased confidence in the market.',
       changePercent: 32.1,
-      timeframe: 'Q3 2024',
+      timeframe: timeframes.currentQuarter,
       relevanceScore: 71
     }
   ];

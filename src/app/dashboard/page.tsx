@@ -1,11 +1,11 @@
 "use client";
 
-import StatsSection from "@/components/dashboard/StatsSection";
-import StartupForm from "@/components/dashboard/StartupForm";
-import EventsNewsManager from "@/components/dashboard/EventsNewsManager";
-import InvestorPortfolioSection from "@/components/dashboard/InvestorPortfolioSection";
-import InvestmentOpportunities from "@/components/dashboard/InvestmentOpportunities";
-import MarketInsights from "@/components/dashboard/MarketInsights";
+import StatsSection from "@/components/dashboard/founder/StatsSection";
+import StartupForm from "@/components/dashboard/founder/StartupForm";
+import EventsNewsManager from "@/components/dashboard/founder/EventsNewsManager";
+import InvestorPortfolioSection from "@/components/dashboard/investor/InvestorPortfolioSection";
+import InvestmentOpportunities from "@/components/dashboard/investor/InvestmentOpportunities";
+import MarketInsights from "@/components/dashboard/investor/MarketInsights";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Dock from "@/components/ui/Dock";
@@ -54,10 +54,8 @@ export default function Dashboard() {
       setError(null);
 
       try {
-        console.log('User role:', user.role, 'User ID:', user.id);
 
         if (user.role !== 'investor' && user.role !== 'founder') {
-          console.log('User is neither investor nor founder, redirecting to profile page');
           router.push('/profile');
           return;
         }
@@ -66,7 +64,6 @@ export default function Dashboard() {
           const response = await apiService.get<InvestorApiResponse>(`/users/${user.id}/investor`);
           if (response.success && response.data) {
             setUserInvestor(response.data);
-            console.log('Investor data loaded:', response.data);
           } else {
             console.log('No investor data found for user, creating mock investor data'); // TODO REMOVE
             const mockInvestor: InvestorApiResponse = {
@@ -131,9 +128,6 @@ export default function Dashboard() {
       ro.disconnect();
     };
   }, []);
-
-  // Debug info
-  console.log('Dashboard render - User:', user, 'UserInvestor:', userInvestor, 'Loading:', loading);
 
   if (loading) {
     return (
