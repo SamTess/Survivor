@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function POST(req: NextRequest) {
+export async function POST(_req: NextRequest) {
   try {
     const updated: { id: number; from: string | null; to: string }[] = [];
 
