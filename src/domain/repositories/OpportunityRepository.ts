@@ -16,6 +16,7 @@ export type ScoreBreakdown = {
   stage: number;
   geo: number;
   engagement: number;
+  budget?: number;
 };
 
 export interface OpportunityScoringService {

@@ -9,8 +9,12 @@ export type StartupForScoring = {
   likesCount?: number;
   bookmarksCount?: number;
   details: Array<{ needs?: string | null }>;
+  ask_min_eur?: number | null;
+  ask_max_eur?: number | null;
+  round?: string | null;
 };
 
 export interface OpportunityReadRepository {
   getStartupForScoring(id: number): Promise<StartupForScoring | null>;
+  getStartupsForScoring(): Promise<StartupForScoring[]>;
 }

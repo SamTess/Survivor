@@ -1,113 +1,42 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { FiSearch, FiMapPin, FiUsers, FiEye, FiHeart, FiBookmark } from "react-icons/fi";
-import { FaRocket, FaStar } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
+import { FaRocket } from "react-icons/fa";
 import { InvestorApiResponse } from "@/domain/interfaces/Investor";
 
-interface StartupOpportunity {
-  id: number;
-  name: string;
-  description: string;
-  sector: string;
-  maturity: string;
-  location: string;
-  foundingDate: string;
-  fundingGoal: number;
-  fundingRaised: number;
-  valuation: number;
-  minimumInvestment: number;
-  riskLevel: 'low' | 'medium' | 'high';
-  investorCount: number;
-  viewsCount: number;
-  likesCount: number;
-  bookmarksCount: number;
-  founderNames: string[];
-  tags: string[];
-  pitchVideoUrl?: string;
-  businessPlan?: string;
-  matchScore: number; // How well it matches investor's focus
-}
+type OpportunityItem = {
+  id: string;
+  direction: string;
+  source_type: string;
+  source_id: number;
+  target_type: string;
+  target_id: number;
+  score?: number | null;
+  score_breakdown?: Record<string, number> | null;
+  status: string;
+  updated_at: string | Date;
+};
 
 interface InvestmentOpportunitiesProps {
   investor: InvestorApiResponse | null;
 }
 
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'EUR',
-    notation: 'compact',
-    maximumFractionDigits: 1
-  }).format(amount);
-}
-
-function getRiskColor(risk: 'low' | 'medium' | 'high') {
-  switch (risk) {
-    case 'low': return 'text-green-600 bg-green-100 dark:bg-green-900/20 dark:text-green-400';
-    case 'medium': return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400';
-    case 'high': return 'text-red-600 bg-red-100 dark:bg-red-900/20 dark:text-red-400';
-  }
-}
-
-function getMatchScoreColor(score: number) {
-  if (score >= 80) return 'text-green-600 bg-green-100 dark:bg-green-900/20 dark:text-green-400';
-  if (score >= 60) return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400';
-  if (score >= 40) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400';
+function badgeForScore(score?: number | null) {
+  const s = typeof score === 'number' ? score : 0;
+  if (s >= 80) return 'text-green-600 bg-green-100 dark:bg-green-900/20 dark:text-green-400';
+  if (s >= 60) return 'text-blue-600 bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400';
+  if (s >= 40) return 'text-yellow-600 bg-yellow-100 dark:bg-yellow-900/20 dark:text-yellow-400';
   return 'text-gray-600 bg-gray-100 dark:bg-gray-900/20 dark:text-gray-400';
 }
 
-// Mock data generator
-function generateMockOpportunities(investor: InvestorApiResponse | null): StartupOpportunity[] {
-  const sectors = ['FinTech', 'HealthTech', 'EdTech', 'CleanTech', 'E-commerce', 'AI/ML', 'SaaS', 'IoT', 'Blockchain', 'AgTech'];
-  const maturities = ['Seed', 'Pre-Series A', 'Series A', 'Series B'];
-  const locations = ['Paris', 'London', 'Berlin', 'Amsterdam', 'Barcelona', 'Milan', 'Stockholm', 'Dublin'];
-  const riskLevels: ('low' | 'medium' | 'high')[] = ['low', 'medium', 'high'];
-
-  return Array.from({ length: 20 }, (_, i) => {
-    const fundingGoal = 500000 + Math.random() * 5000000;
-    const fundingRaised = Math.random() * fundingGoal * 0.8;
-    const sector = sectors[Math.floor(Math.random() * sectors.length)];
-
-    // Higher match score if sector matches investor focus
-    let matchScore = 30 + Math.random() * 40;
-    if (investor?.investment_focus && sector.toLowerCase().includes(investor.investment_focus.toLowerCase())) {
-      matchScore = 70 + Math.random() * 30;
-    }
-
-    return {
-      id: i + 1,
-      name: `${sector} Startup ${String.fromCharCode(65 + i)}`,
-      description: `Innovative ${sector.toLowerCase()} solution revolutionizing the industry with cutting-edge technology and sustainable business practices.`,
-      sector,
-      maturity: maturities[Math.floor(Math.random() * maturities.length)],
-      location: locations[Math.floor(Math.random() * locations.length)],
-      foundingDate: new Date(2020 + Math.floor(Math.random() * 4), Math.floor(Math.random() * 12), 1).toISOString(),
-      fundingGoal,
-      fundingRaised,
-      valuation: fundingGoal * (2 + Math.random() * 8),
-      minimumInvestment: 10000 + Math.random() * 90000,
-      riskLevel: riskLevels[Math.floor(Math.random() * riskLevels.length)],
-      investorCount: Math.floor(Math.random() * 50) + 5,
-      viewsCount: Math.floor(Math.random() * 10000) + 100,
-      likesCount: Math.floor(Math.random() * 500) + 10,
-      bookmarksCount: Math.floor(Math.random() * 100) + 5,
-      founderNames: [`Founder ${i + 1}A`, `Founder ${i + 1}B`],
-      tags: [sector, maturities[Math.floor(Math.random() * maturities.length)], 'Growth', 'Innovation'].slice(0, 3),
-      matchScore: Math.round(matchScore)
-    };
-  }).sort((a, b) => b.matchScore - a.matchScore);
-}
-
 export default function InvestmentOpportunities({ investor }: InvestmentOpportunitiesProps) {
-  const [opportunities, setOpportunities] = useState<StartupOpportunity[]>([]);
+  const [opportunities, setOpportunities] = useState<OpportunityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSector, setSelectedSector] = useState<string>('all');
-  const [selectedMaturity, setSelectedMaturity] = useState<string>('all');
-  const [selectedRisk, setSelectedRisk] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   useEffect(() => {
     const fetchOpportunities = async () => {
@@ -115,12 +44,15 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
       setError(null);
 
       try {
-        // For now, use mock data. In production:
-        // const response = await apiService.get<StartupOpportunity[]>(`/investment-opportunities?investor_id=${investor?.id}`);
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const mockData = generateMockOpportunities(investor);
-        setOpportunities(mockData);
+        if (!investor?.id) {
+          setOpportunities([]);
+          setLoading(false);
+          return;
+        }
+        const res = await fetch(`/api/opportunities?type=INVESTOR&id=${investor.id}&limit=50`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error || 'Erreur API');
+        setOpportunities(json.items as OpportunityItem[]);
       } catch (error) {
         console.error('Error fetching investment opportunities:', error);
         setError('Failed to load investment opportunities');
@@ -132,20 +64,59 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
     fetchOpportunities();
   }, [investor]);
 
-  const filteredOpportunities = opportunities.filter(opportunity => {
-    const matchesSearch = opportunity.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         opportunity.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         opportunity.sector.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesSector = selectedSector === 'all' || opportunity.sector === selectedSector;
-    const matchesMaturity = selectedMaturity === 'all' || opportunity.maturity === selectedMaturity;
-    const matchesRisk = selectedRisk === 'all' || opportunity.riskLevel === selectedRisk;
-
-    return matchesSearch && matchesSector && matchesMaturity && matchesRisk;
+  const filteredOpportunities = opportunities.filter(op => {
+    const label = `${op.source_type} ${op.source_id} ${op.target_type} ${op.target_id}`.toLowerCase();
+    const matchesSearch = label.includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || op.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  const sectors = [...new Set(opportunities.map(op => op.sector))];
-  const maturities = [...new Set(opportunities.map(op => op.maturity))];
+  const refresh = async () => {
+    if (!investor?.id) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/opportunities?type=INVESTOR&id=${investor.id}&limit=50`);
+      const json = await res.json();
+      if (json.success) setOpportunities(json.items as OpportunityItem[]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const generate = async () => {
+    if (!investor?.id) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/opportunities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mode: 'investor', id: investor.id, topK: 20, minScore: 45 }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Génération échouée');
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateStatus = async (opId: string, status: string) => {
+    try {
+      const res = await fetch('/api/opportunities', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: opId, status }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Mise à jour échouée');
+      await refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Erreur');
+    }
+  };
 
   if (loading) {
     return (
@@ -190,9 +161,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-foreground">Investment Opportunities</h2>
-              <p className="text-sm text-muted-foreground">
-                Discover startups that match your investment focus
-              </p>
+              <p className="text-sm text-muted-foreground">Matches générés pour votre profil investisseur</p>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -216,6 +185,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                   <div className="bg-current h-0.5 rounded"></div>
                 </div>
               </button>
+              <button onClick={generate} className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90">Générer</button>
             </div>
           </div>
 
@@ -231,39 +201,20 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                 className="w-full pl-10 pr-4 py-2 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               />
             </div>
-
             <div className="flex gap-2">
               <select
-                value={selectedSector}
-                onChange={(e) => setSelectedSector(e.target.value)}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
                 className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
               >
-                <option value="all">All Sectors</option>
-                {sectors.map(sector => (
-                  <option key={sector} value={sector}>{sector}</option>
-                ))}
-              </select>
-
-              <select
-                value={selectedMaturity}
-                onChange={(e) => setSelectedMaturity(e.target.value)}
-                className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              >
-                <option value="all">All Stages</option>
-                {maturities.map(maturity => (
-                  <option key={maturity} value={maturity}>{maturity}</option>
-                ))}
-              </select>
-
-              <select
-                value={selectedRisk}
-                onChange={(e) => setSelectedRisk(e.target.value)}
-                className="px-3 py-2 text-sm bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors"
-              >
-                <option value="all">All Risk Levels</option>
-                <option value="low">Low Risk</option>
-                <option value="medium">Medium Risk</option>
-                <option value="high">High Risk</option>
+                <option value="all">All Status</option>
+                <option value="new">new</option>
+                <option value="qualified">qualified</option>
+                <option value="contacted">contacted</option>
+                <option value="in_discussion">in_discussion</option>
+                <option value="pilot">pilot</option>
+                <option value="deal">deal</option>
+                <option value="lost">lost</option>
               </select>
             </div>
           </div>
@@ -271,7 +222,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
           <div className="flex items-center justify-between text-sm text-muted-foreground">
             <span>{filteredOpportunities.length} opportunities found</span>
             {investor?.investment_focus && (
-              <span>Matched to your focus: <strong>{investor.investment_focus}</strong></span>
+              <span>Focus: <strong>{investor.investment_focus}</strong></span>
             )}
           </div>
         </div>
@@ -287,96 +238,54 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-2">
                 <FaRocket className="text-primary" size={16} />
-                <h3 className="font-semibold text-foreground">{opportunity.name}</h3>
+                {(() => {
+                  const isStartupTarget = opportunity.target_type === 'STARTUP';
+                  const startupId = isStartupTarget ? opportunity.target_id : (opportunity.source_type === 'STARTUP' ? opportunity.source_id : null);
+                  return (
+                    <a className="font-semibold text-foreground hover:underline" href={startupId ? `/projects/${startupId}` : undefined} target={startupId ? '_self' : undefined}>
+                      {startupId ? `Startup #${startupId}` : `${opportunity.source_type} #${opportunity.source_id} → ${opportunity.target_type} #${opportunity.target_id}`}
+                    </a>
+                  );
+                })()}
               </div>
-              <div className="flex items-center gap-1">
-                <FaStar className="text-yellow-500" size={12} />
-                <span className={`px-2 py-1 text-xs rounded-full font-medium ${getMatchScoreColor(opportunity.matchScore)}`}>
-                  {opportunity.matchScore}% match
-                </span>
-              </div>
-            </div>
-
-            <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-              {opportunity.description}
-            </p>
-
-            <div className="flex flex-wrap gap-2 mb-3">
-              <span className="px-2 py-1 text-xs bg-primary/10 text-primary rounded-full">
-                {opportunity.sector}
-              </span>
-              <span className="px-2 py-1 text-xs bg-secondary/50 text-secondary-foreground rounded-full">
-                {opportunity.maturity}
-              </span>
-              <span className={`px-2 py-1 text-xs rounded-full ${getRiskColor(opportunity.riskLevel)}`}>
-                {opportunity.riskLevel} risk
+              <span className={`px-2 py-1 text-xs rounded-full font-medium ${badgeForScore(opportunity.score)}`}>
+                {typeof opportunity.score === 'number' ? `${Math.round(opportunity.score)}%` : '—'}
               </span>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
-              <div>
-                <p className="text-muted-foreground">Target Funding</p>
-                <p className="font-semibold text-foreground">{formatCurrency(opportunity.fundingGoal)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Min. Investment</p>
-                <p className="font-semibold text-foreground">{formatCurrency(opportunity.minimumInvestment)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Valuation</p>
-                <p className="font-semibold text-foreground">{formatCurrency(opportunity.valuation)}</p>
-              </div>
-              <div>
-                <p className="text-muted-foreground">Progress</p>
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-secondary/30 rounded-full h-2">
-                    <div
-                      className="bg-primary h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${(opportunity.fundingRaised / opportunity.fundingGoal) * 100}%` }}
-                    ></div>
+            {opportunity.score_breakdown && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-3 text-xs">
+                {Object.entries(opportunity.score_breakdown).map(([k, v]) => (
+                  <div key={k} className="bg-secondary/30 rounded-md px-2 py-1 flex items-center justify-between">
+                    <span className="text-muted-foreground capitalize">{k}</span>
+                    <span className="text-foreground font-medium">{Math.round(Number(v))}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {Math.round((opportunity.fundingRaised / opportunity.fundingGoal) * 100)}%
-                  </span>
-                </div>
+                ))}
               </div>
-            </div>
+            )}
 
             <div className="flex items-center justify-between pt-3 border-t border-border/20">
-              <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <FiMapPin size={12} />
-                  <span>{opportunity.location}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <FiUsers size={12} />
-                  <span>{opportunity.investorCount} investors</span>
-                </div>
+              <div className="text-xs text-muted-foreground">
+                <span className="mr-2">{opportunity.direction}</span>
+                <span>{new Date(opportunity.updated_at).toLocaleString()}</span>
               </div>
 
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <FiEye size={12} />
-                  <span>{opportunity.viewsCount}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <FiHeart size={12} />
-                  <span>{opportunity.likesCount}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <FiBookmark size={12} />
-                  <span>{opportunity.bookmarksCount}</span>
-                </div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <label htmlFor={`status-${opportunity.id}`} className="sr-only">Status</label>
+                <select
+                  id={`status-${opportunity.id}`}
+                  value={opportunity.status}
+                  onChange={(e) => updateStatus(opportunity.id, e.target.value)}
+                  className="px-2 py-1 bg-background border border-border rounded-md"
+                >
+                  <option value="new">new</option>
+                  <option value="qualified">qualified</option>
+                  <option value="contacted">contacted</option>
+                  <option value="in_discussion">in_discussion</option>
+                  <option value="pilot">pilot</option>
+                  <option value="deal">deal</option>
+                  <option value="lost">lost</option>
+                </select>
               </div>
-            </div>
-
-            <div className="flex gap-2 mt-3">
-              <button className="flex-1 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium">
-                View Details
-              </button>
-              <button className="px-4 py-2 border border-border rounded-lg hover:bg-secondary/50 transition-colors text-sm">
-                <FiBookmark size={14} />
-              </button>
             </div>
           </div>
         ))}

@@ -28,8 +28,8 @@ export default function OpportunitiesPage() {
         const json = await res.json();
         if (json.success) setItems(json.items || []);
         else setError(json.error || "Erreur inconnue");
-      } catch (e: any) {
-        setError(e?.message || "Erreur réseau");
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Erreur réseau");
       } finally {
         setLoading(false);
       }

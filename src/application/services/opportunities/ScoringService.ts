@@ -4,6 +4,8 @@ import { InvestorRepository } from "../../../domain/repositories/InvestorReposit
 import { PartnerRepository } from "../../../domain/repositories/PartnerRepository";
 import { StartupRepository } from "../../../domain/repositories/StartupRepository";
 import { OpportunityReadRepository, StartupForScoring } from "../../../domain/repositories/OpportunityReadRepository";
+import { InvestmentFundRepository } from "../../../domain/repositories/InvestmentFundRepository";
+import { InvestmentFund } from "../../../domain/interfaces/InvestmentFund";
 
 type Vec = number[];
 
@@ -44,6 +46,7 @@ export class ScoringService {
     private readonly investorRepo: InvestorRepository,
     private readonly partnerRepo: PartnerRepository,
   private readonly readRepo?: OpportunityReadRepository,
+  private readonly fundRepo?: InvestmentFundRepository,
   ) {}
 
   // Placeholder feature extraction. In a next iteration, persist vectors/tags.
@@ -82,13 +85,76 @@ export class ScoringService {
     return 0;
   }
 
-  private scorePair(A: { type: EntityType; country?: string | null; tags: Set<string>; tfidfVec: number[]; maturity?: string | null; needsText?: string | null; signals?: { views: number; likes: number; bookmarks: number; createdAt: Date } | null; },
-                    B: { type: EntityType; country?: string | null; tags: Set<string>; tfidfVec: number[]; focusText?: string | null; }) {
+  // Budget/fund fit sub-score for Startup ↔ Investor (0..20)
+  private budgetScoreInvestor(startup: StartupForScoring, funds: InvestmentFund[] | null | undefined): number {
+    if (!funds || funds.length === 0) return 0;
+    const askMin = startup.ask_min_eur ?? null;
+    const askMax = startup.ask_max_eur ?? null;
+    if (askMin == null && askMax == null) return 0;
+
+    const now = new Date();
+    let best = 0; // keep best across funds
+    for (const f of funds) {
+      const fMin = f.ticket_min_eur ?? null;
+      const fMax = f.ticket_max_eur ?? null;
+
+      let base = 0; // 0..15 based on ticket overlap/distance
+      if (fMin != null && fMax != null && askMin != null && askMax != null) {
+        // overlap check
+        const overlap = !(askMax < fMin || askMin > fMax);
+        if (overlap) {
+          base = 15;
+        } else if (askMax < fMin) {
+          const r = Math.max(0, Math.min(1, askMax / fMin));
+          base = 15 * r;
+        } else if (askMin > fMax) {
+          const r = Math.max(0, Math.min(1, fMax / askMin));
+          base = 15 * r;
+        }
+      } else if (fMin != null && askMax != null) {
+        const r = Math.max(0, Math.min(1, askMax / fMin));
+        base = 15 * r;
+      } else if (fMax != null && askMin != null) {
+        const r = Math.max(0, Math.min(1, fMax / askMin));
+        base = 15 * r;
+      } else {
+        base = 0;
+      }
+
+      // availability bonuses up to 5
+      let avail = 0;
+      // +3 if we're within investment period
+      if (f.investment_period_start && f.investment_period_end) {
+        if (now >= f.investment_period_start && now <= f.investment_period_end) {
+          avail += 3;
+        }
+      }
+      // +2 scaled by dry powder ratio
+      if (f.dry_powder_eur && f.aum_eur && f.aum_eur > 0) {
+        const ratio = Math.max(0, Math.min(1, (f.dry_powder_eur || 0) / f.aum_eur));
+        avail += 2 * ratio;
+      }
+
+      best = Math.max(best, base + avail);
+    }
+    return Math.max(0, Math.min(20, best));
+  }
+
+  private scorePair(
+    A: { type: EntityType; country?: string | null; tags: Set<string>; tfidfVec: number[]; maturity?: string | null; needsText?: string | null; signals?: { views: number; likes: number; bookmarks: number; createdAt: Date } | null; focusText?: string | null; },
+    B: { type: EntityType; country?: string | null; tags: Set<string>; tfidfVec: number[]; maturity?: string | null; needsText?: string | null; signals?: { views: number; likes: number; bookmarks: number; createdAt: Date } | null; focusText?: string | null; }
+  ) {
     const sTags = 40 * jaccard(A.tags, B.tags);
     const sText = 25 * cosine(A.tfidfVec, B.tfidfVec);
-    const sStage = 15 * (this.stageHeuristic(A.needsText, A.maturity, B.focusText) / 15);
+    const aIsStartup = A.type === EntityType.STARTUP;
+    const bIsStartup = B.type === EntityType.STARTUP;
+    const sStage = aIsStartup
+      ? 15 * (this.stageHeuristic(A.needsText ?? null, A.maturity ?? null, B.focusText ?? null) / 15)
+      : bIsStartup
+        ? 15 * (this.stageHeuristic(B.needsText ?? null, B.maturity ?? null, A.focusText ?? null) / 15)
+        : 0;
     const sGeo = geoScore(A.country, B.country);
-    const sEng = engagementBonus(A.signals);
+    const sEng = aIsStartup ? engagementBonus(A.signals) : (bIsStartup ? engagementBonus(B.signals) : 0);
 
     const score = Math.min(100, sTags + sText + sStage + sGeo + sEng);
     const breakdown: ScoreBreakdown = { tags: sTags, text: sText, stage: sStage, geo: sGeo, engagement: sEng };
@@ -115,7 +181,15 @@ export class ScoringService {
         address: inv.address,
       });
   const { score, breakdown } = this.scorePair({ type: 'STARTUP' as EntityType, ...sFeat }, { type: 'INVESTOR' as EntityType, ...iFeat });
-  if (score >= minScore) matches.push({ direction: 'S->I' as OpportunityDirection, targetType: 'INVESTOR' as EntityType, targetId: inv.id, score, breakdown });
+      // Budget/fund fit
+      let budget = 0;
+      if (this.fundRepo) {
+        const funds = await this.fundRepo.getByInvestor(inv.id);
+        budget = this.budgetScoreInvestor(startup, funds);
+      }
+      const total = Math.min(100, score + budget);
+      const fullBreakdown: ScoreBreakdown = { ...breakdown, budget };
+      if (total >= minScore) matches.push({ direction: 'S->I' as OpportunityDirection, targetType: 'INVESTOR' as EntityType, targetId: inv.id, score: total, breakdown: fullBreakdown });
     }
     for (const par of partners) {
       const pFeat = this.extractPartnerFeatures({
@@ -140,7 +214,7 @@ export class ScoringService {
         target_id: m.targetId,
         score: +m.score.toFixed(2),
         score_breakdown: m.breakdown as unknown as Record<string, number>,
-  status: 'new' as unknown as OpportunityStatus,
+  status: (m.score >= 70 ? 'qualified' : 'new') as unknown as OpportunityStatus,
       });
       // Journaliser l'événement de création/maj automatique
       await this.opportunityRepo.logEvent({
@@ -148,6 +222,82 @@ export class ScoringService {
         type: 'auto_created',
         payload: { score: op.score, breakdown: op.score_breakdown, source: 'generateForStartup' },
       });
+      created++;
+    }
+    return { created };
+  }
+
+  async generateForInvestor(investorId: number, topK = 10, minScore = 45) {
+    // Load investor and all startups
+    const [inv, startups] = await Promise.all([
+      this.investorRepo.getById(investorId),
+      this.readRepo ? this.readRepo.getStartupsForScoring() : Promise.resolve([]),
+    ]);
+    if (!inv || !startups.length) return { created: 0 };
+  const iFeat = this.extractInvestorFeatures({ investment_focus: inv.investment_focus, description: inv.description, address: inv.address });
+  const invFunds = this.fundRepo ? await this.fundRepo.getByInvestor(investorId) : null;
+    const matches: Array<{ targetId: number; score: number; breakdown: ScoreBreakdown }> = [];
+    for (const s of startups) {
+      const sFeat = this.extractStartupFeatures(s);
+      const { score, breakdown } = this.scorePair({ type: EntityType.INVESTOR, ...iFeat }, { type: EntityType.STARTUP, ...sFeat });
+      // Budget/fund fit once per investor, reuse cached funds if possible
+      let budget = 0;
+      if (this.fundRepo) {
+        budget = this.budgetScoreInvestor(s, invFunds ?? undefined);
+      }
+      const total = Math.min(100, score + budget);
+      const fullBreakdown: ScoreBreakdown = { ...breakdown, budget };
+      if (total >= minScore) matches.push({ targetId: s.id, score: total, breakdown: fullBreakdown });
+    }
+    matches.sort((a, b) => b.score - a.score);
+    const top = matches.slice(0, topK);
+    let created = 0;
+    for (const m of top) {
+      const op = await this.opportunityRepo.upsertUnique({
+        direction: 'I->S' as OpportunityDirection,
+        source_type: 'INVESTOR' as EntityType,
+        source_id: investorId,
+        target_type: 'STARTUP' as EntityType,
+        target_id: m.targetId,
+        score: +m.score.toFixed(2),
+        score_breakdown: m.breakdown as unknown as Record<string, number>,
+        status: (m.score >= 70 ? 'qualified' : 'new') as unknown as OpportunityStatus,
+      });
+      await this.opportunityRepo.logEvent({ opportunity_id: op.id, type: 'auto_created', payload: { score: op.score, breakdown: op.score_breakdown, source: 'generateForInvestor' } });
+      created++;
+    }
+    return { created };
+  }
+
+  async generateForPartner(partnerId: number, topK = 10, minScore = 45) {
+    // Load partner and all startups
+    const [par, startups] = await Promise.all([
+      this.partnerRepo.getById(partnerId),
+      this.readRepo ? this.readRepo.getStartupsForScoring() : Promise.resolve([]),
+    ]);
+    if (!par || !startups.length) return { created: 0 };
+    const pFeat = this.extractPartnerFeatures({ partnership_type: par.partnership_type, description: par.description, address: par.address });
+    const matches: Array<{ targetId: number; score: number; breakdown: ScoreBreakdown }> = [];
+    for (const s of startups) {
+      const sFeat = this.extractStartupFeatures(s);
+  const { score, breakdown } = this.scorePair({ type: EntityType.PARTNER, ...pFeat }, { type: EntityType.STARTUP, ...sFeat });
+      if (score >= minScore) matches.push({ targetId: s.id, score, breakdown });
+    }
+    matches.sort((a, b) => b.score - a.score);
+    const top = matches.slice(0, topK);
+    let created = 0;
+    for (const m of top) {
+      const op = await this.opportunityRepo.upsertUnique({
+        direction: 'P->S' as OpportunityDirection,
+        source_type: 'PARTNER' as EntityType,
+        source_id: partnerId,
+        target_type: 'STARTUP' as EntityType,
+        target_id: m.targetId,
+        score: +m.score.toFixed(2),
+        score_breakdown: m.breakdown as unknown as Record<string, number>,
+        status: (m.score >= 70 ? 'qualified' : 'new') as unknown as OpportunityStatus,
+      });
+      await this.opportunityRepo.logEvent({ opportunity_id: op.id, type: 'auto_created', payload: { score: op.score, breakdown: op.score_breakdown, source: 'generateForPartner' } });
       created++;
     }
     return { created };

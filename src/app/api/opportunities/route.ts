@@ -6,6 +6,7 @@ import { PartnerRepositoryPrisma } from '../../../infrastructure/persistence/pri
 import { ScoringService } from '../../../application/services/opportunities/ScoringService';
 import { OpportunityReadRepositoryPrisma } from '../../../infrastructure/persistence/prisma/OpportunityReadRepositoryPrisma';
 import { EntityType, OpportunityStatus } from '../../../domain/enums/Opportunities';
+import { InvestmentFundRepositoryPrisma } from '../../../infrastructure/persistence/prisma/InvestmentFundRepositoryPrisma';
 
 const opportunityRepo = new OpportunityRepositoryPrisma();
 const scoringService = new ScoringService(
@@ -14,18 +15,31 @@ const scoringService = new ScoringService(
   new InvestorRepositoryPrisma(),
   new PartnerRepositoryPrisma(),
   new OpportunityReadRepositoryPrisma(),
+  new InvestmentFundRepositoryPrisma(),
 );
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-  const startupId = Number(body.startupId);
-    if (!Number.isInteger(startupId) || startupId <= 0) {
-      return NextResponse.json({ success: false, error: 'startupId invalide' }, { status: 400 });
-    }
+    const mode = String(body.mode || 'startup'); // 'startup' | 'investor' | 'partner'
+    const id = Number(body.id);
     const topK = body.topK ? Number(body.topK) : 10;
     const minScore = body.minScore ? Number(body.minScore) : 45;
-    const res = await scoringService.generateForStartup(startupId, topK, minScore);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return NextResponse.json({ success: false, error: 'id invalide' }, { status: 400 });
+    }
+
+    let res: unknown;
+    if (mode === 'startup') {
+      res = await scoringService.generateForStartup(id, topK, minScore);
+    } else if (mode === 'investor') {
+      res = await scoringService.generateForInvestor(id, topK, minScore);
+    } else if (mode === 'partner') {
+      res = await scoringService.generateForPartner(id, topK, minScore);
+    } else {
+      return NextResponse.json({ success: false, error: 'mode invalide' }, { status: 400 });
+    }
     return NextResponse.json({ success: true, data: res });
   } catch (e) {
     return NextResponse.json({ success: false, error: e instanceof Error ? e.message : 'Erreur' }, { status: 500 });
@@ -39,8 +53,21 @@ export async function GET(request: NextRequest) {
   const status = searchParams.get('status') as OpportunityStatus | null;
   const page = Number(searchParams.get('page') || '1');
   const limit = Number(searchParams.get('limit') || '10');
+  const action = searchParams.get('action');
 
   try {
+    if (action === 'batch') {
+      // Trigger a simple batch for the N latest startups
+      const n = Number(searchParams.get('n') || '10');
+      const startups = await new StartupRepositoryPrisma().getAll();
+      const latest = startups.slice(0, n);
+      let totalCreated = 0;
+      for (const s of latest) {
+        const res = await scoringService.generateForStartup(s.id, 10, 45);
+        totalCreated += res.created;
+      }
+      return NextResponse.json({ success: true, processed: latest.length, created: totalCreated });
+    }
     if (type && id) {
       const res = await opportunityRepo.listForEntity(type, Number(id), page, limit);
       return NextResponse.json({ success: true, ...res });

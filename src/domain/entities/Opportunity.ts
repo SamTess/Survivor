@@ -13,6 +13,18 @@ export type Opportunity = {
   reason?: string | null;
   next_action?: string | null;
   owner_user_id?: number | null;
+  // optional financial fields
+  deal_type?: string | null;
+  round?: string | null;
+  proposed_amount_eur?: unknown;
+  valuation_pre_money_eur?: unknown;
+  ownership_target_pct?: unknown;
+  fund_id?: string | null;
+  budget_fit?: string | null;
+  budget_fit_score?: unknown;
+  pilot_estimated_cost_eur?: unknown;
+  pilot_budget_fit?: string | null;
+  term_deadline?: Date | null;
   created_at: Date;
   updated_at: Date;
 };

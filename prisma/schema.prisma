@@ -34,6 +34,42 @@ enum OpportunityStatus {
   LOST
 }
 
+// Financial/deal enums
+enum DealType {
+  EQUITY
+  CONVERTIBLE
+  SAFE
+  GRANT
+  REVENUE_BASED
+  PARTNERSHIP
+  PILOT
+  LICENSE
+  COMMERCIAL
+}
+
+enum BudgetFit {
+  BELOW_RANGE
+  WITHIN_RANGE
+  ABOVE_RANGE
+  UNKNOWN
+}
+
+enum PilotBudgetFit {
+  WITHIN
+  OVER
+  UNDER
+  UNKNOWN
+}
+
+enum Round {
+  PRE_SEED
+  SEED
+  A
+  B
+  C
+  GROWTH
+}
+
 enum OpportunityEventType {
   AUTO_CREATED
   RESCORED
@@ -58,6 +94,18 @@ model OPPORTUNITY {
   reason         String?
   next_action    String?
   owner_user_id  Int?
+  // Financial/deal enrichment
+  deal_type               DealType?
+  round                   Round?
+  proposed_amount_eur     Decimal? @db.Decimal(18, 2)
+  valuation_pre_money_eur Decimal? @db.Decimal(18, 2)
+  ownership_target_pct    Decimal? @db.Decimal(5, 2)
+  fund_id                 String?
+  budget_fit              BudgetFit?
+  budget_fit_score        Decimal? @db.Decimal(5, 2)
+  pilot_estimated_cost_eur Decimal? @db.Decimal(18, 2)
+  pilot_budget_fit        PilotBudgetFit?
+  term_deadline           DateTime?
   created_at     DateTime            @default(now())
   updated_at     DateTime            @updatedAt
 
@@ -101,6 +149,17 @@ model S_STARTUP {
   bookmarksCount Int      @default(0)
   sharesCount    Int      @default(0)
   followersCount Int      @default(0)
+  // Funding needs (optional)
+  fundraising_status String? // not_raising|preparing|raising|closed
+  round              String? // pre-seed|seed|A|B|C|growth (kept as string to avoid breaking existing forms)
+  ask_currency       String? @db.Char(3)
+  ask_min            Decimal? @db.Decimal(18, 2)
+  ask_max            Decimal? @db.Decimal(18, 2)
+  ask_min_eur        Decimal? @db.Decimal(18, 2)
+  ask_max_eur        Decimal? @db.Decimal(18, 2)
+  use_of_funds       String?
+  revenue_arr_eur    Decimal? @db.Decimal(18, 2)
+  runway_months      Int?
 }
 
 model S_STARTUP_DETAIL {
@@ -165,6 +224,8 @@ model S_INVESTOR {
   investment_focus String?
   user_id          Int?
   user             S_USER?  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  // Relation to investment funds
+  funds            INVESTMENT_FUND[]
 
   @@unique([user_id])
   created_at       DateTime @default(now())
@@ -189,6 +250,11 @@ model S_PARTNER {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
   @@index([partnership_type])
+  // Pilot budget (optional)
+  budget_cycle         String? // one_off|quarterly|annual
+  pilot_budget_min_eur Decimal? @db.Decimal(18, 2)
+  pilot_budget_max_eur Decimal? @db.Decimal(18, 2)
+  program_names        String[]
 }
 
 model S_NEWS {
@@ -485,4 +551,42 @@ model S_USER_ROLE {
 
   @@id([user_id, role])
   @@index([role])
+}
+
+// Feature persistence for scoring
+model FEATURE_VECTOR {
+  id           String     @id @default(uuid())
+  entity_type  EntityType
+  entity_id    Int
+  tags         String[]
+  tfidf        Json
+  updated_at   DateTime   @updatedAt
+  created_at   DateTime   @default(now())
+
+  @@unique([entity_type, entity_id])
+  @@index([entity_type])
+}
+
+// Investment funds for investors
+model INVESTMENT_FUND {
+  id                      String   @id @default(uuid())
+  investor_id             Int
+  name                    String
+  vintage                 Int?
+  aum_eur                 Decimal? @db.Decimal(18, 2)
+  dry_powder_eur          Decimal? @db.Decimal(18, 2)
+  investment_period_start DateTime?
+  investment_period_end   DateTime?
+  ticket_min_eur          Decimal? @db.Decimal(18, 2)
+  ticket_max_eur          Decimal? @db.Decimal(18, 2)
+  follow_on_ratio         Decimal? @db.Decimal(4, 2)
+  sector_focus            String[]
+  geo_focus               String[]
+  stage_focus             String[]
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  investor S_INVESTOR @relation(fields: [investor_id], references: [id], onDelete: Cascade)
+
+  @@index([investor_id])
 }
