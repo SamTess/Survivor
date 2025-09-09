@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Project } from './types'
+import type { Project, CreateProjectData } from './types'
 
 export const useProjectsData = () => {
   const [projects, setProjects] = useState<Project[]>([])
@@ -26,7 +26,7 @@ export const useProjectsData = () => {
     }
   }
 
-  const createProject = async (projectData: Omit<Project, 'id' | 'created_at' | 'viewsCount' | 'likesCount' | 'bookmarksCount' | 'followersCount'>) => {
+  const createProject = async (projectData: CreateProjectData) => {
     const response = await fetch('/api/startups', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

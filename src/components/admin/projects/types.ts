@@ -28,6 +28,8 @@ export interface ProjectFormData {
   description: string
 }
 
+export type CreateProjectData = Omit<Project, 'id' | 'created_at' | 'viewsCount' | 'likesCount' | 'bookmarksCount' | 'followersCount'>
+
 export interface AlertState {
   isOpen: boolean
   title: string
