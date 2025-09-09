@@ -48,6 +48,7 @@ export default function SignupPage() {
 
   const isPasswordValid = passwordRequirements.every(req => req.test(password));
   const doPasswordsMatch = password === confirmPassword && password.length > 0;
+  const isFormValid = name.trim() && email.trim() && password.trim() && confirmPassword.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && name.trim().length >= 2 && isPasswordValid && doPasswordsMatch;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -396,7 +397,7 @@ export default function SignupPage() {
             <div className="space-y-2">
               <button
                 type="submit"
-                disabled={loading || !isPasswordValid || !doPasswordsMatch || !name.trim() || !email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || name.trim().length < 2}
+                disabled={loading || !isFormValid}
                 className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
                 aria-describedby={loading ? "loading-status" : "submit-help"}
               >
@@ -414,7 +415,7 @@ export default function SignupPage() {
                 )}
               </button>
               <p id="submit-help" className="text-xs text-center text-gray-500">
-                {!name.trim() || !email.trim() || !password.trim() || !confirmPassword.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || name.trim().length < 2 || !isPasswordValid || !doPasswordsMatch
+                {!isFormValid
                   ? "Please fill in all required fields correctly to enable account creation"
                   : "All fields are valid. Click to create your account."
                 }
