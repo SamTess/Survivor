@@ -1,6 +1,6 @@
 "use client"
 
-import React from 'react'
+import React, { useState, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { FaCog, FaDownload, FaEye, FaEyeSlash, FaChartLine, FaHistory } from 'react-icons/fa'
 import { Button } from '@/components/ui/button'
@@ -21,6 +21,11 @@ export default function DashboardControls({
   onSettingsChange,
   onExport
 }: DashboardControlsProps) {
+  const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 })
+  const [isMoving, setIsMoving] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const moveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   const toggleSetting = (key: keyof DashboardSettings) => {
     onSettingsChange({ ...settings, [key]: !settings[key] })
   }
@@ -30,6 +35,77 @@ export default function DashboardControls({
       event.preventDefault()
       toggleSetting(key)
     }
+  }
+
+  const generateRandomPosition = () => {
+    const maxX = 400
+    const maxY = 200
+    const angle = Math.random() * Math.PI * 2
+    const distance = Math.random() * Math.max(maxX, maxY)
+    const newX = Math.cos(angle) * distance
+    const newY = Math.sin(angle) * distance
+    return { x: newX, y: newY }
+  }
+
+  const startMovingSequence = () => {
+    if (isMoving) return
+
+    setIsMoving(true)
+    const moveSequence = () => {
+      setButtonPosition(generateRandomPosition())
+      moveTimeoutRef.current = setTimeout(() => {
+        setButtonPosition(generateRandomPosition())
+        moveTimeoutRef.current = setTimeout(() => {
+          setButtonPosition(generateRandomPosition())
+          moveTimeoutRef.current = setTimeout(() => {
+            setButtonPosition(generateRandomPosition())
+            setIsMoving(false)
+          }, 150)
+        }, 100)
+      }, 200)
+    }
+
+    moveSequence()
+  }
+
+  const handleMouseEnter = () => {
+    startMovingSequence()
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      const mouseX = e.clientX
+      const mouseY = e.clientY
+      const detectionZone = 50
+      const isNearButton =
+        mouseX >= rect.left - detectionZone &&
+        mouseX <= rect.right + detectionZone &&
+        mouseY >= rect.top - detectionZone &&
+        mouseY <= rect.bottom + detectionZone
+
+      if (isNearButton && !isMoving) {
+        startMovingSequence()
+      }
+    }
+  }
+  const handleMouseLeave = () => {
+    if (moveTimeoutRef.current) {
+      clearTimeout(moveTimeoutRef.current)
+      moveTimeoutRef.current = null
+    }
+    setTimeout(() => {
+      setButtonPosition({ x: 0, y: 0 })
+      setIsMoving(false)
+    }, 500)
+  }
+  const handleClick = (e: React.MouseEvent) => {
+    if (isMoving) {
+      e.preventDefault()
+      e.stopPropagation()
+      return
+    }
+    onExport()
   }
 
   const controls = [
@@ -66,7 +142,12 @@ export default function DashboardControls({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4" role="group" aria-labelledby="dashboard-settings-group">
+          <div
+            className="flex flex-wrap items-center gap-4"
+            role="group"
+            aria-labelledby="dashboard-settings-group"
+            onMouseMove={handleMouseMove}
+          >
             <h3 id="dashboard-settings-group" className="sr-only">Dashboard Settings</h3>
             {controls.map(({ key, label, icon: Icon, description, color }) => (
               <div
@@ -129,10 +210,19 @@ export default function DashboardControls({
             <div className="w-px h-12 bg-gradient-to-b from-transparent via-slate-300 dark:via-slate-600 to-transparent mx-2" aria-hidden="true" role="separator" />
 
             <Button
+              ref={buttonRef}
               variant="outline"
               size="sm"
-              onClick={onExport}
-              className="flex items-center gap-2 px-4 py-2 bg-card border-border transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+              onClick={handleClick}
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+              className={`flex items-center gap-2 px-4 py-2 bg-card border-border transition-all duration-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+                isMoving ? 'pointer-events-none opacity-75' : ''
+              }`}
+              style={{
+                transform: `translate(${buttonPosition.x}px, ${buttonPosition.y}px)`,
+                transition: isMoving ? 'transform 0.15s ease-out' : 'transform 0.5s ease-out'
+              }}
               aria-label="Export Dashboard Report"
             >
               <FaDownload className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
