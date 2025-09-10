@@ -25,7 +25,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       const currentPath = `/profile/${id}`;
@@ -36,8 +35,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const isOwnProfile = user?.id === currentUser?.id;
   const isCurrentUserAdmin = currentUser?.role === 'admin';
   const canEdit = isOwnProfile || isCurrentUserAdmin;
-  const canEditRole = isCurrentUserAdmin || isOwnProfile; // Users can edit their own role now
-  const canSetAdminRole = isCurrentUserAdmin && !isOwnProfile; // Only admins can set admin role for others
+  const canEditRole = isCurrentUserAdmin || isOwnProfile;
+  const canSetAdminRole = isCurrentUserAdmin && !isOwnProfile;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -152,9 +151,19 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         setAvatarSize(window.innerWidth >= 640 ? 96 : 64);
       };
 
+      const debouncedUpdateSize = () => {
+        let timeoutId: NodeJS.Timeout;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(updateSize, 100);
+        };
+      };
+
+      const debouncedHandler = debouncedUpdateSize();
+
       updateSize();
-      window.addEventListener('resize', updateSize);
-      return () => window.removeEventListener('resize', updateSize);
+      window.addEventListener('resize', debouncedHandler);
+      return () => window.removeEventListener('resize', debouncedHandler);
     }, []);
 
     return (
