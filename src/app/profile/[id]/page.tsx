@@ -259,12 +259,12 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex flex-col space-y-3">
+                <div className="flex space-x-3">
                   {/* Edit buttons - show if user can edit */}
                   {canEdit && (
                     <>
                       {isEditing ? (
-                        <div className="flex space-x-3">
+                        <>
                           <button
                             onClick={handleSave}
                             disabled={saving}
@@ -282,7 +282,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                           >
                             Cancel
                           </button>
-                        </div>
+                        </>
                       ) : (
                         <button
                           onClick={handleEdit}
