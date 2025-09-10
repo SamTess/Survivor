@@ -2,13 +2,15 @@
 
 import React from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Search, Menu, X, Sparkles, User } from "lucide-react"
-import { useState } from "react"
+import { Search, Menu, X, Sparkles, CircleUser, LogOut, Upload } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
 import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
 import DarkModeToggle from "../layout/DarkModeToggle"
+import { SearchUser } from "@/components/ui/SearchUser"
 
 type NavItem = {
   href: string
@@ -17,8 +19,13 @@ type NavItem = {
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [avatarFailed, setAvatarFailed] = useState(false)
   const pathname = usePathname()
-  const { isAuthenticated, isAdmin, user } = useAuth()
+  const { isAuthenticated, isAdmin, user, logout } = useAuth()
+  const profileDropdownRef = useRef<HTMLDivElement>(null)
+  const searchDropdownRef = useRef<HTMLDivElement>(null)
 
   const navItems: NavItem[] = [
     { href: '/', label: 'Home' },
@@ -28,6 +35,31 @@ export function Navbar() {
   ]
   if (isAuthenticated)
     navItems.push({ href: '/dashboard', label: 'Dashboard' })
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false)
+      }
+      if (searchDropdownRef.current && !searchDropdownRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleLogout = async () => {
+    setIsProfileDropdownOpen(false)
+    await logout()
+  }
+
+  const handleUserSelect = () => {
+    setIsSearchOpen(false)
+  }
 
   return (
     <nav className="fixed w-full top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/20">
@@ -71,21 +103,96 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button
-              size="sm"
-              className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
-            >
-              <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
-            >
-              <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login?callback=%2Fprofile'}>
-                <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </Link>
-            </Button>
+            {/* Search Dropdown */}
+            <div className="relative" ref={searchDropdownRef}>
+              <Button
+                size="sm"
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
+              >
+                <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Button>
+
+              {isSearchOpen && (
+                <div className="absolute overflow-visible right-0 top-12 w-96 bg-background/80 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg px-4 pt-3 pb-5 z-50 animate-in slide-in-from-top-2 duration-200">
+                  <SearchUser
+                    onUserSelect={handleUserSelect}
+                    placeholder="Search for users..."
+                    showRoleFilter={false}
+                    maxResults={10}
+                    cardSize="sm"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Profile Dropdown */}
+            <div className="relative" ref={profileDropdownRef}>
+              <Button
+                size="sm"
+                onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
+              >
+                <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                  {isAuthenticated && user?.id && !avatarFailed ? (
+                    <Image
+                      src={`/api/users/${user.id}/image`}
+                      alt={user?.name || "Avatar"}
+                      width={40}
+                      height={40}
+                      className="w-full h-full object-cover rounded-full"
+                      onError={() => setAvatarFailed(true)}
+                    />
+                  ) : (
+                    <CircleUser className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                  )}
+                </div>
+              </Button>
+
+              {isProfileDropdownOpen && isAuthenticated && (
+                <div className="absolute right-0 top-12 w-48 bg-background/95 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg z-50 animate-in slide-in-from-top-2 duration-200">
+                  <Link
+                    href={`/profile/${user?.id}`}
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200 rounded-t-2xl"
+                  >
+                    <CircleUser className="h-4 w-4 text-muted-foreground" />
+                    Profile
+                  </Link>
+                  {user?.role === 'founder' && (
+                    <Link
+                      href="/media"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
+                    >
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      Media Storage
+                    </Link>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left rounded-b-2xl"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+
+              {isProfileDropdownOpen && !isAuthenticated && (
+                <div className="absolute right-0 top-12 w-48 bg-background/95 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg py-2 z-50 animate-in slide-in-from-top-2 duration-200">
+                  <Link
+                    href="/login?callback=%2Fprofile"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
+                  >
+                    <CircleUser className="h-4 w-4 text-muted-foreground" />
+                    Login
+                  </Link>
+                </div>
+              )}
+            </div>
+
             <DarkModeToggle className="text-muted-foreground hover:text-primary" />
             {isAdmin &&
               <Button
@@ -134,20 +241,94 @@ export function Navbar() {
                   </Link>
                 )
               })}
+              {/* Mobile-only Messages entry */}
+              <Link
+                href="/message"
+                onClick={() => setIsMenuOpen(false)}
+                className={cn(
+                  "border-none px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200",
+                  pathname?.startsWith('/message')
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-primary hover:bg-muted/50",
+                )}
+              >
+                Messages
+              </Link>
+
               <div className="px-4 pt-2">
-                <div className="flex justify-center gap-2 mb-4">
-                  <DarkModeToggle />
+                {/* Mobile Search, Dark Mode, Profile, and Logout on same line */}
+                <div className="flex items-center justify-between gap-2 mb-4">
+                  {/* Search Button */}
+                  <div className="relative" ref={searchDropdownRef}>
+                    <Button
+                      size="sm"
+                      onClick={() => setIsSearchOpen(!isSearchOpen)}
+                      className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200"
+                    >
+                      <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </Button>
+
+                    {isSearchOpen && (
+                      <div className="absolute overflow-visible left-0 top-12 w-80 bg-background/80 backdrop-blur-md border border-border/20 rounded-2xl shadow-lg px-4 pt-3 pb-5 z-50 animate-in slide-in-from-top-2 duration-200">
+                        <SearchUser
+                          onUserSelect={handleUserSelect}
+                          placeholder="Search for users..."
+                          showRoleFilter={false}
+                          maxResults={10}
+                          cardSize="sm"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dark Mode Toggle */}
+                  <DarkModeToggle className="text-muted-foreground hover:text-primary w-5 h-5" />
+
+                  {/* Profile Button - Mobile: Direct redirect to profile */}
+                  <Link href={`/profile/${user?.id}`} onClick={() => setIsMenuOpen(false)}>
+                    <Button
+                      size="sm"
+                      className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200"
+                    >
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                        {isAuthenticated && user?.id && !avatarFailed ? (
+                          <Image
+                            src={`/api/users/${user.id}/image`}
+                            alt={user?.name || "Avatar"}
+                            width={40}
+                            height={40}
+                            className="w-full h-full object-cover rounded-full"
+                            onError={() => setAvatarFailed(true)}
+                          />
+                        ) : (
+                          <CircleUser className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                        )}
+                      </div>
+                    </Button>
+                  </Link>
+
+                  {/* Logout Button (visible when authenticated) */}
+                  {isAuthenticated && (
+                    <Button
+                      onClick={() => {
+                        handleLogout()
+                        setIsMenuOpen(false)
+                      }}
+                      size="sm"
+                      className="rounded-full w-10 h-10 p-0 bg-red-600/20 hover:bg-red-600/30 border-0 transition-all duration-200"
+                    >
+                      <LogOut className="h-5 w-5 text-red-600" />
+                    </Button>
+                  )}
                 </div>
-                <div className="flex gap-2 mb-2">
-                  <Button asChild className="flex-1 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Link href={isAuthenticated && user ? `/profile/${user.id}` : '/login'}>
-                      {isAuthenticated ? 'Profile' : 'Login'}
+
+                {isAdmin && (
+                  <Button asChild className="w-full rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/30 transition-all duration-200">
+                    <Link href="/admin" onClick={() => setIsMenuOpen(false)}>
+                      <span className="text-sm font-medium text-primary">Admin</span>
                     </Link>
                   </Button>
-                  <Button asChild className="flex-1 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground">
-                    <Link href="/admin">Admin</Link>
-                  </Button>
-                </div>
+                )}
               </div>
             </div>
           </div>

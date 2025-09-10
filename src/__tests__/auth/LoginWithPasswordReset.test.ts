@@ -167,6 +167,7 @@ describe('Login API with Password Reset', () => {
       id: 1,
       name: 'John Doe',
       email: 'john@example.com',
+      role: 'user',
     });
     expect(mockAuth.verifyPassword).toHaveBeenCalledWith('correct-password', 'hashed-password');
   });

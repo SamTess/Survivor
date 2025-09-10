@@ -50,6 +50,14 @@ export class StartupService {
     return this.startupRepository.getByMaturity(maturity.trim());
   }
 
+  async getByDateRange(startDate: Date, endDate: Date): Promise<Startup[]> {
+    if (startDate > endDate) {
+      throw new Error("Start date cannot be after end date");
+    }
+
+    return this.startupRepository.getByDateRange(startDate, endDate);
+  }
+
   async searchStartups(query: string): Promise<Startup[]> {
     if (!query || query.trim().length < 2) {
       throw new Error("Search query must be at least 2 characters long");

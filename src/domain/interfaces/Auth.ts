@@ -1,4 +1,4 @@
-export type UserRole = 'user' | 'admin' | 'investor' | 'founder';
+export type UserRole = 'user' | 'admin' | 'investor' | 'founder' | 'visitor';
 
 export interface LoginCredentials {
   email: string;

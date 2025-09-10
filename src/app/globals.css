@@ -1,7 +1,6 @@
 @import "tailwindcss";
 
 :root {
-  /* Updated color tokens to match startup incubator design brief */
   --background: oklch(1 0 0);
   --foreground: oklch(0.205 0 0);
   --card: oklch(0.985 0 0);
@@ -120,3 +119,34 @@ body {
 .animate-card { animation: card-in .35s ease-out both; }
 .animate-draw { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw-line 1s ease-out forwards; }
 .animate-bar { transform-origin: bottom; animation: bar-raise 1s ease-out both; }
+
+:root {
+  --event-networking: oklch(0.72 0.18 265);
+  --event-workshop:   oklch(0.78 0.16 150);
+  --event-conference: oklch(0.82 0.16 60);
+  --event-webinar:    oklch(0.78 0.16 320);
+  --event-pitch:      oklch(0.76 0.18 20);
+  --event-other:      oklch(0.72 0.16 210);
+}
+
+.event-chip {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: 0.375rem; /* ~ rounded-md */
+  font-size: 11px;
+  line-height: 1;
+}
+.event-chip .event-dot {
+  width: 0.5rem; /* 8px */
+  height: 0.5rem;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.event-chip--networking { color: var(--event-networking); border-color: color-mix(in oklch, var(--event-networking) 30%, transparent); background: color-mix(in oklch, var(--event-networking) 12%, transparent); }
+.event-chip--workshop { color: var(--event-workshop); border-color: color-mix(in oklch, var(--event-workshop) 30%, transparent); background: color-mix(in oklch, var(--event-workshop) 12%, transparent); }
+.event-chip--conference { color: var(--event-conference); border-color: color-mix(in oklch, var(--event-conference) 30%, transparent); background: color-mix(in oklch, var(--event-conference) 12%, transparent); }
+.event-chip--webinar { color: var(--event-webinar); border-color: color-mix(in oklch, var(--event-webinar) 30%, transparent); background: color-mix(in oklch, var(--event-webinar) 12%, transparent); }
+.event-chip--pitch { color: var(--event-pitch); border-color: color-mix(in oklch, var(--event-pitch) 30%, transparent); background: color-mix(in oklch, var(--event-pitch) 12%, transparent); }
+.event-chip--other { color: var(--event-other); border-color: color-mix(in oklch, var(--event-other) 30%, transparent); background: color-mix(in oklch, var(--event-other) 12%, transparent); }

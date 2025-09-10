@@ -93,7 +93,7 @@ export function AlertModal({ isOpen, onClose, title, message, type = "info" }: A
   )
 }
 
-// Modal de formulaire générique
+// Generic form modal
 export interface FormModalProps {
   isOpen: boolean
   onClose: () => void
@@ -143,6 +143,9 @@ export function FormModal({
   return (
     <UniversalModal isOpen={isOpen} onClose={onClose} title={title} actions={actions} closeOnOverlayClick={!loading}>
       <form onSubmit={handleSubmit} data-modal-form>
+        <div className="mb-4 text-sm text-muted-foreground">
+          Fields marked with <span className="text-red-500">*</span> are required.
+        </div>
         {children}
       </form>
     </UniversalModal>

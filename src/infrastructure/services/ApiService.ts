@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { SessionUser, LoginCredentials, SignupData, RequestResetData, ResetPasswordData, LoginErrorResponse } from '@/domain/interfaces';
+import { normalizeRole } from '@/utils/roleUtils';
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -18,19 +19,15 @@ export class ApiService {
       headers: {
         'Content-Type': 'application/json',
       },
-      withCredentials: true, // Important for HTTP-only cookies
+      withCredentials: true,
     });
 
     this.setupInterceptors();
   }
 
   private setupInterceptors() {
-    // Request interceptor
     this.client.interceptors.request.use(
       (config) => {
-        // Add any request transformation here
-        // For example, add auth headers if needed (though we use cookies)
-        console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
         return config;
       },
       (error) => {
@@ -42,18 +39,13 @@ export class ApiService {
     // Response interceptor
     this.client.interceptors.response.use(
       (response: AxiosResponse) => {
-        // Transform successful responses
-        console.log(`API Response: ${response.status} ${response.config.url}`);
         return response;
       },
       (error: AxiosError) => {
-        // Handle common error scenarios
         console.error('API Response Error:', error);
 
         if (error.response?.status === 401) {
-          // Unauthorized - redirect to login or emit event
           console.warn('Unauthorized access - session may have expired');
-          // You can emit a custom event here for logout
           window.dispatchEvent(new CustomEvent('auth:unauthorized'));
         }
 
@@ -146,7 +138,25 @@ export class ApiService {
   }
 
   async signup(userData: SignupData): Promise<ApiResponse<SessionUser>> {
-    return this.post<SessionUser>('/auth/signup', userData);
+    try {
+      const response = await this.client.post<SessionUser>('/auth/signup', userData);
+      return {
+        success: true,
+        data: response.data,
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as { error?: string } | undefined;
+        return {
+          success: false,
+          error: apiError?.error || error.message,
+        };
+      }
+      return {
+        success: false,
+        error: 'An unexpected error occurred during signup',
+      };
+    }
   }
 
   async logout(): Promise<ApiResponse<{ ok: boolean }>> {
@@ -154,7 +164,23 @@ export class ApiService {
   }
 
   async getCurrentUser(): Promise<ApiResponse<SessionUser>> {
-    return this.get<SessionUser>('/auth/me');
+    try {
+      const response = await this.client.get('/auth/me');
+      const u = response.data as { id: number; name: string; email: string; role: string; permissions?: string[] };
+
+      const role = normalizeRole(u?.role);
+
+      return {
+        success: true,
+        data: { id: u.id, name: u.name, email: u.email, role, permissions: u.permissions },
+      };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const apiError = error.response?.data as { error?: string } | undefined;
+        return { success: false, error: apiError?.error || error.message };
+      }
+      return { success: false, error: 'Failed to fetch current user' };
+    }
   }
 
   async requestPasswordReset(data: RequestResetData): Promise<ApiResponse<{ message: string }>> {

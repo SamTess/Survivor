@@ -4,6 +4,7 @@ import { PrismaClient } from '@prisma/client';
 import { verifyPassword, signJwt, getAuthSecret } from '../../../../infrastructure/security/auth';
 import { PasswordResetService } from '../../../../infrastructure/services/PasswordResetService';
 import { EmailService } from '../../../../infrastructure/services/EmailService';
+import { normalizeRole } from '../../../../utils/roleUtils';
 
 interface GlobalWithPrisma {
   prisma?: PrismaClient;
@@ -28,6 +29,104 @@ const emailConfig = {
 
 const emailService = new EmailService(emailConfig);
 
+/**
+ * @openapi
+ * /auth/login:
+ *   post:
+ *     summary: User Login
+ *     description: Authenticate a user and return a JWT token
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: User's email address
+ *                 example: "user@example.com"
+ *               password:
+ *                 type: string
+ *                 description: User's password
+ *                 example: "securepassword123"
+ *     responses:
+ *       200:
+ *         description: Successful login
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                   description: User ID
+ *                   example: 1
+ *                 name:
+ *                   type: string
+ *                   description: User's full name
+ *                   example: "John Doe"
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   description: User's email address
+ *                   example: "user@example.com"
+ *                 role:
+ *                   type: string
+ *                   description: User's role
+ *                   example: "user"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Missing fields"
+ *       401:
+ *         description: Invalid credentials or password reset required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     error:
+ *                       type: string
+ *                       example: "Invalid credentials"
+ *                 - type: object
+ *                   properties:
+ *                     error:
+ *                       type: string
+ *                       example: "No password set. A password creation email has been sent."
+ *                     requiresPasswordReset:
+ *                       type: boolean
+ *                       example: true
+ *                     devMode:
+ *                       type: boolean
+ *                       example: true
+ *                     resetUrl:
+ *                       type: string
+ *                       example: "http://localhost:3000/auth/reset-password?token=abc123"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Server error"
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -73,7 +172,8 @@ export async function POST(req: NextRequest) {
     }
 
     const token = signJwt({ userId: user.id }, 60 * 60 * 24 * 7, getAuthSecret());
-    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: user.role });
+    const normalizedRole = normalizeRole(user.role);
+    const res = NextResponse.json({ id: user.id, name: user.name, email: user.email, role: normalizedRole });
     res.cookies.set('auth', token, { httpOnly: true, maxAge: 60 * 60 * 24 * 7, sameSite: 'lax', path: '/' });
     return res;
   } catch (e) {

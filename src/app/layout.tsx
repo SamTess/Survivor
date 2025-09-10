@@ -3,6 +3,7 @@ import "./globals.css";
 import { Navbar } from "@/components/navigation/Navbar";
 import { AuthProvider } from "../context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
+import { ChatLauncher } from "@/components/chat/ChatLauncher";
 
 
 export const metadata: Metadata = {
@@ -24,6 +25,7 @@ export default function RootLayout({
           <Navbar />
           {children}
           <Toaster />
+          <ChatLauncher />
         </AuthProvider>
       </body>
     </html>

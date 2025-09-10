@@ -25,7 +25,7 @@ export function LatestNews() {
           setNews(sorted);
         }
       } catch {
-        if (!cancelled) setError('Impossible de charger les news');
+        if (!cancelled) setError('Unable to load news');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -41,7 +41,7 @@ export function LatestNews() {
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Latest News</h2>
         </div>
         {loading ? (
-          <div className="text-sm text-muted-foreground">Chargement...</div>
+          <div className="text-sm text-muted-foreground">Loading...</div>
         ) : error ? (
           <div className="text-sm text-red-500">{error}</div>
         ) : (

@@ -56,7 +56,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
   }
 
   async getAll(): Promise<Startup[]> {
-    const startups = await prisma.s_STARTUP.findMany({
+    const startups: Startup[] = await prisma.s_STARTUP.findMany({
       orderBy: { created_at: 'desc' },
     });
 
@@ -98,7 +98,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
   }
 
   async getBySector(sector: string): Promise<Startup[]> {
-    const startups = await prisma.s_STARTUP.findMany({
+    const startups: Startup[] = await prisma.s_STARTUP.findMany({
       where: { sector },
       orderBy: { created_at: 'desc' },
     });
@@ -119,7 +119,7 @@ export class StartupRepositoryPrisma implements StartupRepository {
   }
 
   async getByMaturity(maturity: string): Promise<Startup[]> {
-    const startups = await prisma.s_STARTUP.findMany({
+    const startups: Startup[] = await prisma.s_STARTUP.findMany({
       where: { maturity },
       orderBy: { created_at: 'desc' },
     });
@@ -139,8 +139,34 @@ export class StartupRepositoryPrisma implements StartupRepository {
     }));
   }
 
+  async getByDateRange(startDate: Date, endDate: Date): Promise<Startup[]> {
+    const startups: Startup[] = await prisma.s_STARTUP.findMany({
+      where: {
+        created_at: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { created_at: 'desc' },
+    });
+
+    return startups.map(startup => ({
+      id: startup.id,
+      name: startup.name,
+      legal_status: startup.legal_status,
+      address: startup.address,
+      phone: startup.phone,
+      sector: startup.sector,
+      maturity: startup.maturity,
+      email: startup.email,
+      description: startup.description,
+      image_data: startup.image_data,
+      created_at: startup.created_at,
+    }));
+  }
+
   async search(query: string): Promise<Startup[]> {
-    const startups = await prisma.s_STARTUP.findMany({
+    const startups: Startup[] = await prisma.s_STARTUP.findMany({
       where: {
         OR: [
           { name: { contains: query, mode: 'insensitive' } },
@@ -215,8 +241,8 @@ export class StartupRepositoryPrisma implements StartupRepository {
 
   async getPaginated(page: number, limit: number): Promise<{ startups: Startup[], total: number }> {
     const skip = (page - 1) * limit;
-    
-    const [startups, total] = await Promise.all([
+
+    const [startups, total]: [Startup[], number] = await Promise.all([
       prisma.s_STARTUP.findMany({
         skip,
         take: limit,
