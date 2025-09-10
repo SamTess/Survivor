@@ -130,15 +130,41 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
-  const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => (
-    <div className="w-24 h-24">
-      {uid ? (
-        <UserAvatar uid={uid} name={name} size={96} />
-      ) : (
-        <div className="w-24 h-24 rounded-full bg-muted" />
-      )}
-    </div>
-  );
+  const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => {
+    // Use a responsive approach: show smaller avatar on mobile, larger on desktop
+    const [avatarSize, setAvatarSize] = useState(64);
+
+    useEffect(() => {
+      const updateSize = () => {
+        // 64px (16*4) on mobile, 96px (24*4) on sm screens and up
+        setAvatarSize(window.innerWidth >= 640 ? 96 : 64);
+      };
+
+      const debouncedUpdateSize = () => {
+        let timeoutId: NodeJS.Timeout;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(updateSize, 100);
+        };
+      };
+
+      const debouncedHandler = debouncedUpdateSize();
+
+      updateSize();
+      window.addEventListener('resize', debouncedHandler);
+      return () => window.removeEventListener('resize', debouncedHandler);
+    }, []);
+
+    return (
+      <div className="w-16 h-16 sm:w-24 sm:h-24">
+        {uid ? (
+          <UserAvatar uid={uid} name={name} size={avatarSize} />
+        ) : (
+          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-muted" />
+        )}
+      </div>
+    );
+  };
 
   if (!isAuthenticated) {
     return null;
@@ -206,10 +232,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                         type="text"
                         value={editedUser?.name || ''}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="text-3xl font-bold text-foreground border-b-2 border-border bg-transparent focus:outline-none focus:border-primary transition-all duration-200"
+                        className="text-xl sm:text-3xl font-bold text-foreground border-b-2 border-border bg-transparent focus:outline-none focus:border-primary transition-all duration-200"
                       />
                     ) : (
-                      <h1 className="text-3xl font-bold text-foreground">{user?.name || 'Unknown User'}</h1>
+                      <h1 className="text-xl sm:text-3xl font-bold text-foreground">{user?.name || 'Unknown User'}</h1>
                     )}
 
                     <div className="flex items-center space-x-3 mt-2">
@@ -245,38 +271,40 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                           </button>
                         </>
                       ) : (
-                        <>
-                          <button
-                            onClick={handleEdit}
-                            className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md"
-                          >
-                            Edit Profile
-                          </button>
-                          {user?.role === 'founder' && (
-                            <Link
-                              href="/media"
-                              className="bg-accent text-accent-foreground px-4 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="7,10 12,15 17,10"/>
-                                <line x1="12" x2="12" y1="15" y2="3"/>
-                              </svg>
-                              Media Storage
-                            </Link>
-                          )}
-                        </>
+                        <button
+                          onClick={handleEdit}
+                          className="bg-primary text-primary-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                            <path d="m15 5 4 4"/>
+                          </svg>
+                          <span className="hidden sm:inline">Edit Profile</span>
+                        </button>
+                      )}
+                      {user?.role === 'founder' && (
+                        <Link
+                          href="/media"
+                          className="bg-accent text-accent-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" x2="12" y1="15" y2="3"/>
+                          </svg>
+                          <span className="hidden sm:inline">Media Storage</span>
+                        </Link>
                       )}
                     </>
                   ) : (
                     <button
                       onClick={handleStartConversation}
-                      className="bg-accent text-accent-foreground px-4 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
+                      className="bg-accent text-accent-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
                       </svg>
-                      Start Conversation
+                      <span className="hidden sm:inline">Start Conversation</span>
                     </button>
                   )}
                 </div>
