@@ -93,6 +93,7 @@ export default function LoginPage() {
               width={100}
               height={100}
               className="object-contain"
+              unoptimized
             />
           </div>
           <h1 id="login-title" className="text-3xl font-bold text-gray-900 mb-2">Welcome back!</h1>

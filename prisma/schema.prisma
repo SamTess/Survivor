@@ -69,6 +69,8 @@ model S_USER {
   passwordResets S_PASSWORD_RESET[]
   followersCount Int      @default(0)
   roles         S_USER_ROLE[]
+  mediaFiles    S_MEDIA_STORAGE[]
+  storageQuota  S_USER_STORAGE_QUOTA?
 }
 
 model S_FOUNDER {
@@ -411,4 +413,36 @@ model S_USER_ROLE {
 
   @@id([user_id, role])
   @@index([role])
+}
+
+model S_MEDIA_STORAGE {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  filename      String
+  original_name String
+  file_type     String
+  mime_type     String
+  file_size     Int
+  file_path     String
+  description   String?
+  tags          String?
+  is_public     Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          S_USER   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([file_type])
+  @@index([is_public])
+  @@index([created_at])
+}
+
+model S_USER_STORAGE_QUOTA {
+  user_id       Int      @id
+  used_bytes    BigInt   @default(0)
+  max_bytes     BigInt   @default(2147483648) // 2GB default
+  last_updated  DateTime @default(now()) @updatedAt
+  user          S_USER   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([used_bytes])
 }

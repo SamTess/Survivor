@@ -72,6 +72,7 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
                 fill
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, 896px"
+                unoptimized
               />
               {newsItem.category && (
                 <div className="absolute top-4 left-4">
