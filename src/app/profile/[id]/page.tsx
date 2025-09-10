@@ -80,7 +80,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     setError(null);
 
     try {
-      const updateData: any = {
+      const updateData: Partial<UserApiResponse> = {
         name: editedUser.name,
         email: editedUser.email,
       };
@@ -322,7 +322,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 </div>
                 <div className="ml-3">
                   <p className="text-sm text-amber-700">
-                    <strong>Admin View:</strong> You are viewing and can edit another user's profile. You can also change their role.
+                    <strong>Admin View:</strong> You are viewing and can edit another user&apos;s profile. You can also change their role.
                   </p>
                 </div>
               </div>
