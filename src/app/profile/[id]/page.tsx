@@ -130,15 +130,31 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }
   };
 
-  const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => (
-    <div className="w-16 h-16 sm:w-24 sm:h-24">
-      {uid ? (
-        <UserAvatar uid={uid} name={name} size={64} className="sm:!w-24 sm:!h-24" />
-      ) : (
-        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-muted" />
-      )}
-    </div>
-  );
+  const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => {
+    // Use a responsive approach: show smaller avatar on mobile, larger on desktop
+    const [avatarSize, setAvatarSize] = useState(64);
+
+    useEffect(() => {
+      const updateSize = () => {
+        // 64px (16*4) on mobile, 96px (24*4) on sm screens and up
+        setAvatarSize(window.innerWidth >= 640 ? 96 : 64);
+      };
+
+      updateSize();
+      window.addEventListener('resize', updateSize);
+      return () => window.removeEventListener('resize', updateSize);
+    }, []);
+
+    return (
+      <div className="w-16 h-16 sm:w-24 sm:h-24">
+        {uid ? (
+          <UserAvatar uid={uid} name={name} size={avatarSize} />
+        ) : (
+          <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-muted" />
+        )}
+      </div>
+    );
+  };
 
   if (!isAuthenticated) {
     return null;
