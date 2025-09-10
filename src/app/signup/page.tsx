@@ -18,14 +18,12 @@ export default function SignupPage() {
   const router = useRouter();
   const { signup, loading, error, clearError, isAuthenticated } = useAuth();
 
-  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       router.push(nextPath);
     }
   }, [isAuthenticated, router, nextPath]);
 
-  // Handle callback parameter from URL
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
@@ -71,7 +69,6 @@ export default function SignupPage() {
       router.push(nextPath);
       router.refresh();
     }
-    // Error handling is now managed by the AuthContext
   }
 
   return (
@@ -86,6 +83,7 @@ export default function SignupPage() {
               width={100}
               height={100}
               className="object-contain"
+              unoptimized
             />
           </div>
           <h1 id="signup-title" className="text-3xl font-bold text-gray-900 mb-2">Join Jeb</h1>

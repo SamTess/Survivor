@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { UserApiResponse } from '@/domain/interfaces/User';
 import { formatDate } from '@/utils/dateUtils';
 import { ProtectedRoute, useAuth } from '@/context/auth';
@@ -25,7 +26,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
       const currentPath = `/profile/${id}`;
@@ -140,9 +140,19 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         setAvatarSize(window.innerWidth >= 640 ? 96 : 64);
       };
 
+      const debouncedUpdateSize = () => {
+        let timeoutId: NodeJS.Timeout;
+        return () => {
+          clearTimeout(timeoutId);
+          timeoutId = setTimeout(updateSize, 100);
+        };
+      };
+
+      const debouncedHandler = debouncedUpdateSize();
+
       updateSize();
-      window.addEventListener('resize', updateSize);
-      return () => window.removeEventListener('resize', updateSize);
+      window.addEventListener('resize', debouncedHandler);
+      return () => window.removeEventListener('resize', debouncedHandler);
     }, []);
 
     return (
@@ -271,6 +281,19 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                           </svg>
                           <span className="hidden sm:inline">Edit Profile</span>
                         </button>
+                      )}
+                      {user?.role === 'founder' && (
+                        <Link
+                          href="/media"
+                          className="bg-accent text-accent-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7,10 12,15 17,10"/>
+                            <line x1="12" x2="12" y1="15" y2="3"/>
+                          </svg>
+                          <span className="hidden sm:inline">Media Storage</span>
+                        </Link>
                       )}
                     </>
                   ) : (

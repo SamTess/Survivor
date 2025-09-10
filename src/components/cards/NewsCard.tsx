@@ -41,6 +41,7 @@ export default function NewsCard({
             fill
             className="object-cover transition-transform duration-300"
             sizes="192px"
+            unoptimized
           />
         </div>
 
@@ -54,10 +55,10 @@ export default function NewsCard({
             <div className="text-muted-foreground text-sm overflow-hidden">
               {description ? (
                 <div className="line-clamp-2">
-                  <MarkdownRenderer 
-                    content={description} 
-                    compact={true} 
-                    className="[&>*]:my-0 [&_p]:my-0 [&_p]:leading-tight" 
+                  <MarkdownRenderer
+                    content={description}
+                    compact={true}
+                    className="[&>*]:my-0 [&_p]:my-0 [&_p]:leading-tight"
                   />
                 </div>
               ) : (
