@@ -55,6 +55,37 @@ export default function MediaManager() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const VideoPreview = ({ file }: { file: MediaFile }) => {
+    const [imageError, setImageError] = useState(false);
+
+    if (imageError) {
+      return (
+        <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
+          <div className="w-full h-full flex items-center justify-center">
+            <Video className="h-8 w-8 text-gray-400" />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
+            <Video className="h-8 w-8 text-white" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
+        <img
+          src={`/api/media/${file.id}/preview`}
+          alt={`${file.original_name} preview`}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+        />
+        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
+          <Video className="h-8 w-8 text-white" />
+        </div>
+      </div>
+    );
+  };
+
   const loadFiles = async () => {
     try {
       setLoading(true);
@@ -137,24 +168,7 @@ export default function MediaManager() {
       );
     } else if (file.file_type === 'video') {
       return (
-        <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
-          <img
-            src={`/api/media/${file.id}/preview`}
-            alt={`${file.original_name} preview`}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
-              const parent = target.parentElement;
-              if (parent) {
-                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center"><Video class="h-8 w-8 text-gray-400" /></div>';
-              }
-            }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
-            <Video className="h-8 w-8 text-white" />
-          </div>
-        </div>
+        <VideoPreview file={file} />
       );
     } else {
       return (
