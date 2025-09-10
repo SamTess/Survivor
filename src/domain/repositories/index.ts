@@ -7,3 +7,4 @@ export type { FounderRepository } from './FounderRepository';
 export type { InvestorRepository } from './InvestorRepository';
 export type { PartnerRepository } from './PartnerRepository';
 export type { OpportunityRepository } from './OpportunityRepository';
+export type { StatisticsRepository } from './StatisticsRepository';

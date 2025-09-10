@@ -21,16 +21,15 @@ export default function DashboardControls({
   onSettingsChange,
   onExport
 }: DashboardControlsProps) {
-  const toggleSetting = (key: keyof DashboardSettings) => {
-    onSettingsChange({ ...settings, [key]: !settings[key] })
-  }
 
-  const handleKeyDown = (event: React.KeyboardEvent, key: keyof DashboardSettings) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, key: keyof DashboardSettings) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      toggleSetting(key)
+      onSettingsChange({ ...settings, [key]: !settings[key] })
     }
   }
+
+  const handleClick = () => onExport()
 
   const controls = [
     {
@@ -71,12 +70,12 @@ export default function DashboardControls({
             {controls.map(({ key, label, icon: Icon, description, color }) => (
               <div
                 key={key}
-                className={`group relative p-4 rounded-xl border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
+                className={`group relative p-4 rounded-xl border transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${
                   settings[key]
                     ? `admin-stat-card--${color} admin-stat-card--active bg-card border-border`
                     : 'bg-card border-border'
                 }`}
-                onClick={() => toggleSetting(key)}
+                onClick={() => onSettingsChange({ ...settings, [key]: !settings[key] })}
                 onKeyDown={(e) => handleKeyDown(e, key)}
                 role="button"
                 tabIndex={0}
@@ -85,23 +84,13 @@ export default function DashboardControls({
               >
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg admin-stat-icon-container ${
-                    settings[key]
-                      ? `bg-${color}-100 dark:bg-${color}-900/30`
-                      : ''
+                    settings[key] ? `bg-${color}-100 dark:bg-${color}-900/30` : ''
                   }`} aria-hidden="true">
-                    <Icon className={`h-4 w-4 ${
-                      settings[key]
-                        ? ``
-                        : 'text-muted-foreground'
-                    }`} />
+                    <Icon className={`h-4 w-4 ${settings[key] ? '' : 'text-muted-foreground'}`} />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className={`text-sm font-semibold ${
-                        settings[key]
-                          ? `text-${color}-700 dark:text-${color}-300`
-                          : 'text-card-foreground'
-                      }`}>
+                      <span className={`text-sm font-semibold ${settings[key] ? `text-${color}-700 dark:text-${color}-300` : 'text-card-foreground'}`}>
                         {label}
                       </span>
                       {settings[key] ? (
@@ -110,9 +99,7 @@ export default function DashboardControls({
                         <FaEyeSlash className="h-3 w-3 text-slate-400" aria-hidden="true" />
                       )}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {description}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{description}</p>
                   </div>
                 </div>
 
@@ -131,8 +118,8 @@ export default function DashboardControls({
             <Button
               variant="outline"
               size="sm"
-              onClick={onExport}
-              className="flex items-center gap-2 px-4 py-2 bg-card border-border transition-all duration-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+              onClick={handleClick}
+              className="flex items-center gap-2 px-4 py-2 bg-card border-border shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 hover:shadow-none hover:bg-card hover:text-card-foreground"
               aria-label="Export Dashboard Report"
             >
               <FaDownload className="h-4 w-4 text-muted-foreground" aria-hidden="true" />

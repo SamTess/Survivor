@@ -614,11 +614,11 @@ export default function ConversationClient({ cid, embedded }: { cid: number; emb
   })();
   items.push(<div key={0} className="h-0" ref={bottomRef} />);
 
-  const messagesBox = <div ref={messagesContainerRef} className="p-3 h-full overflow-y-auto flex flex-col gap-3">{items}</div>;
+  const messagesBox = <div ref={messagesContainerRef} className="p-3 h-full overflow-y-auto overflow-x-hidden flex flex-col gap-3">{items}</div>;
 
   const input = (
     <input
-      className="flex-1 border border-border rounded px-3 py-2 bg-input text-foreground"
+      className="flex-1 border border-border rounded-l-2xl rounded-r px-3 py-2 bg-input text-foreground"
       placeholder="Your Message..."
       aria-label="Your Message..."
       value={text}
@@ -626,7 +626,7 @@ export default function ConversationClient({ cid, embedded }: { cid: number; emb
       onChange={(e) => setText(e.target.value)}
     />
   );
-  const button = <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded" aria-label="Send message" onClick={send}>Send</button>;
+  const button = <button className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-l rounded-r-2xl" aria-label="Send message" onClick={send}>Send</button>;
   const form = (
     <form className="p-2 border-t flex flex-col gap-2" onSubmit={(e) => { e.preventDefault(); void send(); }}>
   {replyTo && (
@@ -651,7 +651,7 @@ export default function ConversationClient({ cid, embedded }: { cid: number; emb
 
   if (embedded) {
     return (
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full overflow-x-hidden">
         <div className="flex-1 min-h-0">{messagesBox}</div>
         {form}
       </div>

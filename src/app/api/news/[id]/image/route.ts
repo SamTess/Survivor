@@ -1,6 +1,100 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { detectMime } from '@/utils/image';
+
+/**
+ * @openapi
+ * /news/{id}/image:
+ *   get:
+ *     summary: Get News Image
+ *     description: Retrieve the image data for a specific news article
+ *     tags:
+ *       - News
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: News article unique ID
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: News image retrieved successfully
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: News image data in JPEG format
+ *           image/png:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: News image data in PNG format
+ *           image/gif:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: News image data in GIF format
+ *           image/webp:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *               description: News image data in WebP format
+ *         headers:
+ *           Content-Type:
+ *             schema:
+ *               type: string
+ *               enum: [image/jpeg, image/png, image/gif, image/webp]
+ *               description: Image MIME type
+ *               example: "image/jpeg"
+ *           Cache-Control:
+ *             schema:
+ *               type: string
+ *               example: "public, max-age=604800, stale-while-revalidate=86400"
+ *               description: Cache control directives for optimal image caching
+ *       400:
+ *         description: Invalid news ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid news ID"
+ *       404:
+ *         description: News not found or no image available
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "No image available for this news"
+ *       500:
+ *         description: Failed to fetch image
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch image"
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -50,9 +144,9 @@ export async function GET(
   } catch (error) {
     console.error('Error fetching news image:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to fetch image' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch image'
       },
       { status: 500 }
     );

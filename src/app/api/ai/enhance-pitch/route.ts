@@ -5,6 +5,99 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY || '',
 });
 
+/**
+ * @openapi
+ * /ai/enhance-pitch:
+ *   post:
+ *     summary: Enhance Pitch Content with AI
+ *     description: Enhance pitch deck content using AI to make it more professional and engaging for investors
+ *     tags:
+ *       - AI
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *               - type
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 description: The content to be enhanced
+ *                 example: "We are a tech startup that builds mobile apps"
+ *               type:
+ *                 type: string
+ *                 description: Type of content to enhance
+ *                 enum: [description, needs, title, general]
+ *                 example: "description"
+ *     responses:
+ *       200:
+ *         description: Content enhanced successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 enhancedContent:
+ *                   type: string
+ *                   description: The AI-enhanced content
+ *                   example: "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions."
+ *                 originalContent:
+ *                   type: string
+ *                   description: The original content provided
+ *                   example: "We are a tech startup that builds mobile apps"
+ *                 type:
+ *                   type: string
+ *                   description: The type of enhancement performed
+ *                   example: "description"
+ *                 success:
+ *                   type: boolean
+ *                   description: Whether AI enhancement was successful
+ *                   example: true
+ *                 error:
+ *                   type: string
+ *                   description: Error message if AI enhancement failed but fallback was used
+ *                   example: "AI enhancement failed, used basic rules"
+ *             examples:
+ *               success:
+ *                 summary: Successful AI enhancement
+ *                 value:
+ *                   enhancedContent: "We are an innovative tech startup that develops cutting-edge mobile applications, revolutionizing user experiences through advanced technology solutions."
+ *                   originalContent: "We are a tech startup that builds mobile apps"
+ *                   type: "description"
+ *                   success: true
+ *               fallback:
+ *                 summary: Fallback enhancement when AI fails
+ *                 value:
+ *                   enhancedContent: "We are an innovative startup that builds mobile apps."
+ *                   originalContent: "We are a tech startup that builds mobile apps"
+ *                   type: "description"
+ *                   success: false
+ *                   error: "AI enhancement failed, used basic rules"
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Content and type are required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Internal server error"
+ */
+
 const getPromptForType = (content: string, type: string): string => {
   const prompts = {
     description: `Improve this company description to make it more engaging, professional and convincing for investors. Keep the same essence but make it more impactful. Maximum 200 words. Respond ONLY with the improved description, no additional text or quotes.

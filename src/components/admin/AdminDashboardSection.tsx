@@ -6,6 +6,7 @@ import { useRecentActivity } from '@/hooks/useRecentActivity'
 import DashboardControls, { DashboardSettings } from './DashboardControls'
 import KPISection from './KPIComponent'
 import AdminRecentActivitySection from './AdminRecentActivitySection'
+import { generateDashboardPDF } from '@/utils/pdfGenerator'
 
 export default function AdminDashboardSection() {
   const { stats, loading: statsLoading } = useAdminStats()
@@ -30,23 +31,37 @@ export default function AdminDashboardSection() {
     return () => clearInterval(interval)
   }, [])
 
-  const handleExport = () => {
-    const reportData = {
-      generated: new Date().toISOString(),
-      stats,
-      systemHealth: { uptime: '99.9%', responseTime: '42ms', dbSize: '2.1GB' },
-      recentActivities: activityData?.activities?.slice(0, 10)
-    }
+  const handleExport = async () => {
+    try {
+      const trendsResponse = await fetch('/api/trends')
+      const trendsResult = await trendsResponse.json()
 
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `dashboard-report-${new Date().toISOString().split('T')[0]}.json`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+      const pdfStats = stats ? {
+        totalUsers: stats.totalUsers?.value || 0,
+        activeProjects: stats.activeProjects?.value || 0,
+        NewsArticle: stats.newsArticles?.value || 0,
+        UpcomingEvents: stats.upcomingEvents?.value || 0
+      } : null
+
+      const pdfActivity = activityData?.activities?.map(activity => ({
+        id: activity.id || '',
+        type: activity.type || 'activity',
+        description: activity.description || '',
+        timestamp: activity.timestamp || new Date().toISOString(),
+        user: activity.user || undefined
+      })) || null
+
+      const trends = trendsResult.success ? {
+        totalUsers: trendsResult.data.totalUsers,
+        activeProjects: trendsResult.data.activeProjects,
+        NewsArticle: trendsResult.data.NewsArticle,
+        UpcomingEvents: trendsResult.data.UpcommingEvents || trendsResult.data.UpcomingEvents
+      } : undefined
+
+      await generateDashboardPDF(pdfStats, pdfActivity, null, trends)
+    } catch (error) {
+      console.error('Erreur lors de la génération du PDF:', error)
+    }
   }
 
   if (statsLoading || activityLoading) {

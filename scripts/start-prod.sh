@@ -8,5 +8,12 @@ else
   npx prisma db push
 fi
 
+echo "Generating initial API documentation..."
+npx tsx scripts/generate-swagger-docs.ts
+
+echo "Starting documentation watcher and server in background..."
+bash scripts/docs-watch.sh &
+npx http-server docs/api -p 8080 --cors -c-1 &
+
 echo "Starting production server..."
 npm start

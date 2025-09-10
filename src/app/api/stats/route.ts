@@ -1,57 +1,281 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/infrastructure/persistence/prisma/client';
 import { verifyJwt } from '@/infrastructure/security/auth';
+import { StatisticsService } from '../../../application/services/statistics/StatisticsService';
+import { StatisticsRepositoryPrisma } from '../../../infrastructure/repositories/statistics/StatisticsRepositoryPrisma';
+import { StatisticsFilters } from '../../../domain/interfaces/Statistics';
 
-interface UserRole {
-  role?: string;
-}
+/**
+ * @openapi
+ * /api/stats:
+ *   get:
+ *     tags:
+ *       - Analytics
+ *     summary: Get platform statistics
+ *     description: |
+ *       Retrieve comprehensive statistics and analytics data for the platform.
+ *
+ *       This endpoint provides comprehensive analytics using Clean Architecture principles:
+ *       - Domain layer: Defines statistics entities and repository interfaces
+ *       - Application layer: Contains business logic in StatisticsService
+ *       - Infrastructure layer: Implements data access with StatisticsRepositoryPrisma
+ *       - Presentation layer: This API route handles HTTP concerns
+ *
+ *       Features include:
+ *       - Content performance metrics (views, likes, bookmarks, follows)
+ *       - Time-series data for charts and trends
+ *       - Top performing content rankings
+ *       - Platform-wide statistics (admin only)
+ *       - User-specific metrics filtered by ownership
+ *
+ *       The scope parameter determines data access:
+ *       - "user": Only content owned by the authenticated user
+ *       - "admin": Platform-wide data (requires admin role)
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           default: "30"
+ *         description: Time period in days (or "all" for all time)
+ *       - in: query
+ *         name: scope
+ *         schema:
+ *           type: string
+ *           enum: [user, admin]
+ *           default: "user"
+ *         description: Statistics scope ("user" for user-owned content, "admin" for platform-wide)
+ *       - in: query
+ *         name: contentType
+ *         schema:
+ *           type: string
+ *           enum: [all, startup, news, event]
+ *           default: "all"
+ *         description: Content type filter
+ *     responses:
+ *       200:
+ *         description: Statistics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     overview:
+ *                       type: object
+ *                       properties:
+ *                         totalViews:
+ *                           type: integer
+ *                           example: 15420
+ *                         totalLikes:
+ *                           type: integer
+ *                           example: 892
+ *                         totalBookmarks:
+ *                           type: integer
+ *                           example: 234
+ *                         totalFollows:
+ *                           type: integer
+ *                           example: 156
+ *                         totalActiveUsers:
+ *                           type: integer
+ *                           example: 3
+ *                         conversionRate:
+ *                           type: number
+ *                           format: float
+ *                           example: 0.073
+ *                         totalSessions:
+ *                           type: integer
+ *                           example: 0
+ *                         viewsThisMonth:
+ *                           type: integer
+ *                           example: 15420
+ *                         lastUpdated:
+ *                           type: string
+ *                           format: date-time
+ *                           example: "2024-01-15T16:00:00.000Z"
+ *                     platform:
+ *                       type: object
+ *                       description: Platform-wide metrics (admin only)
+ *                       properties:
+ *                         totalStartups:
+ *                           type: integer
+ *                           example: 25
+ *                         totalEvents:
+ *                           type: integer
+ *                           example: 12
+ *                         totalNews:
+ *                           type: integer
+ *                           example: 45
+ *                         totalUsers:
+ *                           type: integer
+ *                           example: 150
+ *                     charts:
+ *                       type: object
+ *                       properties:
+ *                         monthlyViews:
+ *                           type: array
+ *                           items:
+ *                             type: integer
+ *                           example: [120, 145, 200, 180, 220]
+ *                         activeUsers:
+ *                           type: array
+ *                           items:
+ *                             type: integer
+ *                           example: [45, 52, 38, 67, 71]
+ *                     topContent:
+ *                       type: object
+ *                       properties:
+ *                         startups:
+ *                           type: array
+ *                           description: Top 5 startups by views
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: integer
+ *                               name:
+ *                                 type: string
+ *                               viewsCount:
+ *                                 type: integer
+ *                               likesCount:
+ *                                 type: integer
+ *                               bookmarksCount:
+ *                                 type: integer
+ *                               followersCount:
+ *                                 type: integer
+ *                         events:
+ *                           type: array
+ *                           description: Top 5 events by views
+ *                           items:
+ *                             type: object
+ *                         news:
+ *                           type: array
+ *                           description: Top 5 news articles by views
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: integer
+ *                               title:
+ *                                 type: string
+ *                               viewsCount:
+ *                                 type: integer
+ *                               likesCount:
+ *                                 type: integer
+ *                               bookmarksCount:
+ *                                 type: integer
+ *                               startup_id:
+ *                                 type: integer
+ *                 period:
+ *                   type: string
+ *                   example: "30"
+ *                 contentType:
+ *                   type: string
+ *                   example: "all"
+ *                 scope:
+ *                   type: string
+ *                   example: "user"
+ *                 startupIds:
+ *                   type: array
+ *                   items:
+ *                     type: integer
+ *                   description: User's startup IDs (user scope only)
+ *                   example: [1, 3, 5]
+ *                 generatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2024-01-15T16:00:00.000Z"
+ *             example:
+ *               success: true
+ *               data:
+ *                 overview:
+ *                   totalViews: 15420
+ *                   totalLikes: 892
+ *                   totalBookmarks: 234
+ *                   totalFollows: 156
+ *                   totalActiveUsers: 3
+ *                   conversionRate: 0.073
+ *                   totalSessions: 0
+ *                   viewsThisMonth: 15420
+ *                   lastUpdated: "2024-01-15T16:00:00.000Z"
+ *                 platform:
+ *                   totalStartups: 25
+ *                   totalEvents: 12
+ *                   totalNews: 45
+ *                   totalUsers: 150
+ *                 charts:
+ *                   monthlyViews: [120, 145, 200, 180, 220]
+ *                   activeUsers: [45, 52, 38, 67, 71]
+ *                 topContent:
+ *                   startups:
+ *                     - id: 1
+ *                       name: "TechVenture AI"
+ *                       viewsCount: 2340
+ *                       likesCount: 87
+ *                       bookmarksCount: 23
+ *                       followersCount: 45
+ *                   events: []
+ *                   news:
+ *                     - id: 1
+ *                       title: "Tech Startup Raises $10M"
+ *                       viewsCount: 1250
+ *                       likesCount: 67
+ *                       bookmarksCount: 18
+ *                       startup_id: 1
+ *               period: "30"
+ *               contentType: "all"
+ *               scope: "user"
+ *               startupIds: [1, 3, 5]
+ *               generatedAt: "2024-01-15T16:00:00.000Z"
+ *       401:
+ *         description: Unauthorized - authentication required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Unauthorized"
+ *       403:
+ *         description: Admin access required (for admin scope)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Admin access required"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to fetch statistics"
+ */
 
-interface StartupRecord {
-  id: number;
-}
-
-interface FounderRecord {
-  startup_id: number;
-}
-
-interface NewsRecord {
-  id: number;
-}
-
-interface EventRecord {
-  id: number;
-}
-
-interface InteractionEvent {
-  occurredAt: Date;
-  eventType: string;
-}
-
-interface StartupStats {
-  id: number;
-  name: string;
-  viewsCount: number;
-  likesCount: number;
-  bookmarksCount: number;
-  followersCount: number;
-}
-
-interface NewsStats {
-  id: number;
-  title: string;
-  viewsCount: number;
-  likesCount: number;
-  bookmarksCount: number;
-  startup_id: number;
-}
-
-interface EventStats {
-  id: number;
-  name: string;
-  viewsCount: number;
-  likesCount: number;
-  bookmarksCount: number;
-}
+const statisticsRepository = new StatisticsRepositoryPrisma();
+const statisticsService = new StatisticsService(statisticsRepository);
 
 export async function GET(request: NextRequest) {
   try {
@@ -78,321 +302,24 @@ export async function GET(request: NextRequest) {
       startDate.setDate(startDate.getDate() - periodDays);
     }
 
-    const userId = payload.userId;
-
-    let isAdmin = false;
-    if (scope === 'admin') {
-      const user = await prisma.s_USER.findUnique({
-        where: { id: userId },
-        include: { roles: true }
-      });
-
-      const mainRoleIsAdmin = user?.role?.toLowerCase() === 'admin';
-      const hasAdminRole = user?.roles?.some((role: UserRole) => {
-        const roleString = role.role?.toLowerCase();
-        return roleString ? ['admin', 'super_admin'].includes(roleString) : false;
-      }) ?? false;
-
-      isAdmin = mainRoleIsAdmin || hasAdminRole;
-
-      if (!isAdmin) {
-        return NextResponse.json(
-          { success: false, error: 'Admin access required' },
-          { status: 403 }
-        );
-      }
-    }
-
-    let startupIds: number[] = [];
-
-    if (scope === 'admin' && isAdmin) {
-      const allStartups = await prisma.s_STARTUP.findMany({
-        select: { id: true }
-      });
-      startupIds = allStartups.map((s: StartupRecord) => s.id);
-    } else {
-      const userStartups = await prisma.s_FOUNDER.findMany({
-        where: { user_id: userId },
-        select: { startup_id: true }
-      });
-      startupIds = userStartups.map((f: FounderRecord) => f.startup_id);
-
-      if (startupIds.length === 0) {
-        return NextResponse.json({
-          success: true,
-          data: {
-            overview: {
-              totalViews: 0,
-              totalLikes: 0,
-              totalBookmarks: 0,
-              totalFollows: 0,
-              totalActiveUsers: 0,
-              conversionRate: 0,
-              totalSessions: 0,
-              viewsThisMonth: 0,
-              lastUpdated: new Date().toISOString()
-            },
-            charts: {
-              monthlyViews: [0],
-              activeUsers: [0]
-            },
-            topContent: {
-              startups: [],
-              events: [],
-              news: []
-            }
-          },
-          period: period,
-          scope,
-          generatedAt: new Date().toISOString()
-        });
-      }
-    }
-
-    let newsIds: number[] = [];
-    let eventIds: number[] = [];
-
-    if (contentType === 'all' || contentType === 'news') {
-      const newsData = await prisma.s_NEWS.findMany({
-        where: startupIds.length > 0 ? { startup_id: { in: startupIds } } : {},
-        select: { id: true }
-      });
-      newsIds = newsData.map((n: NewsRecord) => n.id);
-    }
-
-    if (contentType === 'all' || contentType === 'event') {
-      const eventData = await prisma.s_EVENT.findMany({
-        select: { id: true }
-      });
-      eventIds = eventData.map((e: EventRecord) => e.id);
-    }
-
-    const buildLikeFilter = (baseFilter: Record<string, unknown> = {}): Record<string, unknown> => {
-      if (contentType === 'startup') {
-        return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
-      } else if (contentType === 'news') {
-        return { ...baseFilter, contentType: 'NEWS', contentId: { in: newsIds } };
-      } else if (contentType === 'event') {
-        return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
-      } else {
-        const orConditions: Array<{ contentType: string; contentId: { in: number[] } }> = [];
-        if (startupIds.length > 0) {
-          orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
-        }
-        if (newsIds.length > 0) {
-          orConditions.push({ contentType: 'NEWS', contentId: { in: newsIds } });
-        }
-        if (scope === 'admin' && eventIds.length > 0) {
-          orConditions.push({ contentType: 'EVENT', contentId: { in: eventIds } });
-        }
-        return orConditions.length > 0 ? { ...baseFilter, OR: orConditions } : baseFilter;
-      }
+    const filters: StatisticsFilters = {
+      period,
+      scope,
+      contentType,
+      userId: payload.userId,
+      startDate: startDate ?? undefined
     };
 
-    const buildBookmarkFilter = (baseFilter: Record<string, unknown> = {}): Record<string, unknown> => {
-      if (contentType === 'startup') {
-        return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
-      } else if (contentType === 'news') {
-        return { ...baseFilter, contentType: 'NEWS', contentId: { in: newsIds } };
-      } else if (contentType === 'event') {
-        return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
-      } else {
-        const orConditions: Array<{ contentType: string; contentId: { in: number[] } }> = [];
-        if (startupIds.length > 0) {
-          orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
-        }
-        if (newsIds.length > 0) {
-          orConditions.push({ contentType: 'NEWS', contentId: { in: newsIds } });
-        }
-        if (scope === 'admin' && eventIds.length > 0) {
-          orConditions.push({ contentType: 'EVENT', contentId: { in: eventIds } });
-        }
-        return orConditions.length > 0 ? { ...baseFilter, OR: orConditions } : baseFilter;
-      }
-    };
+    const statisticsData = await statisticsService.getStatistics(filters);
 
-    const buildInteractionFilter = (baseFilter: Record<string, unknown> = {}): Record<string, unknown> => {
-      if (contentType === 'startup') {
-        return { ...baseFilter, contentType: 'STARTUP', contentId: { in: startupIds } };
-      } else if (contentType === 'news') {
-        return { ...baseFilter, contentType: 'NEWS', contentId: { in: newsIds } };
-      } else if (contentType === 'event') {
-        return { ...baseFilter, contentType: 'EVENT', contentId: { in: eventIds } };
-      } else {
-        const orConditions: Array<{ contentType: string; contentId: { in: number[] } }> = [];
-        if (startupIds.length > 0) {
-          orConditions.push({ contentType: 'STARTUP', contentId: { in: startupIds } });
-        }
-        if (newsIds.length > 0) {
-          orConditions.push({ contentType: 'NEWS', contentId: { in: newsIds } });
-        }
-        if (scope === 'admin' && eventIds.length > 0) {
-          orConditions.push({ contentType: 'EVENT', contentId: { in: eventIds } });
-        }
-        return orConditions.length > 0 ? { ...baseFilter, OR: orConditions } : baseFilter;
-      }
-    };
-
-    const [
-      totalLikes,
-      totalBookmarks,
-      totalFollows,
-      startupStats,
-      newsStats,
-      eventStats,
-      dailyInteractionEvents
-    ] = await Promise.all([
-      prisma.s_LIKE.count({
-        where: buildLikeFilter(startDate ? { createdAt: { gte: startDate } } : {})
-      }),
-
-      prisma.s_BOOKMARK.count({
-        where: buildBookmarkFilter(startDate ? { createdAt: { gte: startDate } } : {})
-      }),
-
-      prisma.s_FOLLOW.count({
-        where: {
-          ...(startDate && { createdAt: { gte: startDate } }),
-          targetType: 'STARTUP',
-          targetId: { in: startupIds }
-        }
-      }),
-
-      (contentType === 'all' || contentType === 'startup') ? prisma.s_STARTUP.findMany({
-        where: { id: { in: startupIds } },
-        select: {
-          id: true,
-          name: true,
-          viewsCount: true,
-          likesCount: true,
-          bookmarksCount: true,
-          followersCount: true
-        }
-      }) : Promise.resolve([]),
-
-      (contentType === 'all' || contentType === 'news') && newsIds.length > 0 ? prisma.s_NEWS.findMany({
-        where: { id: { in: newsIds } },
-        select: {
-          id: true,
-          title: true,
-          viewsCount: true,
-          likesCount: true,
-          bookmarksCount: true,
-          startup_id: true
-        }
-      }) : Promise.resolve([]),
-
-      (contentType === 'all' || contentType === 'event') && scope === 'admin' ? prisma.s_EVENT.findMany({
-        where: { id: { in: eventIds } },
-        select: {
-          id: true,
-          name: true,
-          viewsCount: true,
-          likesCount: true,
-          bookmarksCount: true
-        }
-      }) : Promise.resolve([]),
-
-      prisma.s_INTERACTION_EVENT.findMany({
-        where: buildInteractionFilter(startDate ? { occurredAt: { gte: startDate } } : {}),
-        select: {
-          occurredAt: true,
-          eventType: true
-        },
-        orderBy: { occurredAt: 'desc' }
-      })
-    ]);
-
-    let totalViews = 0;
-    if (contentType === 'startup' || contentType === 'all') {
-      totalViews += startupStats.reduce((sum: number, s: StartupStats) => sum + s.viewsCount, 0);
+    let startupIds: number[] | undefined;
+    if (scope === 'user') {
+      startupIds = await statisticsRepository.getStartupIds(payload.userId, false);
     }
-    if (contentType === 'news' || contentType === 'all') {
-      totalViews += newsStats.reduce((sum: number, n: NewsStats) => sum + n.viewsCount, 0);
-    }
-    if (contentType === 'event' || contentType === 'all') {
-      totalViews += eventStats.reduce((sum: number, e: EventStats) => sum + e.viewsCount, 0);
-    }
-    const totalInteractions = totalLikes + totalBookmarks;
-    const conversionRate = totalViews > 0 ? totalInteractions / totalViews : 0;
-
-    const dailyEventCounts = new Map<string, { views: number; interactions: number }>();
-
-    for (let i = 0; i < (startDate ? Math.ceil((new Date().getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) : 30); i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateKey = date.toISOString().split('T')[0];
-      dailyEventCounts.set(dateKey, { views: 0, interactions: 0 });
-    }
-
-    dailyInteractionEvents.forEach((event: InteractionEvent) => {
-      const dateKey = event.occurredAt.toISOString().split('T')[0];
-      const current = dailyEventCounts.get(dateKey) || { views: 0, interactions: 0 };
-
-      if (event.eventType === 'VIEW') {
-        current.views++;
-      } else if (['LIKE', 'BOOKMARK', 'FOLLOW'].includes(event.eventType)) {
-        current.interactions++;
-      }
-
-      dailyEventCounts.set(dateKey, current);
-    });
-
-    const sortedDates = Array.from(dailyEventCounts.keys()).sort();
-    const monthlyViews = sortedDates.map(date => dailyEventCounts.get(date)?.views || 0);
-    const monthlyInteractions = sortedDates.map(date => dailyEventCounts.get(date)?.interactions || 0);
-
-    let platformMetrics = {};
-    if (scope === 'admin' && isAdmin) {
-      const [totalStartups, totalEvents, totalNews, totalUsers] = await Promise.all([
-        prisma.s_STARTUP.count(),
-        prisma.s_EVENT.count(),
-        prisma.s_NEWS.count(),
-        prisma.s_USER.count()
-      ]);
-
-      platformMetrics = {
-        totalStartups,
-        totalEvents,
-        totalNews,
-        totalUsers
-      };
-    } else {
-      platformMetrics = {
-        totalStartups: startupIds.length,
-        totalEvents: 0,
-        totalNews: newsStats.length,
-        totalUsers: 1
-      };
-    }
-
-    const stats = {
-      overview: {
-        totalViews,
-        totalLikes,
-        totalBookmarks,
-        totalFollows,
-        totalActiveUsers: startupStats.length,
-        conversionRate,
-        totalSessions: 0,
-        viewsThisMonth: totalViews,
-        lastUpdated: new Date().toISOString()
-      },
-      platform: platformMetrics,
-      charts: {
-        monthlyViews: monthlyViews.length > 0 ? monthlyViews : [0],
-        activeUsers: monthlyInteractions.length > 0 ? monthlyInteractions : [0]
-      },
-      topContent: {
-        startups: startupStats.sort((a: StartupStats, b: StartupStats) => b.viewsCount - a.viewsCount).slice(0, 5),
-        events: eventStats.sort((a: EventStats, b: EventStats) => b.viewsCount - a.viewsCount).slice(0, 5),
-        news: newsStats.sort((a: NewsStats, b: NewsStats) => b.viewsCount - a.viewsCount).slice(0, 5)
-      }
-    };
 
     return NextResponse.json({
       success: true,
-      data: stats,
+      data: statisticsData,
       period: period,
       contentType: contentType,
       scope,
@@ -402,6 +329,14 @@ export async function GET(request: NextRequest) {
 
   } catch (error) {
     console.error('Error fetching statistics:', error);
+
+    if (error instanceof Error && error.message === 'Admin access required') {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,

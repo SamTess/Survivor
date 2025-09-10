@@ -22,10 +22,8 @@ export function ChatLauncher(): React.ReactElement {
   const [error, setError] = React.useState<string | null>(null);
   const [titleOverride, setTitleOverride] = React.useState<string | null>(null);
   const [unread, setUnread] = React.useState<Record<number, number>>({});
-  // De-duplicate events (by messageId) to avoid double increments
-  const seenMsgIdsRef = React.useRef<Set<number>>(new Set());
-
   const { user } = useAuth();
+  const seenMsgIdsRef = React.useRef<Set<number>>(new Set());
   const currentUserId = typeof user?.id === "number" ? user.id : null;
   const storageKey = React.useMemo(() => (currentUserId ? `chat:unread:${currentUserId}` : null), [currentUserId]);
 
@@ -112,7 +110,7 @@ export function ChatLauncher(): React.ReactElement {
 
   React.useEffect(() => {
     const es = new EventSource("/api/messages/stream");
-  es.onmessage = (ev) => {
+    es.onmessage = (ev) => {
       try {
         const data = JSON.parse(ev.data);
         if ((data?.type === 'message:new' || data?.type === 'message:deleted' || data?.type === 'reaction:update') && typeof data.conversationId === 'number') {
@@ -197,70 +195,71 @@ export function ChatLauncher(): React.ReactElement {
   }, [loadConvs, currentUserId]);
 
   const AvatarBubble: React.FC<{ user: UserLite }> = ({ user: u }) => (
-    <UserAvatar uid={u.id} name={u.name} size={24} className="ring-2 ring-white" />
+    <UserAvatar uid={u.id} name={u.name} size={28} className="ring-2 ring-background shadow-sm" />
   );
 
   const totalUnread = Object.values(unread).reduce((a, b) => a + (b || 0), 0);
   const convItems = convs.map((c) => {
-    const others = c.users.filter((u) => currentUserId == null || u.id !== currentUserId);
-    const labels = others.map((u) => (u.name && u.name.trim()) ? u.name : `#${u.id}`);
-    const title = (activeId === c.id && titleOverride) ? titleOverride : (labels.join(", ") || `Conversation #${c.id}`);
+  const others = c.users.filter((u) => currentUserId == null || u.id !== currentUserId);
+  const labels = others.map((u) => (u.name && u.name.trim()) ? u.name : `#${u.id}`);
+  const title = (activeId === c.id && titleOverride) ? titleOverride : (labels.join(", ") || `Conversation #${c.id}`);
   const last = c.last?.sent_at ? new Date(c.last.sent_at).toLocaleString("en-GB") : "";
-    const unreadCount = unread[c.id] ?? 0;
-    const isActive = activeId === c.id;
-    return (
-      <div
-        key={c.id}
-        className={`w-full px-3 py-3 rounded-lg border transition flex items-center justify-between gap-3 ${isActive ? 'bg-accent/10 border-accent ring-1 ring-accent/50' : 'hover:bg-muted border-border'}`}
-        role="listitem"
-        aria-current={isActive ? 'true' : undefined}
+  const unreadCount = unread[c.id] ?? 0;
+  const isActive = activeId === c.id;
+
+  return (
+    <div
+      key={c.id}
+      className={`w-full px-4 py-3 rounded-2xl border border-border/20 transition-all duration-200 flex items-center justify-between gap-3 ${isActive ? 'bg-primary/10 border-primary/30 shadow-sm' : 'hover:bg-muted/50 hover:shadow-sm hover:scale-[1.02]'}`}
+      role="listitem"
+      aria-current={isActive ? 'true' : undefined}
+    >
+      <button
+        className="flex items-center gap-3 min-w-0 flex-1 text-left focus:outline-none rounded-xl p-1 -m-1"
+        onClick={(e) => { e.preventDefault(); setActiveId(c.id); setTitleOverride(null); setUnread((prev) => ({ ...prev, [c.id]: 0 })); }}
       >
-        <button
-          className="flex items-center gap-3 min-w-0 flex-1 text-left"
-          onClick={(e) => { e.preventDefault(); setActiveId(c.id); setTitleOverride(null); setUnread((prev) => ({ ...prev, [c.id]: 0 })); }}
-        >
-          <div className="flex -space-x-2">{c.users.slice(0, 4).map((u, i) => (
-            <div key={`avu-${u.id}-${i}`} className="inline-block">
-              <AvatarBubble user={u} />
-            </div>
-          ))}</div>
-          <div className="min-w-0">
-            <div className="truncate text-sm font-semibold text-foreground">{title}</div>
-            <div className="truncate text-xs text-muted-foreground">{last}</div>
+        <div className="flex -space-x-2">{c.users.slice(0, 4).map((u, i) => (
+          <div key={`avu-${u.id}-${i}`} className="inline-block">
+            <AvatarBubble user={u} />
           </div>
-        </button>
-        {unreadCount > 0 && (
-          <div className="shrink-0 text-xs px-2 py-1 rounded-full bg-destructive text-destructive-foreground">{String(unreadCount)}</div>
-        )}
-  <button
-          className="shrink-0 text-destructive hover:text-destructive-foreground hover:bg-destructive text-xs px-2 py-1 border border-destructive rounded"
-          onClick={async (e) => {
-            e.stopPropagation();
-            if (!confirm('Delete this conversation?')) return;
-            try {
-              const r = await fetch(`/api/messages/conversations/${c.id}`, { method: 'DELETE' });
-              if (!r.ok) throw new Error('HTTP ' + r.status);
-              const after = await loadConvs();
-              if (activeId === c.id) setActiveId(null);
-              setConvs(after);
-            } catch (e) {
-              setError(e instanceof Error ? e.message : 'Deletion failed');
-            }
-          }}
-          title="Delete"
-          type="button"
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
-    );
-  });
+        ))}</div>
+        <div className="min-w-0">
+          <div className="truncate text-sm font-semibold text-foreground">{title}</div>
+          <div className="truncate text-xs text-muted-foreground">{last}</div>
+        </div>
+      </button>
+      {unreadCount > 0 && (
+        <div className="shrink-0 text-xs px-2 py-1 rounded-full bg-primary text-primary-foreground font-medium shadow-sm">{String(unreadCount)}</div>
+      )}
+      <button
+        className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 text-xs p-2 rounded-lg transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-destructive/50"
+        onClick={async (e) => {
+          e.stopPropagation();
+          if (!confirm('Delete this conversation?')) return;
+          try {
+            const r = await fetch(`/api/messages/conversations/${c.id}`, { method: 'DELETE' });
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            const after = await loadConvs();
+            if (activeId === c.id) setActiveId(null);
+            setConvs(after);
+          } catch (e) {
+            setError(e instanceof Error ? e.message : 'Deletion failed');
+          }
+        }}
+        title="Delete"
+        type="button"
+      >
+        <Trash2 size={16} />
+      </button>
+    </div>
+  );
+});
 
   const list = (
-    <div className="p-3 space-y-2" role="list">
-  {error && <div className="text-sm text-destructive">{error}</div>}
-  {loading && <div className="text-sm text-muted-foreground">Loading...</div>}
-  {!loading && convs.length === 0 && <div className="text-sm text-muted-foreground">No conversations</div>}
+    <div className="p-4 space-y-3" role="list">
+      {error && <div className="text-sm text-destructive bg-destructive/10 px-3 py-2 rounded-lg border border-destructive/20">{error}</div>}
+      {loading && <div className="text-sm text-muted-foreground text-center py-4">Loading...</div>}
+      {!loading && convs.length === 0 && <div className="text-sm text-muted-foreground text-center py-8">No conversations</div>}
       {convItems}
     </div>
   );
@@ -271,41 +270,38 @@ export function ChatLauncher(): React.ReactElement {
       className="hidden md:block fixed !bottom-20 !right-4 !left-auto z-50 max-w-[95vw]"
       style={{ position: 'fixed', right: 16, bottom: 80, left: 'auto', width: activeId === null ? 'fit-content' : 'min(95vw, 1200px)' }}
     >
-  <div className="border rounded-xl shadow-2xl overflow-hidden bg-transparent" style={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
-  <div className="flex items-center justify-between px-3 py-2 bg-primary text-primary-foreground select-none">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="text-sm font-medium">Messages</div>
-      {activeId !== null && (
-              <button
-    className="ml-2 text-xs px-2 py-1 border border-primary-foreground/30 rounded hover:bg-primary-foreground/10 text-primary-foreground"
+      <div className="border border-border/20 rounded-2xl shadow-2xl overflow-hidden bg-card/90 backdrop-blur-md" style={{ height: '70vh', display: 'flex', flexDirection: 'column' }}>
+        <div className="flex items-center justify-between px-4 py-3 bg-primary/10 border-b border-border/20 select-none">
+          <div className="flex items-center gap-3 min-w-0">
+            <MessageCircle className="h-5 w-5 text-primary" />
+            <div className="text-sm font-semibold text-foreground">Messages</div>
+            {activeId !== null && (<button
+                className="ml-2 text-xs px-3 py-1.5 border border-border/30 rounded-lg hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50"
                 onClick={(e) => { e.preventDefault(); setActiveId(null); setTitleOverride(null); }}
-                type="button"
-              >
-        All conversations
+                type="button">
+                All conversations
               </button>
             )}
           </div>
           <button
-      className="text-primary-foreground/90 hover:text-primary-foreground text-xs px-2 py-1 border border-primary-foreground/30 rounded"
+            className="text-muted-foreground hover:text-foreground text-xs px-3 py-1.5 border border-border/30 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50"
             onClick={(e) => { e.preventDefault(); setOpen(false); }}
           >
-      Close
+             Close
           </button>
         </div>
         {activeId === null ? (
           <div className="flex-1 min-h-0 flex bg-transparent">
-      <div className="ml-auto w-[380px] min-h-0 overflow-y-auto bg-card">
+            <div className="ml-auto w-[400px] min-h-0 overflow-y-auto bg-card/80 border-l border-border/20">
               {list}
             </div>
           </div>
         ) : (
-          <div className="flex-1 min-h-0 grid" style={{ gridTemplateColumns: '1fr 380px' }}>
-            {/* Left: conversation */}
-    <div className="h-full min-h-0 overflow-hidden backdrop-blur-md bg-card/60 supports-[backdrop-filter]:bg-card/60 border-r border-border">
+          <div className="flex-1 min-h-0 grid" style={{ gridTemplateColumns: '1fr 400px' }}>
+            <div className="h-full min-h-0 overflow-hidden bg-card/60 backdrop-blur-md border-r border-border/20">
               <ConversationClient cid={activeId} embedded />
             </div>
-            {/* Right: list */}
-    <div className="border-l bg-card min-h-0 overflow-y-auto">
+            <div className="bg-card/80 min-h-0 overflow-y-auto">
               {list}
             </div>
           </div>
@@ -317,15 +313,15 @@ export function ChatLauncher(): React.ReactElement {
   const btn = (
     <button
       aria-label={open ? "Close messages" : "Open messages"}
-      className="hidden md:flex fixed !bottom-4 !right-4 !left-auto z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg items-center justify-center text-xl hover:bg-primary/90 border border-primary/30 relative"
+      className="hidden md:flex fixed z-50 w-12 h-12 rounded-full bg-primary/90 text-primary-foreground shadow-xl items-center justify-center hover:bg-primary hover:shadow-2xl transition-all duration-200 hover:scale-110 border border-border/20 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
       style={{ position: 'fixed', right: 16, bottom: 16, left: 'auto' }}
       onClick={() => setOpen((v) => !v)}
       type="button"
     >
       <>
-        <MessageCircle size={18} />
+        <MessageCircle size={17} />
         {totalUnread > 0 && (
-      <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] leading-[18px] text-center font-semibold border border-primary-foreground">
+          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] leading-[20px] text-center font-bold border-2 border-background shadow-lg">
             {String(Math.min(totalUnread, 99))}
           </span>
         )}
