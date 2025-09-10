@@ -22,14 +22,10 @@ export default function DashboardControls({
   onExport
 }: DashboardControlsProps) {
 
-  const toggleSetting = (key: keyof DashboardSettings) => {
-    onSettingsChange({ ...settings, [key]: !settings[key] })
-  }
-
-  const handleKeyDown = (event: React.KeyboardEvent, key: keyof DashboardSettings) => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>, key: keyof DashboardSettings) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
-      toggleSetting(key)
+      onSettingsChange({ ...settings, [key]: !settings[key] })
     }
   }
 
@@ -80,7 +76,7 @@ export default function DashboardControls({
                     : 'bg-card border-border'
                 }`}
                 onClick={() => onSettingsChange({ ...settings, [key]: !settings[key] })}
-                onKeyDown={(e) => handleKeyDown(e as unknown as React.KeyboardEvent, key)}
+                onKeyDown={(e) => handleKeyDown(e, key)}
                 role="button"
                 tabIndex={0}
                 aria-pressed={settings[key]}
