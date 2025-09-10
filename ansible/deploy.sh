@@ -100,7 +100,7 @@ run_dependencies() {
     echo
     echo -e "${GREEN}🔧 Installing Dependencies on All Hosts${NC}"
     echo -e "${YELLOW}📋 Running: ansible-playbook playbook.yml${NC}"
-    ansible-playbook playbook.yml -v
+    ansible-playbook playbook.yml
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Dependencies installed successfully!${NC}"
@@ -114,7 +114,7 @@ run_staging_deployment() {
     echo
     echo -e "${GREEN}🎯 Deploying to Staging Environment${NC}"
     echo -e "${YELLOW}📋 Running: ansible-playbook playbook-staging.yml${NC}"
-    ansible-playbook playbook-staging.yml -v
+    ansible-playbook playbook-staging.yml
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Staging deployment completed successfully!${NC}"
@@ -128,7 +128,7 @@ run_production_deployment() {
     echo
     echo -e "${GREEN}🎯 Deploying to Production Environment${NC}"
     echo -e "${YELLOW}📋 Running: ansible-playbook playbook-production.yml${NC}"
-    ansible-playbook playbook-production.yml -v
+    ansible-playbook playbook-production.yml
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Production deployment completed successfully!${NC}"
@@ -143,7 +143,7 @@ run_full_deployment() {
     echo -e "${GREEN}🎯 Deploying to Both Environments${NC}"
 
     echo -e "${YELLOW}📋 Step 1/3: Installing dependencies...${NC}"
-    ansible-playbook playbook.yml -v
+    ansible-playbook playbook.yml
 
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Dependencies installation failed!${NC}"
@@ -151,7 +151,7 @@ run_full_deployment() {
     fi
 
     echo -e "${YELLOW}📋 Step 2/3: Deploying to staging...${NC}"
-    ansible-playbook playbook-staging.yml -v
+    ansible-playbook playbook-staging.yml
 
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Staging deployment failed!${NC}"
@@ -159,7 +159,7 @@ run_full_deployment() {
     fi
 
     echo -e "${YELLOW}📋 Step 3/3: Deploying to production...${NC}"
-    ansible-playbook playbook-production.yml -v
+    ansible-playbook playbook-production.yml
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Full deployment completed successfully!${NC}"

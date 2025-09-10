@@ -12,6 +12,7 @@ services:
       - ../src:/app/src
       - ../public:/app/public
       - ../prisma:/app/prisma
+      - media_uploads:/app/uploads
     environment:
       - NODE_ENV=${NODE_ENV}
       - DB_HOST=${DB_HOST}
@@ -41,6 +42,7 @@ services:
 
 volumes:
   postgres_data:
+  media_uploads:
 
 networks:
   survivor-network:
