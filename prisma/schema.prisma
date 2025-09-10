@@ -7,10 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// --------------------
-// Opportunities Tracker Models
-// --------------------
-
 enum OpportunityDirection {
   S_TO_I
   S_TO_P
@@ -34,7 +30,6 @@ enum OpportunityStatus {
   LOST
 }
 
-// Financial/deal enums
 enum DealType {
   EQUITY
   CONVERTIBLE
@@ -94,7 +89,6 @@ model OPPORTUNITY {
   reason         String?
   next_action    String?
   owner_user_id  Int?
-  // Financial/deal enrichment
   deal_type               DealType?
   round                   Round?
   proposed_amount_eur     Decimal? @db.Decimal(18, 2)
@@ -149,9 +143,8 @@ model S_STARTUP {
   bookmarksCount Int      @default(0)
   sharesCount    Int      @default(0)
   followersCount Int      @default(0)
-  // Funding needs (optional)
-  fundraising_status String? // not_raising|preparing|raising|closed
-  round              String? // pre-seed|seed|A|B|C|growth (kept as string to avoid breaking existing forms)
+  fundraising_status String?
+  round              String?
   ask_currency       String? @db.Char(3)
   ask_min            Decimal? @db.Decimal(18, 2)
   ask_max            Decimal? @db.Decimal(18, 2)
@@ -224,7 +217,6 @@ model S_INVESTOR {
   investment_focus String?
   user_id          Int?
   user             S_USER?  @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  // Relation to investment funds
   funds            INVESTMENT_FUND[]
 
   @@unique([user_id])
@@ -250,8 +242,7 @@ model S_PARTNER {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
   @@index([partnership_type])
-  // Pilot budget (optional)
-  budget_cycle         String? // one_off|quarterly|annual
+  budget_cycle         String?
   pilot_budget_min_eur Decimal? @db.Decimal(18, 2)
   pilot_budget_max_eur Decimal? @db.Decimal(18, 2)
   program_names        String[]
@@ -484,7 +475,6 @@ model S_DAILY_CONTENT_METRICS {
   shares Int @default(0)
   followers Int @default(0)
 
-
   @@unique([day, contentType, contentId])
   @@index([day])
   @@index([contentType])
@@ -502,10 +492,8 @@ model S_PAGE_VIEW {
   utmMedium String?
   utmCampaign String?
 
-
   session S_SESSION? @relation(fields: [sessionId], references: [id])
   user S_USER? @relation(fields: [userId], references: [id])
-
 
   @@index([occurredAt])
   @@index([sessionId])
@@ -523,7 +511,6 @@ model S_DAILY_ACQUISITION_METRICS {
   sessions Int @default(0)
   users Int @default(0)
   signups Int @default(0)
-
 
   @@index([day])
   @@index([utmSource, utmCampaign, day])
@@ -553,7 +540,6 @@ model S_USER_ROLE {
   @@index([role])
 }
 
-// Feature persistence for scoring
 model FEATURE_VECTOR {
   id           String     @id @default(uuid())
   entity_type  EntityType
@@ -567,7 +553,6 @@ model FEATURE_VECTOR {
   @@index([entity_type])
 }
 
-// Investment funds for investors
 model INVESTMENT_FUND {
   id                      String   @id @default(uuid())
   investor_id             Int
