@@ -17,7 +17,7 @@ function isPublic(path: string): boolean {
   if (path.startsWith('/api/partners')) return true;
   if (path.startsWith('/api/users')) return true;
   if (path.startsWith('/_next/') || path.startsWith('/static/')) return true;
-  if (path.match(/\.(png|jpg|jpeg|gif|svg|ico|css|js|woff|woff2|ttf|eot)$/)) return true;
+  if (path.match(/\.(png|jpg|jpeg|gif|svg|ico|css|js|woff|woff2|ttf|eot)$/i)) return true;
   return false;
 }
 
