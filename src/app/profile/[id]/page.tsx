@@ -131,12 +131,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   };
 
   const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => {
-    // Use a responsive approach: show smaller avatar on mobile, larger on desktop
     const [avatarSize, setAvatarSize] = useState(64);
 
     useEffect(() => {
       const updateSize = () => {
-        // 64px (16*4) on mobile, 96px (24*4) on sm screens and up
         setAvatarSize(window.innerWidth >= 640 ? 96 : 64);
       };
 
@@ -185,7 +183,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <ProtectedRoute requireAuth={true}>
-      <div className="min-h-screen bg-background py-5 overflow-y-auto">
+      <div className="h-screen bg-background py-5 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 sm:px-6 lg:px-8 pt-20">
           {/* Error Display */}
           {error && (
