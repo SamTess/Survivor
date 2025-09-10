@@ -5,8 +5,10 @@ export type Opportunity = {
   direction: OpportunityDirection;
   source_type: EntityType;
   source_id: number;
+  source_name?: string | null;
   target_type: EntityType;
   target_id: number;
+  target_name?: string | null;
   score?: number | null;
   score_breakdown?: Record<string, number> | null;
   status: OpportunityStatus;
@@ -25,6 +27,13 @@ export type Opportunity = {
   pilot_estimated_cost_eur?: unknown;
   pilot_budget_fit?: string | null;
   term_deadline?: Date | null;
+  // optional, aggregated history of closed deals for the related startup (for UI sparkline)
+  startup_investment_history?: Array<{
+    dt: string | Date;
+    amount_eur: unknown;
+    round?: string | null;
+    deal_type?: string | null;
+  }>; 
   created_at: Date;
   updated_at: Date;
 };

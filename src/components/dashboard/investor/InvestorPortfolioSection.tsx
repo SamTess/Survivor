@@ -88,75 +88,7 @@ function Sparkline({ data, color = "#6610F2", height = 36 }: { data: number[]; c
   );
 }
 
-// Mock data generator - In real app, this would come from API
-function generateMockPortfolioData(): PortfolioData {
-  const sectors = ['FinTech', 'HealthTech', 'EdTech', 'CleanTech', 'E-commerce', 'AI/ML', 'SaaS'];
-  const maturities = ['Seed', 'Series A', 'Series B', 'Growth'];
-  const statuses: ('active' | 'exited' | 'at_risk')[] = ['active', 'active', 'active', 'exited', 'at_risk'];
-
-  const investments = Array.from({ length: 12 }, (_, i) => {
-    const amount = 50000 + Math.random() * 500000;
-    const returnRate = -20 + Math.random() * 100; // -20% to +80%
-    const currentValue = amount * (1 + returnRate / 100);
-
-    return {
-      id: i + 1,
-      startupName: `Startup ${String.fromCharCode(65 + i)}`,
-      amount,
-      currentValue,
-      returnRate,
-      sector: sectors[Math.floor(Math.random() * sectors.length)],
-      investmentDate: new Date(2022 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 28)).toISOString(),
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      maturity: maturities[Math.floor(Math.random() * maturities.length)]
-    };
-  });
-
-  const totalInvestments = investments.length;
-  const totalInvested = investments.reduce((sum, inv) => sum + inv.amount, 0);
-  const totalValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0);
-  const totalROI = ((totalValue - totalInvested) / totalInvested) * 100;
-  const activeInvestments = investments.filter(inv => inv.status === 'active').length;
-
-  // Sector distribution
-  const sectorMap = new Map<string, { amount: number; count: number }>();
-  investments.forEach(inv => {
-    const existing = sectorMap.get(inv.sector) || { amount: 0, count: 0 };
-    sectorMap.set(inv.sector, {
-      amount: existing.amount + inv.amount,
-      count: existing.count + 1
-    });
-  });
-
-  const sectorDistribution = Array.from(sectorMap.entries()).map(([sector, data]) => ({
-    sector,
-    amount: data.amount,
-    percentage: (data.amount / totalInvested) * 100,
-    count: data.count
-  })).sort((a, b) => b.amount - a.amount);
-
-  const monthlyReturns = Array.from({ length: 12 }, () => -5 + Math.random() * 15);
-  const benchmarkReturns = Array.from({ length: 12 }, () => -3 + Math.random() * 10);
-
-  return {
-    overview: {
-      totalInvestments,
-      totalValue,
-      activeInvestments,
-      averageReturn: totalROI / totalInvestments,
-      bestPerformer: investments.sort((a, b) => b.returnRate - a.returnRate)[0]?.startupName || 'N/A',
-      worstPerformer: investments.sort((a, b) => a.returnRate - b.returnRate)[0]?.startupName || 'N/A',
-      totalROI,
-      monthlyReturn: monthlyReturns[monthlyReturns.length - 1]
-    },
-    investments,
-    sectorDistribution,
-    performance: {
-      monthlyReturns,
-      benchmarkReturns
-    }
-  };
-}
+// Removed mock generator; data is fetched from /api/portfolio
 
 export default function InvestorPortfolioSection({ investor }: InvestorPortfolioSectionProps) {
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);
@@ -170,13 +102,16 @@ export default function InvestorPortfolioSection({ investor }: InvestorPortfolio
       setError(null);
 
       try {
-        // For now, use mock data. In production, this would be an API call:
-        // const response = await apiService.get<PortfolioData>(`/investors/${investor?.id}/portfolio`);
-
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const mockData = generateMockPortfolioData();
-        setPortfolioData(mockData);
+        if (!investor?.id) {
+          setPortfolioData(null);
+          setLoading(false);
+          return;
+        }
+        const months = selectedTimeframe === '3M' ? 3 : selectedTimeframe === '6M' ? 6 : selectedTimeframe === '1Y' ? 12 : 24;
+        const res = await fetch(`/api/portfolio?investorId=${investor.id}&months=${months}`);
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error || 'Erreur API');
+        setPortfolioData(json.data as PortfolioData);
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
         setError('Failed to load portfolio data');
@@ -186,11 +121,11 @@ export default function InvestorPortfolioSection({ investor }: InvestorPortfolio
     };
 
     fetchPortfolioData();
-  }, [investor]);
+  }, [investor, selectedTimeframe]);
 
   if (loading) {
     return (
-      <section className="space-y-6 overflow-y-auto">
+      <section className="space-y-6 overflow-y-auto max-w-6xl mx-auto">
         <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm">
           <div className="animate-pulse">
             <div className="h-6 bg-muted rounded w-1/3 mb-2"></div>
@@ -213,7 +148,7 @@ export default function InvestorPortfolioSection({ investor }: InvestorPortfolio
 
   if (error || !portfolioData) {
     return (
-      <section className="space-y-6 overflow-y-auto">
+      <section className="space-y-6 overflow-y-auto max-w-6xl mx-auto">
         <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-foreground">Portfolio Overview</h2>
           <p className="text-sm text-red-500">Error: {error || 'Failed to load portfolio data'}</p>
@@ -223,7 +158,7 @@ export default function InvestorPortfolioSection({ investor }: InvestorPortfolio
   }
 
   return (
-    <section className="space-y-6 overflow-y-auto">
+    <section className="space-y-6 overflow-y-auto max-w-6xl mx-auto">
       {/* Header */}
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm animate-card transition-all duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

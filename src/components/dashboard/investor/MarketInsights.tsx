@@ -18,23 +18,23 @@ interface MarketTrend {
 interface NewsArticle {
   id: number;
   title: string;
-  summary: string;
-  source: string;
-  publishedAt: string;
-  category: string;
+  summary?: string;
+  source?: string;
+  publishedAt?: string;
+  category?: string;
   relevanceScore: number;
   url?: string;
-  viewsCount: number;
-  likesCount: number;
-  bookmarksCount: number;
+  viewsCount?: number;
+  likesCount?: number;
+  bookmarksCount?: number;
 }
 
 interface UpcomingEvent {
   id: number;
   name: string;
-  description: string;
-  date: string;
-  location: string;
+  description?: string;
+  date?: string;
+  location?: string;
   eventType: 'conference' | 'pitch' | 'networking' | 'webinar';
   relevanceScore: number;
   attendeeCount?: number;
@@ -121,89 +121,10 @@ function getDynamicTimeframes() {
   };
 }
 
-// Mock data generator
-function generateMockMarketInsights(investor: InvestorApiResponse | null): MarketInsight {
-  const sectors = ['FinTech', 'HealthTech', 'EdTech', 'CleanTech', 'E-commerce', 'AI/ML', 'SaaS'];
-  const focusSector = investor?.investment_focus || 'FinTech';
-  const timeframes = getDynamicTimeframes();
-
-  const trends: MarketTrend[] = [
-    {
-      id: 1,
-      title: `${focusSector} Sector Sees 25% Growth`,
-      category: 'sector',
-      description: `Investment in ${focusSector} startups has increased significantly this quarter, driven by innovation and market demand.`,
-      changePercent: 25.3,
-      timeframe: timeframes.currentQuarter,
-      relevanceScore: 95
-    },
-    {
-      id: 2,
-      title: 'Series A Funding Rounds Up 15%',
-      category: 'funding',
-      description: 'Early-stage funding shows strong growth with more investors entering the market.',
-      changePercent: 15.7,
-      timeframe: timeframes.last3Months,
-      relevanceScore: 78
-    },
-    {
-      id: 3,
-      title: 'Tech Startup Valuations Stabilizing',
-      category: 'valuation',
-      description: 'After a period of correction, startup valuations are finding more realistic levels.',
-      changePercent: -5.2,
-      timeframe: timeframes.ytd,
-      relevanceScore: 82
-    },
-    {
-      id: 4,
-      title: 'Exit Activity Rebounds',
-      category: 'exits',
-      description: 'M&A activity and IPO filings show increased confidence in the market.',
-      changePercent: 32.1,
-      timeframe: timeframes.currentQuarter,
-      relevanceScore: 71
-    }
-  ];
-
-  const news: NewsArticle[] = Array.from({ length: 8 }, (_, i) => ({
-    id: i + 1,
-    title: `Breaking: ${sectors[i % sectors.length]} Startup Raises €${(10 + Math.random() * 90).toFixed(0)}M`,
-    summary: `Revolutionary ${sectors[i % sectors.length].toLowerCase()} solution secures major funding round led by prominent investors, marking significant milestone in industry growth.`,
-    source: ['TechCrunch', 'Venture Beat', 'EU Startups', 'Sifted'][i % 4],
-    publishedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-    category: sectors[i % sectors.length],
-    relevanceScore: focusSector === sectors[i % sectors.length] ? 85 + Math.random() * 15 : 40 + Math.random() * 40,
-    viewsCount: Math.floor(Math.random() * 5000) + 100,
-    likesCount: Math.floor(Math.random() * 200) + 10,
-    bookmarksCount: Math.floor(Math.random() * 50) + 5
-  })).sort((a, b) => b.relevanceScore - a.relevanceScore);
-
-  const eventTypes: ('conference' | 'pitch' | 'networking' | 'webinar')[] = ['conference', 'pitch', 'networking', 'webinar'];
-  const events: UpcomingEvent[] = Array.from({ length: 6 }, (_, i) => ({
-    id: i + 1,
-    name: `${sectors[i % sectors.length]} Summit 2024`,
-    description: `Leading ${sectors[i % sectors.length].toLowerCase()} conference bringing together investors, founders, and industry experts.`,
-    date: new Date(Date.now() + (i + 1) * 7 * 24 * 60 * 60 * 1000).toISOString(),
-    location: ['Paris', 'London', 'Berlin', 'Amsterdam', 'Barcelona', 'Stockholm'][i % 6],
-    eventType: eventTypes[i % eventTypes.length],
-    relevanceScore: focusSector === sectors[i % sectors.length] ? 85 + Math.random() * 15 : 50 + Math.random() * 30,
-    attendeeCount: Math.floor(Math.random() * 1000) + 100
-  })).sort((a, b) => b.relevanceScore - a.relevanceScore);
-
-  const sectorPerformance = sectors.map(sector => ({
-    sector,
-    performance: -10 + Math.random() * 30,
-    dealCount: Math.floor(Math.random() * 50) + 10,
-    avgValuation: 5000000 + Math.random() * 20000000
-  })).sort((a, b) => b.performance - a.performance);
-
-  return {
-    trends,
-    news,
-    events,
-    sectorPerformance
-  };
+// Utilities de calcul
+function pctChange(prev: number, curr: number): number {
+  if (prev === 0) return curr === 0 ? 0 : 100;
+  return ((curr - prev) / prev) * 100;
 }
 
 export default function MarketInsights({ investor }: MarketInsightsProps) {
@@ -211,6 +132,7 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'trends' | 'news' | 'events' | 'sectors'>('trends');
+  const focus = investor?.investment_focus?.toLowerCase() || '';
 
   useEffect(() => {
     const fetchMarketInsights = async () => {
@@ -218,12 +140,145 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
       setError(null);
 
       try {
-        // For now, use mock data. In production:
-        // const response = await apiService.get<MarketInsight>(`/market-insights?investor_id=${investor?.id}`);
+        const [newsRes, eventsRes, dealsRes] = await Promise.all([
+          fetch(`/api/news?page=1&limit=50`),
+          fetch(`/api/events?upcoming=true`),
+          fetch(`/api/opportunities?status=deal&page=1&limit=10000`),
+        ]);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const mockData = generateMockMarketInsights(investor);
-        setInsights(mockData);
+        const newsJson = await newsRes.json();
+        const eventsJson = await eventsRes.json();
+        const dealsJson = await dealsRes.json();
+
+        if (!newsJson.success || !eventsJson.success || !dealsJson.success) {
+          throw new Error('API error');
+        }
+
+        type ApiNews = { id: number; title?: string; description?: string; news_date?: string | Date; category?: string; startup?: { name?: string; sector?: string } };
+        type ApiEvent = { id: number; name: string; description?: string; dates?: string; location?: string; event_type?: string };
+        type ApiDeal = { updated_at: string | Date; proposed_amount_eur?: string | number | null };
+        const rawNews = (newsJson.data || []) as ApiNews[];
+        const rawEvents = (eventsJson.data || []) as ApiEvent[];
+        const rawDeals = (dealsJson.items || []) as ApiDeal[];
+
+        const news: NewsArticle[] = rawNews.slice(0, 12).map((n: ApiNews, idx: number) => {
+        const sector = n.startup?.sector || n.category || undefined;
+        const title: string = n.title || `News ${idx + 1}`;
+        const description: string | undefined = n.description || undefined;
+        const publishedAt: string | undefined = n.news_date ? new Date(n.news_date).toISOString() : undefined;
+        const relevance = focus && sector ? (sector.toLowerCase().includes(focus) ? 90 : 60) : 65;
+        return {
+            id: n.id,
+            title,
+            summary: description,
+            source: n.startup?.name || 'Internal',
+            publishedAt,
+            category: sector,
+            relevanceScore: relevance,
+            url: undefined,
+            viewsCount: undefined,
+            likesCount: undefined,
+            bookmarksCount: undefined,
+          };
+        }).sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+        const events: UpcomingEvent[] = rawEvents.slice(0, 8).map((e: ApiEvent) => {
+        const et = (e.event_type || '').toLowerCase();
+        const eventType: UpcomingEvent['eventType'] = et.includes('webinar') ? 'webinar' : et.includes('pitch') ? 'pitch' : et.includes('conf') ? 'conference' : 'networking';
+        const rel = focus ? ((e.name || '').toLowerCase().includes(focus) || (e.description || '').toLowerCase().includes(focus) ? 85 : 60) : 65;
+        return {
+            id: e.id,
+            name: e.name,
+            description: e.description || undefined,
+            date: e.dates || undefined,
+            location: e.location || undefined,
+            eventType,
+            relevanceScore: rel,
+          };
+        }).sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+        const now = new Date();
+        const days = (d: string | Date) => (typeof d === 'string' ? new Date(d) : d);
+        const inWindow = (d: Date, start: Date, end: Date) => d >= start && d < end;
+        const qLen = 90 * 24 * 60 * 60 * 1000;
+        const endCurr = now;
+        const startCurr = new Date(endCurr.getTime() - qLen);
+        const endPrev = startCurr;
+        const startPrev = new Date(endPrev.getTime() - qLen);
+
+        const dealsCurr = rawDeals.filter((o) => inWindow(days(o.updated_at), startCurr, endCurr));
+        const dealsPrev = rawDeals.filter((o) => inWindow(days(o.updated_at), startPrev, endPrev));
+        const sumAmount = (arr: ApiDeal[]) => arr.reduce((s, o) => s + (o.proposed_amount_eur ? Number(o.proposed_amount_eur) : 0), 0);
+        const avg = (arr: ApiDeal[], getter: (x: ApiDeal[]) => number) => (arr.length ? getter(arr) / arr.length : 0);
+        const avgCurr = avg(dealsCurr, sumAmount);
+        const avgPrev = avg(dealsPrev, sumAmount);
+
+        const timeframes = getDynamicTimeframes();
+        const trends: MarketTrend[] = [
+          {
+            id: 1,
+            title: 'Funding deal activity',
+            category: 'funding',
+            description: 'Change in number of signed deals vs previous quarter',
+            changePercent: pctChange(dealsPrev.length, dealsCurr.length),
+            timeframe: timeframes.last3Months,
+            relevanceScore: 80,
+          },
+          {
+            id: 2,
+            title: 'Average ticket size',
+            category: 'valuation',
+            description: 'Average proposed amount per deal vs previous quarter',
+            changePercent: pctChange(avgPrev, avgCurr),
+            timeframe: timeframes.last3Months,
+            relevanceScore: 72,
+          },
+          {
+            id: 3,
+            title: 'Focus sector mentions',
+            category: 'sector',
+            description: 'Mentions in news for the investor focus sector vs previous month',
+            changePercent: (() => {
+              if (!focus) return 0;
+              const last30 = new Date(now.getTime() - 30 * 86400000);
+              const prev30 = new Date(now.getTime() - 60 * 86400000);
+              const nLast = rawNews.filter((n) => {
+                const d = n.news_date ? new Date(n.news_date) : null;
+                const sec = (n.startup?.sector || n.category || '').toLowerCase();
+                return d && d >= last30 && d < now && sec.includes(focus);
+              }).length;
+              const nPrev = rawNews.filter((n) => {
+                const d = n.news_date ? new Date(n.news_date) : null;
+                const sec = (n.startup?.sector || n.category || '').toLowerCase();
+                return d && d >= prev30 && d < last30 && sec.includes(focus);
+              }).length;
+              return pctChange(nPrev, nLast);
+            })(),
+            timeframe: 'Last 30 days',
+            relevanceScore: focus ? 85 : 60,
+          },
+        ];
+
+        // Sector performance (proxi via news récents)
+        const newsBySector = new Map<string, { last90: number; prev90: number }>();
+        for (const n of rawNews) {
+          const sector = (n.startup?.sector || n.category || 'Other') as string;
+          const d = n.news_date ? new Date(n.news_date) : undefined;
+          const bucket = newsBySector.get(sector) || { last90: 0, prev90: 0 };
+          if (d) {
+            if (d >= startCurr && d < endCurr) bucket.last90 += 1;
+            else if (d >= startPrev && d < endPrev) bucket.prev90 += 1;
+          }
+          newsBySector.set(sector, bucket);
+        }
+        const sectorPerformance = Array.from(newsBySector.entries()).map(([sector, v]) => ({
+          sector,
+          performance: pctChange(v.prev90, v.last90),
+          dealCount: v.last90,
+          avgValuation: 0,
+        })).sort((a, b) => b.performance - a.performance).slice(0, 10);
+
+        setInsights({ trends, news, events, sectorPerformance });
       } catch (error) {
         console.error('Error fetching market insights:', error);
         setError('Failed to load market insights');
@@ -237,7 +292,7 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
 
   if (loading) {
     return (
-      <section className="space-y-6 overflow-y-auto">
+      <section className="space-y-6 overflow-y-auto max-w-4xl mx-auto">
         <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm">
           <div className="animate-pulse">
             <div className="h-6 bg-muted rounded w-1/3 mb-2"></div>
@@ -261,7 +316,7 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
 
   if (error || !insights) {
     return (
-      <section className="space-y-6 overflow-y-auto">
+      <section className="space-y-6 overflow-y-auto max-w-4xl mx-auto">
         <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm">
           <h2 className="text-lg font-semibold text-foreground">Market Insights</h2>
           <p className="text-sm text-red-500">Error: {error || 'Failed to load market insights'}</p>
@@ -271,7 +326,7 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
   }
 
   return (
-    <section className="space-y-6 overflow-y-auto">
+    <section className="space-y-6 overflow-y-auto max-w-4xl mx-auto">
       {/* Header */}
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-5 shadow-sm animate-card transition-all duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -364,31 +419,39 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
                     <FaNewspaper className="text-primary" size={16} />
                     <h3 className="font-semibold text-foreground line-clamp-2">{article.title}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{article.summary}</p>
+                  {article.summary && (
+                    <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{article.summary}</p>
+                  )}
                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{article.source}</span>
-                    <span>{formatDate(article.publishedAt)}</span>
-                    <span className="px-2 py-1 bg-secondary/50 text-secondary-foreground rounded-full">
-                      {article.category}
-                    </span>
+                    {article.source && <span>{article.source}</span>}
+                    {article.publishedAt && <span>{formatDate(article.publishedAt)}</span>}
+                    {article.category && (
+                      <span className="px-2 py-1 bg-secondary/50 text-secondary-foreground rounded-full">
+                        {article.category}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                   <span className={`px-2 py-1 text-xs rounded-full ${getRelevanceColor(article.relevanceScore)}`}>
                     {article.relevanceScore}% relevant
                   </span>
-                  <button className="p-2 text-muted-foreground hover:text-primary transition-colors">
-                    <FiExternalLink size={16} />
-                  </button>
+                  {article.url && (
+                    <a href={article.url} target="_blank" rel="noreferrer" className="p-2 text-muted-foreground hover:text-primary transition-colors">
+                      <FiExternalLink size={16} />
+                    </a>
+                  )}
                 </div>
               </div>
-              <div className="flex items-center justify-between pt-3 border-t border-border/20 text-xs text-muted-foreground">
-                <div className="flex items-center gap-4">
-                  <span>{article.viewsCount} views</span>
-                  <span>{article.likesCount} likes</span>
-                  <span>{article.bookmarksCount} bookmarks</span>
+              {(article.viewsCount || article.likesCount || article.bookmarksCount) && (
+                <div className="flex items-center justify-between pt-3 border-t border-border/20 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4">
+                    {typeof article.viewsCount === 'number' && <span>{article.viewsCount} views</span>}
+                    {typeof article.likesCount === 'number' && <span>{article.likesCount} likes</span>}
+                    {typeof article.bookmarksCount === 'number' && <span>{article.bookmarksCount} bookmarks</span>}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ))}
         </div>
@@ -411,7 +474,7 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
                   <div className="flex items-center gap-4 text-sm">
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <FiCalendar size={14} />
-                      <span>{formatDate(event.date)}</span>
+                      <span>{event.date ? formatDate(event.date) : 'TBD'}</span>
                     </div>
                     <div className="flex items-center gap-1 text-muted-foreground">
                       <FiMapPin size={14} />
@@ -471,9 +534,11 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
                         {formatPercent(sector.performance)}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Avg: {formatCurrency(sector.avgValuation)}
-                    </p>
+                    {sector.avgValuation ? (
+                      <p className="text-xs text-muted-foreground">Avg: {formatCurrency(sector.avgValuation)}</p>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">Avg: N/A</p>
+                    )}
                   </div>
                 </div>
               ))}

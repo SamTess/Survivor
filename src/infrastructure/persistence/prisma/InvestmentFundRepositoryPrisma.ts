@@ -4,9 +4,18 @@ import { InvestmentFund } from '../../../domain/interfaces/InvestmentFund';
 
 export class InvestmentFundRepositoryPrisma implements InvestmentFundRepository {
   async getByInvestor(investorId: number): Promise<InvestmentFund[]> {
-  // Prisma exposes the model as `iNVESTMENT_FUND` (lowercase first char)
-  const rows = await prisma.iNVESTMENT_FUND.findMany({ where: { investor_id: investorId } });
-    return rows.map((row: Record<string, unknown>) => {
+  const anyPrisma = prisma as unknown as Record<string, unknown>;
+  const delegate = (anyPrisma as unknown as Record<string, unknown>)['iNVESTMENT_FUND'] as unknown;
+  let rows: Array<Record<string, unknown>>;
+  if (delegate && typeof (delegate as { findMany?: unknown }).findMany === 'function') {
+    rows = await (delegate as { findMany: (args: { where: { investor_id: number } }) => Promise<Array<Record<string, unknown>>> }).findMany({ where: { investor_id: investorId } });
+  } else {
+    rows = await (prisma as unknown as { $queryRawUnsafe: <T=unknown>(sql: string, ...params: unknown[]) => Promise<T> }).$queryRawUnsafe<Array<Record<string, unknown>>>(
+      `SELECT * FROM "INVESTMENT_FUND" WHERE investor_id = $1 ORDER BY created_at DESC;`,
+      investorId
+    );
+  }
+    return rows.map((row) => {
       const r = row as Record<string, unknown>;
       return {
         id: r.id as string,

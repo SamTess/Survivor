@@ -16,6 +16,7 @@ type StartupRow = {
   ask_min_eur: unknown | null;
   ask_max_eur: unknown | null;
   round: string | null;
+  revenue_arr_eur: unknown | null;
 };
 
 export class OpportunityReadRepositoryPrisma implements OpportunityReadRepository {
@@ -37,6 +38,7 @@ export class OpportunityReadRepositoryPrisma implements OpportunityReadRepositor
       ask_min_eur: row.ask_min_eur !== null && row.ask_min_eur !== undefined ? Number(row.ask_min_eur as number) : null,
       ask_max_eur: row.ask_max_eur !== null && row.ask_max_eur !== undefined ? Number(row.ask_max_eur as number) : null,
       round: row.round ?? null,
+  // revenue_arr_eur not part of StartupForScoring interface yet; could be used later if needed
     };
     return mapped;
   }
