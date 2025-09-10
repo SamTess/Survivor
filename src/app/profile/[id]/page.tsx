@@ -131,11 +131,11 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   };
 
   const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => (
-    <div className="w-24 h-24">
+    <div className="w-16 h-16 sm:w-24 sm:h-24">
       {uid ? (
-        <UserAvatar uid={uid} name={name} size={96} />
+        <UserAvatar uid={uid} name={name} size={64} className="sm:!w-24 sm:!h-24" />
       ) : (
-        <div className="w-24 h-24 rounded-full bg-muted" />
+        <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-muted" />
       )}
     </div>
   );
@@ -206,10 +206,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                         type="text"
                         value={editedUser?.name || ''}
                         onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="text-3xl font-bold text-foreground border-b-2 border-border bg-transparent focus:outline-none focus:border-primary transition-all duration-200"
+                        className="text-xl sm:text-3xl font-bold text-foreground border-b-2 border-border bg-transparent focus:outline-none focus:border-primary transition-all duration-200"
                       />
                     ) : (
-                      <h1 className="text-3xl font-bold text-foreground">{user?.name || 'Unknown User'}</h1>
+                      <h1 className="text-xl sm:text-3xl font-bold text-foreground">{user?.name || 'Unknown User'}</h1>
                     )}
 
                     <div className="flex items-center space-x-3 mt-2">
@@ -247,21 +247,25 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                       ) : (
                         <button
                           onClick={handleEdit}
-                          className="bg-primary text-primary-foreground px-4 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md"
+                          className="bg-primary text-primary-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-primary/90 transition-all duration-200 border border-primary/20 backdrop-blur-md flex items-center gap-2"
                         >
-                          Edit Profile
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                            <path d="m15 5 4 4"/>
+                          </svg>
+                          <span className="hidden sm:inline">Edit Profile</span>
                         </button>
                       )}
                     </>
                   ) : (
                     <button
                       onClick={handleStartConversation}
-                      className="bg-accent text-accent-foreground px-4 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
+                      className="bg-accent text-accent-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
                       </svg>
-                      Start Conversation
+                      <span className="hidden sm:inline">Start Conversation</span>
                     </button>
                   )}
                 </div>
