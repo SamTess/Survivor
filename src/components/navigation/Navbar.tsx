@@ -5,7 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Search, Menu, X, Sparkles, CircleUser, LogOut } from "lucide-react"
+import { Search, Menu, X, Sparkles, CircleUser, LogOut, Upload } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
@@ -159,6 +159,16 @@ export function Navbar() {
                     <CircleUser className="h-4 w-4 text-muted-foreground" />
                     Profile
                   </Link>
+                  {user?.role === 'founder' && (
+                    <Link
+                      href="/media"
+                      onClick={() => setIsProfileDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 transition-all duration-200"
+                    >
+                      <Upload className="h-4 w-4 text-muted-foreground" />
+                      Media Storage
+                    </Link>
+                  )}
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-all duration-200 w-full text-left rounded-b-2xl"
