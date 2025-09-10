@@ -52,6 +52,7 @@ export default function ForgotPasswordPage() {
                 width={100}
                 height={100}
                 className="w-10 h-10"
+                unoptimized
               />
             </div>
             <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -104,6 +105,7 @@ export default function ForgotPasswordPage() {
               width={40}
               height={40}
               className="w-10 h-10"
+              unoptimized
             />
           </div>
           <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">

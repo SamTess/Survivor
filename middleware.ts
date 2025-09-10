@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyJwtEdge } from './src/infrastructure/security/auth-edge';
 
-const PUBLIC_PATHS = ['/login','/signup','/favicon.ico', '/'];
+const PUBLIC_PATHS = ['/login', '/signup', '/favicon.ico', '/', '/about', '/news', '/events', '/projects', '/health', '/home', '/logo.png'];
 
 function isPublic(path: string): boolean {
   if (PUBLIC_PATHS.includes(path)) return true;
+  if (path.startsWith('/auth/')) return true;
   if (path.startsWith('/api/auth/')) return true;
   if (path.startsWith('/api/health')) return true;
   if (path.startsWith('/api/sync/')) return true;
@@ -16,7 +17,7 @@ function isPublic(path: string): boolean {
   if (path.startsWith('/api/partners')) return true;
   if (path.startsWith('/api/users')) return true;
   if (path.startsWith('/_next/') || path.startsWith('/static/')) return true;
-  if (path.startsWith('/public/')) return true;
+  if (path.match(/\.(png|jpg|jpeg|gif|svg|ico|css|js|woff|woff2|ttf|eot)$/)) return true;
   return false;
 }
 

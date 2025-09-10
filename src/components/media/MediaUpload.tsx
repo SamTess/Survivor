@@ -44,8 +44,7 @@ export default function MediaUpload({ onUploadSuccess }: Props) {
     'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
     'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'video/mp4', 'video/webm', 'video/avi', 'video/mov',
-    'audio/mp3', 'audio/wav', 'audio/ogg'
+    'video/mp4', 'video/webm', 'video/avi', 'video/mov'
   ];
 
   const maxFileSize = 100 * 1024 * 1024;
@@ -61,7 +60,7 @@ export default function MediaUpload({ onUploadSuccess }: Props) {
     }
 
     if (!allowedTypes.includes(file.type)) {
-      setError('File type not supported. Please select an image, document, video, or audio file.');
+      setError('File type not supported. Please select an image, document, or video file.');
       return;
     }
 
@@ -156,7 +155,7 @@ export default function MediaUpload({ onUploadSuccess }: Props) {
             className="cursor-pointer"
           />
           <p className="text-sm text-muted-foreground">
-            Supported: Images, Documents (PDF, Word, Excel), Videos (MP4, WebM), Audio (MP3, WAV). Max size: 100MB
+            Supported: Images, Documents (PDF, Word, Excel), Videos (MP4, WebM). Max size: 100MB
           </p>
         </div>
 

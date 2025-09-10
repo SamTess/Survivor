@@ -6,6 +6,7 @@ import { join } from 'path';
 import { randomUUID } from 'crypto';
 import { existsSync } from 'fs';
 import { MediaPreviewService } from '@/application/services/MediaPreviewService';
+import { DEFAULT_STORAGE_QUOTA } from '@/types/media';
 
 interface GlobalWithPrisma { prisma?: PrismaClient }
 const globalForPrisma = global as unknown as GlobalWithPrisma;
@@ -16,8 +17,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
   document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-  video: ['video/mp4', 'video/webm', 'video/avi', 'video/mov'],
-  audio: ['audio/mp3', 'audio/wav', 'audio/ogg']
+  video: ['video/mp4', 'video/webm', 'video/avi', 'video/mov', 'video/quicktime']
 };
 
 function getFileType(mimeType: string): string {
@@ -50,7 +50,7 @@ async function getUserStorageUsage(userId: number): Promise<{ used: bigint, max:
       data: {
         user_id: userId,
         used_bytes: BigInt(0),
-        max_bytes: BigInt(2147483648)
+        max_bytes: BigInt(DEFAULT_STORAGE_QUOTA)
       }
     });
   }
@@ -63,7 +63,7 @@ async function getUserStorageUsage(userId: number): Promise<{ used: bigint, max:
  * /media/upload:
  *   post:
  *     summary: Upload Media File
- *     description: Upload a media file (image, document, video, or audio) for the authenticated founder
+ *     description: Upload a media file (image, document, or video) for the authenticated founder
  *     tags:
  *       - Media
  *     security:
@@ -80,7 +80,7 @@ async function getUserStorageUsage(userId: number): Promise<{ used: bigint, max:
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: The file to upload (max 100MB)
+ *                 description: The file to upload (images, documents, or videos - max 100MB)
  *               description:
  *                 type: string
  *                 description: Optional description for the file
@@ -123,7 +123,7 @@ async function getUserStorageUsage(userId: number): Promise<{ used: bigint, max:
  *                     fileType:
  *                       type: string
  *                       description: Categorized file type
- *                       enum: [image, document, video, audio, other]
+ *                       enum: [image, document, video, other]
  *                       example: "image"
  *                     fileSize:
  *                       type: integer
@@ -244,7 +244,7 @@ export async function POST(req: NextRequest) {
 
     if (!isAllowedType(file.type)) {
       return NextResponse.json({
-        error: 'File type not allowed'
+        error: `File type not allowed. Detected type: ${file.type}. Supported types: ${Object.values(ALLOWED_TYPES).flat().join(', ')}`
       }, { status: 400 });
     }
 
@@ -314,7 +314,11 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('=== Upload error ===');
+    console.error('Error type:', typeof error);
+    console.error('Error message:', error instanceof Error ? error.message : String(error));
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('Raw error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

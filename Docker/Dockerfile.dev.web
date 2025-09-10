@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache netcat-openbsd dos2unix ffmpeg
+RUN apk add --no-cache netcat-openbsd dos2unix ffmpeg imagemagick
 
 WORKDIR /app
 
