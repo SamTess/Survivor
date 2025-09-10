@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  File, Image, Video, Music, FileText, Download, Trash2,
+  File, Image as ImageIcon, Video, Music, FileText, Download, Trash2,
   Eye, EyeOff, Search, Grid, List
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -73,10 +74,12 @@ export default function MediaManager() {
 
     return (
       <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
-        <img
+        <Image
           src={`/api/media/${file.id}/preview`}
           alt={`${file.original_name} preview`}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           onError={() => setImageError(true)}
         />
         <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 hover:opacity-100 transition-opacity">
@@ -157,11 +160,13 @@ export default function MediaManager() {
   const renderFilePreview = (file: MediaFile) => {
     if (file.file_type === 'image') {
       return (
-        <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden mb-3">
-          <img
+        <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden mb-3 relative">
+          <Image
             src={`/api/media/${file.id}`}
             alt={file.original_name}
-            className="w-full h-full object-cover hover:scale-105 transition-transform cursor-pointer"
+            fill
+            className="object-cover hover:scale-105 transition-transform cursor-pointer"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
             onClick={() => window.open(`/api/media/${file.id}`, '_blank')}
           />
         </div>
@@ -182,8 +187,7 @@ export default function MediaManager() {
   const getFileIcon = (fileType: string) => {
     switch (fileType) {
       case 'image':
-        // eslint-disable-next-line jsx-a11y/alt-text
-        return <Image className="h-4 w-4" />;
+        return <ImageIcon className="h-4 w-4" />;
       case 'video':
         return <Video className="h-4 w-4" />;
       case 'audio':
