@@ -15,7 +15,6 @@ export type Opportunity = {
   reason?: string | null;
   next_action?: string | null;
   owner_user_id?: number | null;
-  // optional financial fields
   deal_type?: string | null;
   round?: string | null;
   proposed_amount_eur?: unknown;
@@ -27,13 +26,12 @@ export type Opportunity = {
   pilot_estimated_cost_eur?: unknown;
   pilot_budget_fit?: string | null;
   term_deadline?: Date | null;
-  // optional, aggregated history of closed deals for the related startup (for UI sparkline)
   startup_investment_history?: Array<{
     dt: string | Date;
     amount_eur: unknown;
     round?: string | null;
     deal_type?: string | null;
-  }>; 
+  }>;
   created_at: Date;
   updated_at: Date;
 };

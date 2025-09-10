@@ -1,23 +1,23 @@
 export type PortfolioOverview = {
   totalInvestments: number;
-  totalValue: number; // EUR
+  totalValue: number;
   activeInvestments: number;
-  averageReturn: number; // percent
+  averageReturn: number;
   bestPerformer: string;
   worstPerformer: string;
-  totalROI: number; // percent
-  monthlyReturn: number; // percent (last period)
+  totalROI: number;
+  monthlyReturn: number;
 };
 
 export type PortfolioInvestmentItem = {
   id: string;
   startupId: number;
   startupName: string;
-  amount: number; // invested EUR
-  currentValue: number; // current value EUR
-  returnRate: number; // percent
+  amount: number;
+  currentValue: number;
+  returnRate: number;
   sector: string;
-  investmentDate: string; // ISO
+  investmentDate: string;
   status: 'active' | 'exited' | 'at_risk';
   maturity: string;
 };

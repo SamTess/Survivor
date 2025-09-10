@@ -21,7 +21,7 @@
     "opps:enrich": "tsx scripts/enrich-opportunities-finance.ts",
     "seed:funds": "tsx scripts/seed-funds.ts",
     "seed:startup-deals": "tsx scripts/seed-startup-deals.ts",
-    "pipeline:opps": "npm run -s seed:funds && npm run -s features:build && npm run -s gen:investor-opps -- ${INVESTOR_ID:-18} force topK=20 minScore=0 && npm run -s opps:enrich"
+    "pipeline:opps": "npm run -s seed:funds && npm run -s features:build && npm run -s gen:investor-opps -- ${INVESTOR_ID:-18} force topK=20 minScore=0 && npm run -s opps:enrich",
     "test-email": "tsx scripts/test-email.ts",
     "docs:generate": "tsx scripts/generate-swagger-docs.ts",
     "docs:serve": "npx http-server docs/api -p 8080 --cors",

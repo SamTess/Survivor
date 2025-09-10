@@ -3,6 +3,51 @@ export const runtime = 'nodejs';
 import prisma from '@/infrastructure/persistence/prisma/client';
 import { detectMime } from '@/utils/image';
 
+/**
+ * @openapi
+ * /users/{id}/image:
+ *   get:
+ *     summary: Get user profile image
+ *     description: Return the raw image bytes for the given user ID with appropriate Content-Type
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: User ID
+ *         example: 12
+ *     responses:
+ *       200:
+ *         description: User image returned as binary
+ *         content:
+ *           image/png: {}
+ *           image/jpeg: {}
+ *           image/webp: {}
+ *       400:
+ *         description: Invalid user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Invalid user ID" }
+ *       404:
+ *         description: User or image not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "No image available for this user" }
+ *       500:
+ *         description: Server error
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

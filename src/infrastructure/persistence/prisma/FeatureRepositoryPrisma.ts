@@ -3,8 +3,6 @@ import { FeatureRepository, FeatureVector } from '../../../domain/repositories/F
 
 export class FeatureRepositoryPrisma implements FeatureRepository {
   async upsert(vec: FeatureVector): Promise<void> {
-  // Access via any to avoid TS errors if Prisma types for FEATURE_VECTOR are not generated yet
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const featureDelegate = (prisma as any).fEATURE_VECTOR;
   await featureDelegate.upsert({
       where: { entity_type_entity_id: { entity_type: vec.entity_type, entity_id: vec.entity_id } },
@@ -13,7 +11,6 @@ export class FeatureRepositoryPrisma implements FeatureRepository {
     });
   }
   async get(entity_type: FeatureVector['entity_type'], entity_id: number): Promise<FeatureVector | null> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const featureDelegate = (prisma as any).fEATURE_VECTOR;
   const row = await featureDelegate.findUnique({ where: { entity_type_entity_id: { entity_type, entity_id } } });
     if (!row) return null;

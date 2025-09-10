@@ -42,14 +42,13 @@ const engagementBonus = (signals?: { views: number; likes: number; bookmarks: nu
 export class ScoringService {
   constructor(
     private readonly opportunityRepo: OpportunityRepository,
-  private readonly startupRepo: StartupRepository,
+    private readonly startupRepo: StartupRepository,
     private readonly investorRepo: InvestorRepository,
     private readonly partnerRepo: PartnerRepository,
-  private readonly readRepo?: OpportunityReadRepository,
-  private readonly fundRepo?: InvestmentFundRepository,
+    private readonly readRepo?: OpportunityReadRepository,
+    private readonly fundRepo?: InvestmentFundRepository,
   ) {}
 
-  // Placeholder feature extraction. In a next iteration, persist vectors/tags.
   private extractStartupFeatures(s: StartupForScoring) {
     const text = `${s.sector || ''} ${s.description || ''} ${(s.details?.[0]?.needs) || ''}`.toLowerCase();
     const tags = new Set(text.split(/[^a-z0-9+]+/).filter(Boolean));
@@ -85,22 +84,18 @@ export class ScoringService {
     return 0;
   }
 
-  // Budget/fund fit sub-score for Startup ↔ Investor (0..20)
   private budgetScoreInvestor(startup: StartupForScoring, funds: InvestmentFund[] | null | undefined): number {
     if (!funds || funds.length === 0) return 0;
     const askMin = startup.ask_min_eur ?? null;
     const askMax = startup.ask_max_eur ?? null;
     if (askMin == null && askMax == null) return 0;
-
     const now = new Date();
-    let best = 0; // keep best across funds
+    let best = 0;
     for (const f of funds) {
       const fMin = f.ticket_min_eur ?? null;
       const fMax = f.ticket_max_eur ?? null;
-
-      let base = 0; // 0..15 based on ticket overlap/distance
+      let base = 0;
       if (fMin != null && fMax != null && askMin != null && askMax != null) {
-        // overlap check
         const overlap = !(askMax < fMin || askMin > fMax);
         if (overlap) {
           base = 15;
@@ -120,27 +115,21 @@ export class ScoringService {
       } else {
         base = 0;
       }
-
-      // availability bonuses up to 5
       let avail = 0;
-      // +3 if we're within investment period
       if (f.investment_period_start && f.investment_period_end) {
         if (now >= f.investment_period_start && now <= f.investment_period_end) {
           avail += 3;
         }
       }
-      // +2 scaled by dry powder ratio
       if (f.dry_powder_eur && f.aum_eur && f.aum_eur > 0) {
         const ratio = Math.max(0, Math.min(1, (f.dry_powder_eur || 0) / f.aum_eur));
         avail += 2 * ratio;
       }
-
       best = Math.max(best, base + avail);
     }
     return Math.max(0, Math.min(20, best));
   }
 
-  // Compute best fund match with fit classification and a suggested proposed amount within overlap or nearest bound
   private bestFundMatch(
     startup: StartupForScoring,
     funds: InvestmentFund[] | null | undefined
@@ -154,16 +143,13 @@ export class ScoringService {
     const askMin = startup.ask_min_eur ?? null;
     const askMax = startup.ask_max_eur ?? null;
     if (askMin == null && askMax == null) return { bestScore: 0, bestFundId: null, budgetFit: 'UNKNOWN', proposedAmount: null };
-
     let bestScore = -1;
     let bestFundId: string | null = null;
     let bestFit: 'BELOW_RANGE' | 'WITHIN_RANGE' | 'ABOVE_RANGE' | 'UNKNOWN' = 'UNKNOWN';
     let bestProp: number | null = null;
-
     for (const f of funds) {
       const fMin = f.ticket_min_eur ?? null;
       const fMax = f.ticket_max_eur ?? null;
-      // base score like budgetScoreInvestor (without avail bonuses)
       let base = 0;
       let fit: 'BELOW_RANGE' | 'WITHIN_RANGE' | 'ABOVE_RANGE' | 'UNKNOWN' = 'UNKNOWN';
       let prop: number | null = null;
@@ -179,7 +165,7 @@ export class ScoringService {
           const r = Math.max(0, Math.min(1, askMax / fMin));
           base = 15 * r;
           fit = 'BELOW_RANGE';
-          prop = askMax; // nearest we can suggest
+          prop = askMax;
         } else if (askMin > fMax) {
           const r = Math.max(0, Math.min(1, fMax / askMin));
           base = 15 * r;
@@ -197,8 +183,6 @@ export class ScoringService {
         fit = askMin > fMax ? 'ABOVE_RANGE' : 'UNKNOWN';
         prop = askMin;
       }
-
-      // availability bonuses up to 5
       let avail = 0;
       const now = new Date();
       if (f.investment_period_start && f.investment_period_end) {
@@ -210,7 +194,6 @@ export class ScoringService {
         const ratio = Math.max(0, Math.min(1, (f.dry_powder_eur || 0) / f.aum_eur));
         avail += 2 * ratio;
       }
-
       const score = base + avail;
       if (score > bestScore) {
         bestScore = score;
@@ -219,7 +202,6 @@ export class ScoringService {
         bestProp = prop;
       }
     }
-
     return { bestScore: Math.max(0, Math.min(20, bestScore)), bestFundId, budgetFit: bestFit, proposedAmount: bestProp };
   }
 
@@ -292,7 +274,6 @@ export class ScoringService {
         : 0;
     const sGeo = geoScore(A.country, B.country);
     const sEng = aIsStartup ? engagementBonus(A.signals) : (bIsStartup ? engagementBonus(B.signals) : 0);
-
     const score = Math.min(100, sTags + sText + sStage + sGeo + sEng);
     const breakdown: ScoreBreakdown = { tags: sTags, text: sText, stage: sStage, geo: sGeo, engagement: sEng };
     return { score, breakdown };
@@ -302,23 +283,18 @@ export class ScoringService {
     const startup = this.readRepo ? await this.readRepo.getStartupForScoring(startupId) : null;
     if (!startup) return { created: 0 };
     const sFeat = this.extractStartupFeatures(startup);
-
-    // Respect de l'architecture oignon: lecture via repositories domaine (infra injectée)
     const [investors, partners] = await Promise.all([
       this.investorRepo.getAll(),
       this.partnerRepo.getAll(),
     ]);
-
-  const matches: Array<{ direction: OpportunityDirection; targetType: EntityType; targetId: number; score: number; breakdown: ScoreBreakdown }>=[];
-
+    const matches: Array<{ direction: OpportunityDirection; targetType: EntityType; targetId: number; score: number; breakdown: ScoreBreakdown }>=[];
     for (const inv of investors) {
       const iFeat = this.extractInvestorFeatures({
         investment_focus: inv.investment_focus,
         description: inv.description,
         address: inv.address,
       });
-  const { score, breakdown } = this.scorePair({ type: 'STARTUP' as EntityType, ...sFeat }, { type: 'INVESTOR' as EntityType, ...iFeat });
-      // Budget/fund fit
+      const { score, breakdown } = this.scorePair({ type: 'STARTUP' as EntityType, ...sFeat }, { type: 'INVESTOR' as EntityType, ...iFeat });
       let budget = 0;
       if (this.fundRepo) {
         const funds = await this.fundRepo.getByInvestor(inv.id);
@@ -334,26 +310,23 @@ export class ScoringService {
         description: par.description,
         address: par.address,
       });
-  const { score, breakdown } = this.scorePair({ type: 'STARTUP' as EntityType, ...sFeat }, { type: 'PARTNER' as EntityType, ...pFeat });
-  if (score >= minScore) matches.push({ direction: 'S->P' as OpportunityDirection, targetType: 'PARTNER' as EntityType, targetId: par.id, score, breakdown });
+      const { score, breakdown } = this.scorePair({ type: 'STARTUP' as EntityType, ...sFeat }, { type: 'PARTNER' as EntityType, ...pFeat });
+      if (score >= minScore) matches.push({ direction: 'S->P' as OpportunityDirection, targetType: 'PARTNER' as EntityType, targetId: par.id, score, breakdown });
     }
-
     matches.sort((a, b) => b.score - a.score);
     const top = matches.slice(0, topK);
-
     let created = 0;
     for (const m of top) {
       const op = await this.opportunityRepo.upsertUnique({
-  direction: m.direction,
-  source_type: 'STARTUP' as EntityType,
+        direction: m.direction,
+        source_type: 'STARTUP' as EntityType,
         source_id: startupId,
-  target_type: m.targetType,
+        target_type: m.targetType,
         target_id: m.targetId,
         score: +m.score.toFixed(2),
         score_breakdown: m.breakdown as unknown as Record<string, number>,
-  status: (m.score >= 70 ? 'qualified' : 'new') as unknown as OpportunityStatus,
+        status: (m.score >= 70 ? 'qualified' : 'new') as unknown as OpportunityStatus,
       });
-      // Journaliser l'événement de création/maj automatique
       await this.opportunityRepo.logEvent({
         opportunity_id: op.id,
         type: 'auto_created',
@@ -365,27 +338,25 @@ export class ScoringService {
   }
 
   async generateForInvestor(investorId: number, topK = 10, minScore = 45) {
-    // Load investor and all startups
     const [inv, startups] = await Promise.all([
       this.investorRepo.getById(investorId),
       this.readRepo ? this.readRepo.getStartupsForScoring() : Promise.resolve([]),
     ]);
     if (!inv || !startups.length) return { created: 0 };
-  const iFeat = this.extractInvestorFeatures({ investment_focus: inv.investment_focus, description: inv.description, address: inv.address });
-  const invFunds = this.fundRepo ? await this.fundRepo.getByInvestor(investorId) : null;
-  const matches: Array<{ targetId: number; score: number; breakdown: ScoreBreakdown; enrich?: { fund_id: string | null; budget_fit: 'BELOW_RANGE' | 'WITHIN_RANGE' | 'ABOVE_RANGE' | 'UNKNOWN'; budget_fit_score: number; proposed_amount_eur: number | null; round: ReturnType<ScoringService['mapRoundStrToEnum']>; deal_type: ReturnType<ScoringService['pickDealTypeForRound']>; } }> = [];
+    const iFeat = this.extractInvestorFeatures({ investment_focus: inv.investment_focus, description: inv.description, address: inv.address });
+    const invFunds = this.fundRepo ? await this.fundRepo.getByInvestor(investorId) : null;
+    const matches: Array<{ targetId: number; score: number; breakdown: ScoreBreakdown; enrich?: { fund_id: string | null; budget_fit: 'BELOW_RANGE' | 'WITHIN_RANGE' | 'ABOVE_RANGE' | 'UNKNOWN'; budget_fit_score: number; proposed_amount_eur: number | null; round: ReturnType<ScoringService['mapRoundStrToEnum']>; deal_type: ReturnType<ScoringService['pickDealTypeForRound']>; } }> = [];
     for (const s of startups) {
       const sFeat = this.extractStartupFeatures(s);
       const { score, breakdown } = this.scorePair({ type: EntityType.INVESTOR, ...iFeat }, { type: EntityType.STARTUP, ...sFeat });
-      // Budget/fund fit once per investor, reuse cached funds if possible
       let budget = 0;
       let enrich: { fund_id: string | null; budget_fit: 'BELOW_RANGE' | 'WITHIN_RANGE' | 'ABOVE_RANGE' | 'UNKNOWN'; budget_fit_score: number; proposed_amount_eur: number | null; round: ReturnType<ScoringService['mapRoundStrToEnum']>; deal_type: ReturnType<ScoringService['pickDealTypeForRound']>; } | undefined;
       if (this.fundRepo) {
         const best = this.bestFundMatch(s, invFunds ?? undefined);
         budget = best.bestScore;
         let roundEnum = this.mapRoundStrToEnum(s.round || null);
-  if (!roundEnum) roundEnum = this.inferRoundByAsk(s.ask_min_eur ?? null, s.ask_max_eur ?? null);
-  if (!roundEnum) roundEnum = this.inferRoundByMaturity(s.maturity ?? null);
+        if (!roundEnum) roundEnum = this.inferRoundByAsk(s.ask_min_eur ?? null, s.ask_max_eur ?? null);
+        if (!roundEnum) roundEnum = this.inferRoundByMaturity(s.maturity ?? null);
         enrich = {
           fund_id: best.bestFundId,
           budget_fit: best.budgetFit,
@@ -398,7 +369,7 @@ export class ScoringService {
             if (s.ask_min_eur != null) return Number(s.ask_min_eur);
             const byRound = this.defaultProposedAmountForRound(roundEnum);
             if (byRound != null) return byRound;
-            return 500_000; // generic fallback
+            return 500_000;
           })(),
           round: roundEnum,
           deal_type: this.pickDealTypeForRound(roundEnum),
@@ -411,7 +382,7 @@ export class ScoringService {
     matches.sort((a, b) => b.score - a.score);
     const top = matches.slice(0, topK);
     let created = 0;
-  for (const m of top) {
+    for (const m of top) {
       const op = await this.opportunityRepo.upsertUnique({
         direction: 'I->S' as OpportunityDirection,
         source_type: 'INVESTOR' as EntityType,
@@ -421,33 +392,32 @@ export class ScoringService {
         score: +m.score.toFixed(2),
         score_breakdown: m.breakdown as unknown as Record<string, number>,
         status: (m.score >= 70 ? 'qualified' : 'new') as unknown as OpportunityStatus,
-    deal_type: m.enrich?.deal_type ?? null,
-    round: m.enrich?.round ?? null,
-    proposed_amount_eur: m.enrich?.proposed_amount_eur ?? null,
-    valuation_pre_money_eur: ((): number | null => {
-      const prop = m.enrich?.proposed_amount_eur ?? null;
-      if (prop == null) return null;
-      // simple heuristic: pre-money is 8x proposed at seed, 10x later
-      if (m.enrich?.round === 'PRE_SEED' || m.enrich?.round === 'SEED') return Math.round(prop * 8);
-      return Math.round(prop * 10);
-    })(),
-    ownership_target_pct: ((): number | null => {
-      const prop = m.enrich?.proposed_amount_eur ?? null;
-      const val = ((): number | null => {
-        if (m.enrich?.round === 'PRE_SEED' || m.enrich?.round === 'SEED') return m.enrich?.proposed_amount_eur ? Math.round(m.enrich.proposed_amount_eur * 8) : null;
-        return m.enrich?.proposed_amount_eur ? Math.round(m.enrich.proposed_amount_eur * 10) : null;
-      })();
-      if (prop == null || val == null || val <= 0) return null;
-      const pct = (prop / val) * 100;
-      return Math.max(1, Math.min(30, Math.round(pct)));
-    })(),
-    fund_id: m.enrich?.fund_id ?? null,
+        deal_type: m.enrich?.deal_type ?? null,
+        round: m.enrich?.round ?? null,
+        proposed_amount_eur: m.enrich?.proposed_amount_eur ?? null,
+        valuation_pre_money_eur: ((): number | null => {
+          const prop = m.enrich?.proposed_amount_eur ?? null;
+          if (prop == null) return null;
+          if (m.enrich?.round === 'PRE_SEED' || m.enrich?.round === 'SEED') return Math.round(prop * 8);
+          return Math.round(prop * 10);
+        })(),
+        ownership_target_pct: ((): number | null => {
+          const prop = m.enrich?.proposed_amount_eur ?? null;
+          const val = ((): number | null => {
+            if (m.enrich?.round === 'PRE_SEED' || m.enrich?.round === 'SEED') return m.enrich?.proposed_amount_eur ? Math.round(m.enrich.proposed_amount_eur * 8) : null;
+            return m.enrich?.proposed_amount_eur ? Math.round(m.enrich.proposed_amount_eur * 10) : null;
+          })();
+          if (prop == null || val == null || val <= 0) return null;
+          const pct = (prop / val) * 100;
+          return Math.max(1, Math.min(30, Math.round(pct)));
+        })(),
+        fund_id: m.enrich?.fund_id ?? null,
         budget_fit: ((): 'BELOW_RANGE' | 'WITHIN_RANGE' | 'ABOVE_RANGE' | 'UNKNOWN' | null => {
           if (m.enrich?.budget_fit) return m.enrich.budget_fit;
           return m.breakdown.budget != null ? 'UNKNOWN' : null;
         })(),
-    budget_fit_score: m.enrich?.budget_fit_score ?? (m.breakdown.budget != null ? Number(m.breakdown.budget.toFixed(2)) : null),
-    term_deadline: new Date(Date.now() + 1000 * 3600 * 24 * 90),
+        budget_fit_score: m.enrich?.budget_fit_score ?? (m.breakdown.budget != null ? Number(m.breakdown.budget.toFixed(2)) : null),
+        term_deadline: new Date(Date.now() + 1000 * 3600 * 24 * 90),
       });
       await this.opportunityRepo.logEvent({ opportunity_id: op.id, type: 'auto_created', payload: { score: op.score, breakdown: op.score_breakdown, source: 'generateForInvestor' } });
       created++;
@@ -456,7 +426,6 @@ export class ScoringService {
   }
 
   async generateForPartner(partnerId: number, topK = 10, minScore = 45) {
-    // Load partner and all startups
     const [par, startups] = await Promise.all([
       this.partnerRepo.getById(partnerId),
       this.readRepo ? this.readRepo.getStartupsForScoring() : Promise.resolve([]),
@@ -466,7 +435,7 @@ export class ScoringService {
     const matches: Array<{ targetId: number; score: number; breakdown: ScoreBreakdown }> = [];
     for (const s of startups) {
       const sFeat = this.extractStartupFeatures(s);
-  const { score, breakdown } = this.scorePair({ type: EntityType.PARTNER, ...pFeat }, { type: EntityType.STARTUP, ...sFeat });
+      const { score, breakdown } = this.scorePair({ type: EntityType.PARTNER, ...pFeat }, { type: EntityType.STARTUP, ...sFeat });
       if (score >= minScore) matches.push({ targetId: s.id, score, breakdown });
     }
     matches.sort((a, b) => b.score - a.score);
