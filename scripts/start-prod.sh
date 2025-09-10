@@ -9,7 +9,7 @@ else
 fi
 
 echo "Generating initial API documentation..."
-npx apidoc -i src/app/api -o docs/api
+npx tsx scripts/generate-swagger-docs.ts
 
 echo "Starting documentation watcher and server in background..."
 bash scripts/docs-watch.sh &
