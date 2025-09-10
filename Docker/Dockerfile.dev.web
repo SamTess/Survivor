@@ -1,6 +1,6 @@
 FROM node:20-alpine
 
-RUN apk add --no-cache netcat-openbsd dos2unix
+RUN apk add --no-cache netcat-openbsd dos2unix ffmpeg imagemagick
 
 WORKDIR /app
 
@@ -11,6 +11,8 @@ RUN npm install
 COPY Docker/.env .env
 
 COPY . .
+
+RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads
 
 RUN dos2unix ./scripts/start-dev.sh && chmod +x ./scripts/start-dev.sh
 

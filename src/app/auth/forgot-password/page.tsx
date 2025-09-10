@@ -16,16 +16,16 @@ export default function ForgotPasswordPage() {
     setError(null);
     setMessage(null);
     setIsLoading(true);
-    
+
     try {
-      const res = await fetch('/api/auth/request-reset', { 
-        method: 'POST', 
-        headers: { 'Content-Type': 'application/json' }, 
-        body: JSON.stringify({ email }) 
+      const res = await fetch('/api/auth/request-reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         setIsSuccess(true);
         setMessage(data.message || 'Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.');
@@ -52,6 +52,7 @@ export default function ForgotPasswordPage() {
                 width={100}
                 height={100}
                 className="w-10 h-10"
+                unoptimized
               />
             </div>
             <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -65,19 +66,19 @@ export default function ForgotPasswordPage() {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
                 <FiCheck className="h-8 w-8 text-green-600" />
               </div>
-              
+
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Vérifiez votre boîte mail
               </h2>
-              
+
               <p className="text-gray-600 mb-6 leading-relaxed">
                 {message}
               </p>
-              
+
               <p className="text-sm text-gray-500 mb-8">
                 Le lien expirera dans 72 heures pour des raisons de sécurité.
               </p>
-              
+
               <Link
                 href="/login"
                 className="inline-flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
@@ -104,6 +105,7 @@ export default function ForgotPasswordPage() {
               width={40}
               height={40}
               className="w-10 h-10"
+              unoptimized
             />
           </div>
           <h1 className="mt-4 text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
