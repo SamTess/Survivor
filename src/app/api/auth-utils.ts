@@ -7,11 +7,6 @@ import { User } from '../../domain/interfaces/User';
 const userRepository = new UserRepositoryPrisma();
 const userService = new UserService(userRepository);
 
-/**
- * Extract user ID from JWT token in request cookies
- * @param request - The Next.js request object
- * @returns User ID if valid token exists, null otherwise
- */
 export function getCurrentUserId(request: NextRequest): number | null {
   const token = request.cookies.get('auth')?.value;
   if (!token) return null;
@@ -25,11 +20,6 @@ export function getCurrentUserId(request: NextRequest): number | null {
   }
 }
 
-/**
- * Get the current authenticated user's full information
- * @param request - The Next.js request object
- * @returns User object if authenticated, null otherwise
- */
 export async function getCurrentUser(request: NextRequest): Promise<User | null> {
   const userId = getCurrentUserId(request);
   if (!userId) return null;
@@ -41,22 +31,11 @@ export async function getCurrentUser(request: NextRequest): Promise<User | null>
   }
 }
 
-/**
- * Check if the current user is an administrator
- * @param request - The Next.js request object
- * @returns true if user is admin, false otherwise
- */
 export async function isCurrentUserAdmin(request: NextRequest): Promise<boolean> {
   const user = await getCurrentUser(request);
   return user?.role === 'admin';
 }
 
-/**
- * Check if the current user can edit a specific user profile
- * @param request - The Next.js request object
- * @param targetUserId - ID of the user profile to edit
- * @returns true if user can edit the profile, false otherwise
- */
 export async function canEditUserProfile(request: NextRequest, targetUserId: number): Promise<boolean> {
   const currentUser = await getCurrentUser(request);
   if (!currentUser) return false;
@@ -67,23 +46,11 @@ export async function canEditUserProfile(request: NextRequest, targetUserId: num
   return isOwnProfile || isAdmin;
 }
 
-/**
- * Check if the current user has a specific role
- * @param request - The Next.js request object
- * @param role - Role to check for
- * @returns true if user has the role, false otherwise
- */
 export async function hasRole(request: NextRequest, role: string): Promise<boolean> {
   const user = await getCurrentUser(request);
   return user?.role === role;
 }
 
-/**
- * Check if the current user has any of the specified roles
- * @param request - The Next.js request object
- * @param roles - Array of roles to check for
- * @returns true if user has any of the roles, false otherwise
- */
 export async function hasAnyRole(request: NextRequest, roles: string[]): Promise<boolean> {
   const user = await getCurrentUser(request);
   return user ? roles.includes(user.role) : false;
