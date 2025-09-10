@@ -34,6 +34,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   }, [isAuthenticated, router, id]);
 
   const isOwnProfile = user?.id === currentUser?.id;
+  const isCurrentUserAdmin = currentUser?.role === 'admin';
+  const canEdit = isOwnProfile || isCurrentUserAdmin;
+  const canEditRole = isCurrentUserAdmin || isOwnProfile; // Users can edit their own role now
+  const canSetAdminRole = isCurrentUserAdmin && !isOwnProfile; // Only admins can set admin role for others
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -76,18 +80,28 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     setError(null);
 
     try {
-      const response = await apiService.put<UserApiResponse>(`/users/${user.id}`, {
+      const updateData: any = {
         name: editedUser.name,
         email: editedUser.email,
-        role: editedUser.role,
-      });
+      };
+
+      if (canEditRole) {
+        updateData.role = editedUser.role;
+      }
+
+      const response = await apiService.put<UserApiResponse>(`/users/${user.id}`, updateData);
 
       if (response.success && response.data) {
         setUser(response.data);
         setEditedUser(response.data);
         setIsEditing(false);
+
+        if (isCurrentUserAdmin && !isOwnProfile) {
+          console.log('User profile updated successfully by admin');
+        }
       } else {
-        setError(response.error || 'Failed to update user');
+        const errorMessage = response.error || 'Failed to update user';
+        setError(errorMessage);
       }
     } catch (error) {
       console.error('Error updating user:', error);
@@ -235,11 +249,12 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3">
-                  {isOwnProfile ? (
+                <div className="flex flex-col space-y-3">
+                  {/* Edit buttons - show if user can edit */}
+                  {canEdit && (
                     <>
                       {isEditing ? (
-                        <>
+                        <div className="flex space-x-3">
                           <button
                             onClick={handleSave}
                             disabled={saving}
@@ -257,7 +272,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                           >
                             Cancel
                           </button>
-                        </>
+                        </div>
                       ) : (
                         <button
                           onClick={handleEdit}
@@ -267,11 +282,16 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                             <path d="m15 5 4 4"/>
                           </svg>
-                          <span className="hidden sm:inline">Edit Profile</span>
+                          <span className="hidden sm:inline">
+                            {isOwnProfile ? 'Edit Profile' : 'Edit User (Admin)'}
+                          </span>
                         </button>
                       )}
                     </>
-                  ) : (
+                  )}
+
+                  {/* Start Conversation button - show for other users' profiles */}
+                  {!isOwnProfile && (
                     <button
                       onClick={handleStartConversation}
                       className="bg-accent text-accent-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
@@ -286,6 +306,28 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               </div>
             </div>
           </div>
+
+          {/* Admin Notice */}
+          {isCurrentUserAdmin && !isOwnProfile && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 animate-fade-down">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600">
+                    <path d="M12 9v4"/>
+                    <path d="m12 15 .01 0"/>
+                    <path d="M8.5 8.5a2.5 2.5 0 1 1 7 0"/>
+                    <path d="M4.5 12.5a2.5 2.5 0 1 0 0-5h-.5v5h.5z"/>
+                    <path d="M19.5 12.5a2.5 2.5 0 1 0 0-5h.5v5h-.5z"/>
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-amber-700">
+                    <strong>Admin View:</strong> You are viewing and can edit another user's profile. You can also change their role.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Profile Details */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -317,17 +359,27 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Role
                     </label>
-                    {isEditing ? (
-                      <select
-                        value={editedUser?.role || ''}
-                        onChange={(e) => handleInputChange('role', e.target.value)}
-                        className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary bg-background/80 backdrop-blur-md text-foreground transition-all duration-200"
-                      >
-                        <option value="founder">Founder</option>
-                        <option value="investor">Investor</option>
-                        <option value="mentor">Mentor</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                    {isEditing && canEditRole ? (
+                      <div>
+                        <select
+                          value={editedUser?.role || ''}
+                          onChange={(e) => handleInputChange('role', e.target.value)}
+                          className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary bg-background/80 backdrop-blur-md text-foreground transition-all duration-200"
+                        >
+                          <option value="visitor">Visitor</option>
+                          <option value="user">User</option>
+                          <option value="founder">Founder</option>
+                          <option value="investor">Investor</option>
+                          {/* Only show admin option if user can set admin role */}
+                          {canSetAdminRole && <option value="admin">Admin</option>}
+                        </select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {isOwnProfile 
+                            ? "You can change your role to any option except admin"
+                            : "As an admin, you can change this user's role"
+                          }
+                        </p>
+                      </div>
                     ) : (
                       <p className="text-foreground capitalize">{user?.role || 'User'}</p>
                     )}
