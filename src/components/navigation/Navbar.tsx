@@ -272,12 +272,7 @@ export function Navbar() {
                   </div>
 
                   {/* Dark Mode Toggle */}
-                  <Button
-                    size="sm"
-                    className="rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200"
-                  >
-                    <DarkModeToggle className="text-muted-foreground hover:text-primary w-5 h-5" />
-                  </Button>
+                  <DarkModeToggle className="text-muted-foreground hover:text-primary w-5 h-5" />
 
                   {/* Profile Button */}
                   <div className="relative" ref={profileDropdownRef}>
