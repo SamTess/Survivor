@@ -99,7 +99,6 @@ function getEventTypeIcon(type: string) {
   }
 }
 
-// Helper function to get current quarter and year
 function getCurrentQuarter(): string {
   const now = new Date();
   const quarter = Math.floor((now.getMonth() + 3) / 3);
@@ -107,12 +106,11 @@ function getCurrentQuarter(): string {
   return `Q${quarter} ${year}`;
 }
 
-// Helper function to get dynamic timeframes
 function getDynamicTimeframes() {
   const now = new Date();
   const currentYear = now.getFullYear();
   const currentQuarter = getCurrentQuarter();
-  
+
   return {
     currentQuarter,
     last3Months: 'Last 3 months',
@@ -121,7 +119,6 @@ function getDynamicTimeframes() {
   };
 }
 
-// Utilities de calcul
 function pctChange(prev: number, curr: number): number {
   if (prev === 0) return curr === 0 ? 0 : 100;
   return ((curr - prev) / prev) * 100;
@@ -259,7 +256,6 @@ export default function MarketInsights({ investor }: MarketInsightsProps) {
           },
         ];
 
-        // Sector performance (proxi via news récents)
         const newsBySector = new Map<string, { last90: number; prev90: number }>();
         for (const n of rawNews) {
           const sector = (n.startup?.sector || n.category || 'Other') as string;

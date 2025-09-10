@@ -88,7 +88,6 @@ function Sparkline({ data, color = "#6610F2", height = 36 }: { data: number[]; c
   );
 }
 
-// Removed mock generator; data is fetched from /api/portfolio
 
 export default function InvestorPortfolioSection({ investor }: InvestorPortfolioSectionProps) {
   const [portfolioData, setPortfolioData] = useState<PortfolioData | null>(null);

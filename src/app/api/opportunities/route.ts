@@ -57,7 +57,6 @@ export async function GET(request: NextRequest) {
 
   try {
     if (action === 'batch') {
-      // Trigger a simple batch for the N latest startups
       const n = Number(searchParams.get('n') || '10');
       const startups = await new StartupRepositoryPrisma().getAll();
       const latest = startups.slice(0, n);
@@ -86,12 +85,30 @@ export async function PATCH(request: NextRequest) {
   try {
     const body = await request.json();
     const id = String(body.id || '');
-    const status = String(body.status || '') as OpportunityStatus;
-    const reason = body.reason ?? null;
-    if (!id || !status) return NextResponse.json({ success: false, error: 'id et status requis' }, { status: 400 });
-    const updated = await opportunityRepo.updateStatus(id, status, reason);
+    if (!id) return NextResponse.json({ success: false, error: 'id requis' }, { status: 400 });
+    if (body.status) {
+      const status = String(body.status) as OpportunityStatus;
+      const reason = body.reason ?? null;
+      const updated = await opportunityRepo.updateStatus(id, status, reason);
+      if (!updated) return NextResponse.json({ success: false, error: 'Opportunity introuvable' }, { status: 404 });
+      await opportunityRepo.logEvent({ opportunity_id: updated.id, type: 'status_changed', payload: { status, reason } });
+      return NextResponse.json({ success: true, data: updated });
+    }
+    const updated = await opportunityRepo.updateFields(id, {
+      deal_type: body.deal_type,
+      round: body.round,
+      proposed_amount_eur: body.proposed_amount_eur,
+      valuation_pre_money_eur: body.valuation_pre_money_eur,
+      ownership_target_pct: body.ownership_target_pct,
+      fund_id: body.fund_id,
+      budget_fit: body.budget_fit,
+      budget_fit_score: body.budget_fit_score,
+      pilot_estimated_cost_eur: body.pilot_estimated_cost_eur,
+      pilot_budget_fit: body.pilot_budget_fit,
+      term_deadline: body.term_deadline ? new Date(body.term_deadline) : undefined,
+    });
     if (!updated) return NextResponse.json({ success: false, error: 'Opportunity introuvable' }, { status: 404 });
-    await opportunityRepo.logEvent({ opportunity_id: updated.id, type: 'status_changed', payload: { status, reason } });
+    await opportunityRepo.logEvent({ opportunity_id: updated.id, type: 'rescored', payload: { action: 'partial_update' } });
     return NextResponse.json({ success: true, data: updated });
   } catch (e) {
     return NextResponse.json({ success: false, error: e instanceof Error ? e.message : 'Erreur' }, { status: 500 });

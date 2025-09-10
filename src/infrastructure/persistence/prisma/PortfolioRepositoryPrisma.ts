@@ -1,12 +1,21 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import prisma from "./client";
 import { PortfolioRepository } from "../../../domain/repositories/PortfolioRepository";
 import { PortfolioData } from "../../../domain/interfaces/Portfolio";
 
 export class PortfolioRepositoryPrisma implements PortfolioRepository {
   async getForInvestor(investorId: number, months = 12): Promise<PortfolioData> {
-    // Recent DEAL opportunities for this investor as investments
-    const rows = await (prisma as any).$queryRawUnsafe(
+    const rows = await prisma.$queryRawUnsafe<
+      Array<{
+        id: string;
+        startup_id: number;
+        startup_name: string | null;
+        sector: string | null;
+        maturity: string | null;
+        amount_eur: number | null;
+        invested_at: Date;
+        status: string;
+      }>
+    >(
       `SELECT o.id,
               CASE WHEN o.source_type = 'STARTUP' THEN o.source_id ELSE o.target_id END AS startup_id,
               (SELECT name FROM "S_STARTUP" s WHERE s.id = CASE WHEN o.source_type = 'STARTUP' THEN o.source_id ELSE o.target_id END) AS startup_name,
@@ -24,13 +33,12 @@ export class PortfolioRepositoryPrisma implements PortfolioRepository {
       investorId
     );
 
-    type Row = { id: string; startup_id: number; startup_name: string; sector: string; maturity: string; amount_eur: number | null; invested_at: Date; status: string };
-    const items = (rows as Row[]).map(r => ({
+    const items = rows.map(r => ({
       id: r.id,
       startupId: r.startup_id,
       startupName: r.startup_name ?? `Startup #${r.startup_id}`,
       amount: Number(r.amount_eur ?? 0),
-      currentValue: Number(r.amount_eur ?? 0), // simple proxy until we have valuations
+      currentValue: Number(r.amount_eur ?? 0),
       returnRate: 0,
       sector: r.sector ?? 'Unknown',
       investmentDate: r.invested_at.toISOString(),
@@ -43,7 +51,6 @@ export class PortfolioRepositoryPrisma implements PortfolioRepository {
     const totalValue = items.reduce((s, it) => s + (it.currentValue || 0), 0);
     const totalROI = totalInvested > 0 ? ((totalValue - totalInvested) / totalInvested) * 100 : 0;
 
-    // sector distribution
     const sectorMap = new Map<string, { amount: number; count: number }>();
     items.forEach(it => {
       const key = it.sector || 'Unknown';
@@ -59,13 +66,12 @@ export class PortfolioRepositoryPrisma implements PortfolioRepository {
       count: d.count,
     })).sort((a, b) => b.amount - a.amount);
 
-    // naive monthly returns placeholder (0) until valuations exist
     const monthlyReturns = Array.from({ length: months }, () => 0);
     const benchmarkReturns = Array.from({ length: months }, () => 0);
 
     const bestPerformer = items[0]?.startupName ?? 'N/A';
     const worstPerformer = items[items.length - 1]?.startupName ?? 'N/A';
-    const activeInvestments = items.length; // without position status, assume active
+    const activeInvestments = items.length;
     const averageReturn = totalInvestments > 0 ? totalROI / totalInvestments : 0;
 
     return {

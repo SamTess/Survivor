@@ -8,6 +8,22 @@ export interface OpportunityRepository {
   listForEntity(entityType: EntityType, entityId: number, page: number, limit: number): Promise<{ items: Opportunity[]; total: number }>;
   updateStatus(id: string, status: OpportunityStatus, reason?: string | null): Promise<Opportunity | null>;
   logEvent(evt: Omit<OpportunityEvent, 'id' | 'occurred_at'> & { occurred_at?: Date }): Promise<OpportunityEvent>;
+  updateFields(
+    id: string,
+    data: {
+      deal_type?: string | null;
+      round?: string | null;
+      proposed_amount_eur?: number | null;
+      valuation_pre_money_eur?: number | null;
+      ownership_target_pct?: number | null;
+      fund_id?: string | null;
+      budget_fit?: string | null;
+      budget_fit_score?: number | null;
+      pilot_estimated_cost_eur?: number | null;
+      pilot_budget_fit?: string | null;
+      term_deadline?: Date | null;
+    }
+  ): Promise<Opportunity | null>;
 }
 
 export type ScoreBreakdown = {
