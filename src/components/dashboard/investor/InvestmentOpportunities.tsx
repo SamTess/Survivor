@@ -123,19 +123,19 @@ function scoreKeyInfo(key: string): { label: string; desc: string } {
   const k = key.toLowerCase();
   switch (k) {
     case 'tags':
-      return { label: 'Tags', desc: 'Chevauchement des tags/intérêts entre investisseur et startup.' };
+  return { label: 'Tags', desc: 'Overlap of tags/interests between investor and startup.' };
     case 'text':
-      return { label: 'Texte', desc: 'Similarité sémantique des descriptions et objectifs.' };
+  return { label: 'Text', desc: 'Semantic similarity of descriptions and objectives.' };
     case 'stage':
-      return { label: 'Stade', desc: 'Adéquation du stade/round de la startup avec votre thèse.' };
+  return { label: 'Stage', desc: 'Startup stage/round alignment with your thesis.' };
     case 'geo':
-      return { label: 'Géo', desc: 'Compatibilité géographique (pays/région ciblés).' };
+  return { label: 'Geo', desc: 'Geographic compatibility (target countries/regions).' };
     case 'engagement':
-      return { label: 'Engagement', desc: 'Signal d\'intérêt récent (vues, likes, bookmarks).' };
+  return { label: 'Engagement', desc: 'Recent interest signal (views, likes, bookmarks).' };
     case 'budget':
-      return { label: 'Budget', desc: 'Fit entre le ticket proposé et votre plage de budget.' };
+  return { label: 'Budget', desc: 'Fit between proposed ticket size and your budget range.' };
     default:
-      return { label: key, desc: 'Contribution au score global (0–100).' };
+  return { label: key, desc: 'Contribution to global score (0–100).' };
   }
 }
 
@@ -312,10 +312,11 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
       });
       const json = await res.json();
       if (!json.success) throw new Error(json.error || 'Mise à jour échouée');
+  // ^ translated elsewhere below; keeping legacy message for robustness, replaced in UI strings.
       await refresh();
       setExpandedId(null);
     } catch (e) {
-      setSaveError(e instanceof Error ? e.message : 'Erreur');
+  setSaveError(e instanceof Error ? e.message : 'Error');
     } finally {
       setSavingId(null);
     }
@@ -334,7 +335,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
         }
         const res = await fetch(`/api/opportunities?type=INVESTOR&id=${investor.id}&limit=50`);
         const json = await res.json();
-        if (!json.success) throw new Error(json.error || 'Erreur API');
+  if (!json.success) throw new Error(json.error || 'API error');
         setOpportunities(json.items as OpportunityItem[]);
         if (!autoGenTried && (json.total === 0 || (json.items as OpportunityItem[]).length === 0)) {
           try {
@@ -393,10 +394,10 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
         body: JSON.stringify({ mode: 'investor', id: investor.id, topK: 20, minScore: 45 }),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Génération échouée');
+  if (!json.success) throw new Error(json.error || 'Generation failed');
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur');
+  setError(e instanceof Error ? e.message : 'Error');
     } finally {
       setLoading(false);
     }
@@ -410,10 +411,10 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
         body: JSON.stringify({ id: opId, status }),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.error || 'Mise à jour échouée');
+  if (!json.success) throw new Error(json.error || 'Update failed');
       await refresh();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur');
+  setError(e instanceof Error ? e.message : 'Error');
     }
   };
 
@@ -464,9 +465,9 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
             </span>
             Investment Opportunities
           </CardTitle>
-          <CardDescription>
-              Matches générés pour votre profil investisseur. Astuce: survolez les éléments pour une aide.
-          </CardDescription>
+      <CardDescription>
+        Matches generated for your investor profile. Tip: hover elements for help.
+      </CardDescription>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -474,20 +475,20 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
               <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
               <input
                 type="text"
-                placeholder="Rechercher une opportunité..."
+                placeholder="Search an opportunity..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                title="Rechercher par nom, type ou identifiants"
+                title="Search by name, type or identifiers"
                 className="w-full pl-10 pr-4 py-2 bg-background/70 border border-border/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              title="Filtrer les opportunités par statut"
+              title="Filter opportunities by status"
               className="px-3 py-2 text-sm bg-background/70 border border-border/60 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 transition-colors"
             >
-              <option value="all">Tous les statuts</option>
+              <option value="all">All statuses</option>
               <option value="new">new</option>
               <option value="qualified">qualified</option>
               <option value="contacted">contacted</option>
@@ -499,21 +500,21 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
             <div className="inline-flex rounded-lg overflow-hidden border border-border/60">
               <button
                 onClick={() => setViewMode('grid')}
-                title="Afficher en grille"
+                title="Show grid view"
                 className={cn("px-3 py-2 text-sm transition-colors", viewMode === 'grid' ? 'bg-primary text-primary-foreground' : 'bg-background/70 text-muted-foreground hover:text-foreground')}
-              >Grille</button>
+              >Grid</button>
               <button
                 onClick={() => setViewMode('list')}
-                title="Afficher en liste"
+                title="Show list view"
                 className={cn("px-3 py-2 text-sm transition-colors", viewMode === 'list' ? 'bg-primary text-primary-foreground' : 'bg-background/70 text-muted-foreground hover:text-foreground')}
-              >Liste</button>
+              >List</button>
             </div>
-            <button onClick={generate} title="Générer de nouvelles opportunités pour votre profil" className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 shadow-sm">Générer</button>
-            <button onClick={() => setShowHelp((v) => !v)} title="Afficher/masquer le glossaire des termes" className="px-3 py-2 rounded-lg bg-background/70 text-foreground text-sm border border-border/60 hover:bg-background/60">{showHelp ? 'Masquer l\u00A0aide' : 'Aide / Glossaire'}</button>
+            <button onClick={generate} title="Generate new opportunities for your profile" className="px-3 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 shadow-sm">Generate</button>
+            <button onClick={() => setShowHelp((v) => !v)} title="Show / hide glossary" className="px-3 py-2 rounded-lg bg-background/70 text-foreground text-sm border border-border/60 hover:bg-background/60">{showHelp ? 'Hide help' : 'Help / Glossary'}</button>
           </div>
         </CardContent>
         <CardFooter className="pt-0 text-sm text-muted-foreground flex justify-between">
-          <span>{filteredOpportunities.length} opportunités</span>
+          <span>{filteredOpportunities.length} opportunities</span>
           {investor?.investment_focus && (
             <span>Focus: <strong className="text-foreground">{investor.investment_focus}</strong></span>
           )}
@@ -523,38 +524,38 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
       {showHelp && (
         <Card className="border-border/30 bg-card/70">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Glossaire rapide</CardTitle>
-            <CardDescription>Repères sur les termes financiers et le calcul du score.</CardDescription>
+            <CardTitle className="text-base">Quick glossary</CardTitle>
+            <CardDescription>Reference for financial terms and score calculation.</CardDescription>
           </CardHeader>
           <CardContent className="pt-0 text-sm text-muted-foreground space-y-3">
             <div>
-              <div className="text-foreground font-medium">Round (stade)</div>
+              <div className="text-foreground font-medium">Round (stage)</div>
               <ul className="list-disc pl-5">
-                <li><span className="text-foreground">Pre-Seed</span>: tout début, validation initiale.</li>
-                <li><span className="text-foreground">Seed</span>: amorçage, premiers clients.</li>
-                <li><span className="text-foreground">Series A/B/C</span>: croissance/accélération.</li>
-                <li><span className="text-foreground">Growth</span>: scale-up.</li>
+                <li><span className="text-foreground">Pre-Seed</span>: very early, initial validation.</li>
+                <li><span className="text-foreground">Seed</span>: early stage, first customers.</li>
+                <li><span className="text-foreground">Series A/B/C</span>: growth / acceleration.</li>
+                <li><span className="text-foreground">Growth</span>: scaling phase.</li>
               </ul>
             </div>
             <div>
-              <div className="text-foreground font-medium">Type de deal</div>
+              <div className="text-foreground font-medium">Deal type</div>
               <ul className="list-disc pl-5">
-                <li><span className="text-foreground">Equity</span>: actions ordinaires/préférentielles.</li>
-                <li><span className="text-foreground">SAFE / Convertible</span>: titre convertible (dette/équity différée).</li>
-                <li><span className="text-foreground">Grant</span>: subvention non dilutive.</li>
-                <li><span className="text-foreground">Revenue-Based</span>: remboursement indexé sur revenus (quasi-dette).</li>
-                <li><span className="text-foreground">Pilot / License / Commercial / Partnership</span>: collaboration commerciale/technique.</li>
+                <li><span className="text-foreground">Equity</span>: common / preferred shares.</li>
+                <li><span className="text-foreground">SAFE / Convertible</span>: convertible instrument (deferred equity/debt).</li>
+                <li><span className="text-foreground">Grant</span>: non-dilutive subsidy.</li>
+                <li><span className="text-foreground">Revenue-Based</span>: revenue-linked repayment (quasi-debt).</li>
+                <li><span className="text-foreground">Pilot / License / Commercial / Partnership</span>: commercial / technical collaboration.</li>
               </ul>
             </div>
             <div>
-              <div className="text-foreground font-medium">Score (cases)</div>
+              <div className="text-foreground font-medium">Score (components)</div>
               <ul className="list-disc pl-5">
-                <li><span className="text-foreground">Tags</span>: chevauchement de tags/intérêts.</li>
-                <li><span className="text-foreground">Texte</span>: similarité sémantique des descriptions.</li>
-                <li><span className="text-foreground">Stade</span>: adéquation du round.</li>
-                <li><span className="text-foreground">Géo</span>: compatibilité géographique.</li>
-                <li><span className="text-foreground">Engagement</span>: signaux d&#39;intérêt (vues, likes...).</li>
-                <li><span className="text-foreground">Budget</span>: fit entre ticket et plage de budget.</li>
+                <li><span className="text-foreground">Tags</span>: overlap of tags / interests.</li>
+                <li><span className="text-foreground">Text</span>: semantic similarity of descriptions.</li>
+                <li><span className="text-foreground">Stage</span>: round fit.</li>
+                <li><span className="text-foreground">Geo</span>: geographic compatibility.</li>
+                <li><span className="text-foreground">Engagement</span>: interest signals (views, likes...).</li>
+                <li><span className="text-foreground">Budget</span>: alignment between ticket size and budget range.</li>
               </ul>
             </div>
           </CardContent>
@@ -592,26 +593,26 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                     {/* Inline meta chips: Round & Deal (compact) */}
                     <div className="hidden sm:flex items-center gap-2">
                       {opportunity.round && (
-                        <span title="Stade de financement (Pre-Seed, Seed, Series A/B/C, Growth)" className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary border border-primary/20">{opportunity.round}</span>
+                        <span title="Funding stage (Pre-Seed, Seed, Series A/B/C, Growth)" className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary border border-primary/20">{opportunity.round}</span>
                       )}
                       {opportunity.deal_type && (
-                        <span title="Type d'opération (Equity, SAFE, Convertible, Grant, Revenue-Based, etc.)" className="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 text-primary border border-accent/20">{opportunity.deal_type}</span>
+                        <span title="Deal type (Equity, SAFE, Convertible, Grant, Revenue-Based, etc.)" className="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 text-primary border border-accent/20">{opportunity.deal_type}</span>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span title={"Score global de pertinence (0–100), agrégé sur plusieurs critères"} className={cn("px-2 py-1 text-xs rounded-full font-medium ring-1", badgeForScore(opportunity.score), "ring-current/25")}>{typeof opportunity.score === 'number' ? `${Math.round(opportunity.score)}%` : '—'}</span>
-                    <span title={"Statut de l'opportunité (new, qualified, contacted, in_discussion, pilot, deal, lost)"} className={cn('px-2 py-1 text-xs rounded-full font-medium', statusChipClass(opportunity.status))}>{opportunity.status.replace('_', ' ')}</span>
+                    <span title={"Overall relevance score (0–100), aggregated across multiple criteria"} className={cn("px-2 py-1 text-xs rounded-full font-medium ring-1", badgeForScore(opportunity.score), "ring-current/25")}>{typeof opportunity.score === 'number' ? `${Math.round(opportunity.score)}%` : '—'}</span>
+                    <span title={"Opportunity status (new, qualified, contacted, in_discussion, pilot, deal, lost)"} className={cn('px-2 py-1 text-xs rounded-full font-medium', statusChipClass(opportunity.status))}>{opportunity.status.replace('_', ' ')}</span>
                   </div>
                 </div>
                 {/* For small screens, show Round/Deal chips on their own line */}
                 {(opportunity.round || opportunity.deal_type) && (
                   <div className="sm:hidden mb-3 flex items-center gap-2">
                     {opportunity.round && (
-                        <span title="Stade de financement (Seed, Series A, Series B, etc.)" className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary border border-primary/20">{opportunity.round}</span>
+                        <span title="Funding stage (Seed, Series A, Series B, etc.)" className="px-1.5 py-0.5 rounded text-[10px] bg-primary/10 text-primary border border-primary/20">{opportunity.round}</span>
                     )}
                     {opportunity.deal_type && (
-                        <span title="Type d'opération (Equity, SAFE, Venture Debt, etc.)" className="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 text-primary border border-accent/20">{opportunity.deal_type}</span>
+                        <span title="Deal type (Equity, SAFE, Venture Debt, etc.)" className="px-1.5 py-0.5 rounded text-[10px] bg-accent/10 text-primary border border-accent/20">{opportunity.deal_type}</span>
                     )}
                   </div>
                 )}
@@ -630,14 +631,14 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                   </div>
                 )}
 
-                {/* Financement */}
+                {/* Financing */}
                 <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
-                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Montant proposé</div>
-                    <div title="Montant du ticket proposé" className="mt-1 text-foreground text-lg md:text-xl font-semibold tracking-tight">{fmtEur(opportunity.proposed_amount_eur) ?? '—'}</div>
+                    <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Proposed amount</div>
+                    <div title="Proposed ticket size" className="mt-1 text-foreground text-lg md:text-xl font-semibold tracking-tight">{fmtEur(opportunity.proposed_amount_eur) ?? '—'}</div>
                     {Array.isArray(opportunity.startup_investment_history) && opportunity.startup_investment_history.length > 0 && (
-                      <div className="mt-2 rounded-md bg-primary/5 p-2" title="Historique des montants récents (hauteur proportionnelle au montant)">
-                        <div className="text-[11px] text-muted-foreground mb-1">Évolution (derniers deals)</div>
+                      <div className="mt-2 rounded-md bg-primary/5 p-2" title="Recent amounts history (height proportional to amount)">
+                        <div className="text-[11px] text-muted-foreground mb-1">Trend (recent deals)</div>
                         <div className="flex items-end gap-1.5 h-12">
                           {opportunity.startup_investment_history.map((p, idx) => {
                             const n = toNumber(p.amount_eur) ?? 0;
@@ -655,16 +656,16 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                     <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Budget fit</div>
                     <div className="mt-1 flex items-center gap-2">
                       {(() => { const info = budgetFitInfo(opportunity); return (
-                        <span title="Adéquation du ticket avec votre plage de budget" className={cn('px-2 py-0.5 rounded-full text-[11px]', info.cls)}>
+                        <span title="Fit of ticket size with your budget range" className={cn('px-2 py-0.5 rounded-full text-[11px]', info.cls)}>
                           {info.label}
                         </span>
                       ); })()}
                       {toNumber(opportunity.budget_fit_score) !== null && (
-                        <span title="Score de budget sur 20 (plus élevé = meilleur fit)" className="text-foreground font-medium">{Math.round(toNumber(opportunity.budget_fit_score) as number)}/20</span>
+                        <span title="Budget score out of 20 (higher = better fit)" className="text-foreground font-medium">{Math.round(toNumber(opportunity.budget_fit_score) as number)}/20</span>
                       )}
                     </div>
                   </div>
-                  <div title="Fonds ciblé et date limite estimée pour l'offre" className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
+                  <div title="Target fund and estimated offer deadline" className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
                     <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Fund + Deadline</div>
                     <div className="mt-1 flex flex-col gap-1">
                       <div className="text-foreground">{opportunity.fund_id ? `Fund ${opportunity.fund_id.slice(0, 6)}…` : '—'}</div>
@@ -672,14 +673,14 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                     </div>
                   </div>
                   {opportunity.valuation_pre_money_eur && (
-                    <div title="Valorisation pré-money estimée" className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
+                    <div title="Estimated pre-money valuation" className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
                       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Valuation (pre-money)</div>
                       <div className="mt-1 font-medium text-foreground">{fmtEur(opportunity.valuation_pre_money_eur)}</div>
                     </div>
                   )}
                   {opportunity.ownership_target_pct && (
-                    <div title="Pourcentage de participation visé" className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
-                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Ownership cible</div>
+                    <div title="Target ownership percentage" className="rounded-lg border border-border/50 p-3 bg-card/60 hover:bg-card/80 transition-colors">
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Target ownership</div>
                       <div className="mt-1 font-medium text-foreground">{fmtPct(opportunity.ownership_target_pct)}</div>
                     </div>
                   )}
@@ -688,10 +689,10 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                 {/* Détails éditables */}
                 {expandedId === opportunity.id && (
                   <div className="mt-4 rounded-lg border border-border/40 bg-background/40 p-4" onClick={(e) => e.stopPropagation()}>
-                    <div className="mb-3 text-sm font-medium text-foreground">Modifier l&apos;opportunité</div>
+                    <div className="mb-3 text-sm font-medium text-foreground">Edit opportunity</div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1" title="Stade de financement: Pre-Seed, Seed, Series A/B/C, Growth">Round</label>
+                        <label className="block text-xs text-muted-foreground mb-1" title="Funding stage: Pre-Seed, Seed, Series A/B/C, Growth">Round</label>
                         <select
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
                           value={editDrafts[opportunity.id]?.round ?? ''}
@@ -708,10 +709,10 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                           <option>Extension</option>
                           <option>Other</option>
                         </select>
-                        <p className="mt-1 text-xs text-muted-foreground">Exemples: Pre-Seed = tout début; Seed = amorçage; Series A/B/C = croissance; Growth = scale.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Examples: Pre-Seed = very early; Seed = initial traction; Series A/B/C = growth; Growth = scale.</p>
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1" title="Type d’opération: Equity, SAFE, Convertible, Grant, etc.">Type de deal</label>
+                        <label className="block text-xs text-muted-foreground mb-1" title="Deal type: Equity, SAFE, Convertible, Grant, etc.">Deal type</label>
                         <select
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
                           value={editDrafts[opportunity.id]?.deal_type ?? ''}
@@ -725,10 +726,10 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                           <option>Grant</option>
                           <option>Other</option>
                         </select>
-                        <p className="mt-1 text-xs text-muted-foreground">Equity = actions; SAFE/Convertible = titre convertible; Grant = subvention; Revenue-Based = dette indexée sur revenus.</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Equity = shares; SAFE/Convertible = convertible instrument; Grant = non-dilutive; Revenue-Based = revenue-linked debt.</p>
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1">Montant proposé (€)</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Proposed amount (€)</label>
                         <input
                           type="number"
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
@@ -738,7 +739,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1">Valorisation pre-money (€)</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Pre-money valuation (€)</label>
                         <input
                           type="number"
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
@@ -748,7 +749,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1">Ownership cible (%)</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Target ownership (%)</label>
                         <input
                           type="number"
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
@@ -772,7 +773,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         </select>
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1">Score budget (/20)</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Budget score (/20)</label>
                         <input
                           type="number"
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
@@ -781,7 +782,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1">Coût pilote estimé (€)</label>
+                        <label className="block text-xs text-muted-foreground mb-1">Estimated pilot cost (€)</label>
                         <input
                           type="number"
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
@@ -790,7 +791,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         />
                       </div>
                       <div>
-                        <label className="block text-xs text-muted-foreground mb-1" title="Adéquation du budget pilote (Within, Over, Under)">Pilot budget fit</label>
+                        <label className="block text-xs text-muted-foreground mb-1" title="Pilot budget alignment (Within, Over, Under)">Pilot budget fit</label>
                         <select
                           className="w-full px-2 py-1.5 rounded-md border border-border/60 bg-background/70"
                           value={editDrafts[opportunity.id]?.pilot_budget_fit ?? ''}
@@ -829,7 +830,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         className="px-3 py-1.5 text-sm rounded-md border border-border/60 bg-background/70 hover:bg-background/60"
                         onClick={() => cancelDraft(opportunity)}
                       >
-                        Annuler
+                        Cancel
                       </button>
                       <button
                         type="button"
@@ -837,13 +838,13 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                         onClick={() => saveDraft(opportunity)}
                         disabled={savingId === opportunity.id}
                       >
-                        {savingId === opportunity.id ? 'Enregistrement…' : 'Enregistrer'}
+                        {savingId === opportunity.id ? 'Saving…' : 'Save'}
                       </button>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-border/20" title="Sens de la relation et dernière mise à jour" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center justify-between pt-3 border-t border-border/20" title="Direction of relationship and last update" onClick={(e) => e.stopPropagation()}>
                   <div className="text-xs text-muted-foreground">
                     <span className="mr-2">{opportunity.direction}</span>
                     <span>{new Date(opportunity.updated_at).toLocaleString()}</span>
@@ -858,7 +859,7 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
                       id={`status-${opportunity.id}`}
                       value={opportunity.status}
                       onChange={(e) => updateStatus(opportunity.id, e.target.value)}
-                      title="Modifier le statut de l'opportunité"
+                      title="Change opportunity status"
                       className="px-3 py-1 rounded-full bg-background/70 border border-border/60 text-foreground font-medium focus:ring-2 focus:ring-primary/40 focus:border-primary/40 hover:bg-background/60"
                     >
                       <option value="new">New</option>
@@ -881,9 +882,9 @@ export default function InvestmentOpportunities({ investor }: InvestmentOpportun
         <Card className="text-center border-dashed border-border/40">
           <CardContent className="p-10">
             <FiSearch className="mx-auto text-muted-foreground mb-4" size={48} />
-            <h3 className="text-lg font-semibold text-foreground mb-2">Aucune opportunité trouvée</h3>
-            <p className="text-muted-foreground mb-4">Ajustez vos filtres ou générez de nouvelles correspondances.</p>
-            <button onClick={generate} title="Générer de nouvelles opportunités pour votre profil" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 shadow-sm">Générer des opportunités</button>
+            <h3 className="text-lg font-semibold text-foreground mb-2">No opportunities found</h3>
+            <p className="text-muted-foreground mb-4">Adjust your filters or generate new matches.</p>
+            <button onClick={generate} title="Generate new opportunities for your profile" className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm hover:bg-primary/90 shadow-sm">Generate opportunities</button>
           </CardContent>
         </Card>
       )}
