@@ -292,7 +292,7 @@ body {
 }
 
 .admin-stat-card--emerald {
-  border-left: 4px solid var(--secondary);
+  border-left: 4px solid var(--primary);
 }
 
 .admin-stat-card--violet {
@@ -349,7 +349,7 @@ body {
 }
 
 .admin-icon-secondary {
-  color: var(--secondary);
+  color: color-mix(in srgb, var(--primary) 80%, var(--accent) 20%);
 }
 
 .admin-icon-accent {
