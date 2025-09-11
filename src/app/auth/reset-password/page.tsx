@@ -12,7 +12,7 @@ function ResetPasswordForm() {
   const [error, setError] = useState('');
   const [validToken, setValidToken] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
-  
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,7 +32,7 @@ function ResetPasswordForm() {
       setCheckingToken(true);
       const response = await fetch(`/api/auth/reset-password?token=${tokenToValidate}`);
       const data = await response.json();
-      
+
       if (data.valid) {
         setValidToken(true);
       } else {
@@ -172,8 +172,8 @@ function ResetPasswordForm() {
             type="submit"
             disabled={loading}
             className={`w-full py-3 px-4 text-white font-medium rounded text-base transition-colors ${
-              loading 
-                ? 'bg-gray-400 cursor-not-allowed' 
+              loading
+                ? 'bg-gray-400 cursor-not-allowed'
                 : 'bg-green-600 hover:bg-green-700 cursor-pointer'
             }`}
           >

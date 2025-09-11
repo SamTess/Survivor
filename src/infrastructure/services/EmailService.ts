@@ -1,30 +1,60 @@
 import nodemailer from 'nodemailer';
+import axios, { AxiosError } from 'axios';
 
 export interface EmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
+  emailServerUrl?: string;
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  auth?: {
     user: string;
     pass: string;
   };
-  from: string;
+  from?: string;
   rejectUnauthorized?: boolean;
 }
 
+export interface EmailData {
+  from: string;
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+}
+
 export class EmailService {
-  private transporter: nodemailer.Transporter;
+  private emailServerUrl: string | null;
+  private fallbackTransporter: nodemailer.Transporter | null = null;
 
   constructor(private config: EmailConfig) {
-    this.transporter = nodemailer.createTransport({
-      host: config.host,
-      port: config.port,
-      secure: config.secure,
-      auth: config.auth,
-      tls: {
-        rejectUnauthorized: config.rejectUnauthorized !== false
-      }
-    });
+    console.log('EmailService config:', config);
+    let emailServerUrl = config.emailServerUrl || null;
+    if (!emailServerUrl && process.env.EMAIL_SERVER_IP) {
+      const ip = process.env.EMAIL_SERVER_IP;
+      const port = process.env.EMAIL_SERVER_PORT || '4000';
+      emailServerUrl = `http://${ip}:${port}/send-email`;
+    }
+    this.emailServerUrl = emailServerUrl;
+    if (this.emailServerUrl) {
+      console.log('📧 Using external email server for email sending:', this.emailServerUrl);
+    } else {
+      console.log('📧 Using direct SMTP for email sending');
+      this.setupFallbackTransporter();
+    }
+  }
+
+  private setupFallbackTransporter() {
+    if (this.config.host && this.config.auth) {
+      this.fallbackTransporter = nodemailer.createTransport({
+        host: this.config.host,
+        port: this.config.port || 587,
+        secure: this.config.secure || false,
+        auth: this.config.auth,
+        tls: {
+          rejectUnauthorized: this.config.rejectUnauthorized !== false
+        }
+      });
+    }
   }
 
   async sendPasswordResetEmail(to: string, resetToken: string, userName: string): Promise<void> {
@@ -93,22 +123,77 @@ export class EmailService {
       The Jeb Incubator Team
     `;
 
-    await this.transporter.sendMail({
-      from: this.config.from,
-      to,
-      subject: 'Create your password - Jeb Incubator',
-      text: textContent,
-      html: htmlContent,
-    });
+    if (this.emailServerUrl) {
+        console.log("Email");
+      await this.sendViaEmailServer({
+        from: this.config.from || 'noreply@jeb-incubator.com',
+        to,
+        subject: 'Create your password - Jeb Incubator',
+        text: textContent,
+        html: htmlContent
+      });
+    } else {
+        console.log("SMTP");
+      await this.sendViaSMTP({
+        from: this.config.from || 'noreply@jeb-incubator.com',
+        to,
+        subject: 'Create your password - Jeb Incubator',
+        text: textContent,
+        html: htmlContent
+      });
+    }
+  }
+
+  private async sendViaEmailServer(emailData: EmailData): Promise<void> {
+    if (!this.emailServerUrl) {
+      throw new Error('Email server URL not configured');
+    }
+    try {
+      await axios.post(this.emailServerUrl, emailData, {
+        timeout: 10000,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch (error: unknown) {
+      const err = error as AxiosError;
+      if (err.response) {
+        throw new Error(`Email server returned ${err.response.status}: ${err.response.data}`);
+      } else if (err.request) {
+        throw new Error('No response from email server');
+      } else {
+        throw new Error(`Failed to send email via server: ${err.message}`);
+      }
+    }
+  }
+
+  private async sendViaSMTP(emailData: EmailData): Promise<void> {
+    if (!this.fallbackTransporter) {
+      throw new Error('No email configuration available');
+    }
+
+    await this.fallbackTransporter.sendMail(emailData);
   }
 
   async verifyConnection(): Promise<boolean> {
-    try {
-      await this.transporter.verify();
-      return true;
-    } catch (error) {
-      console.error('Email service connection failed:', error);
-      return false;
+    if (this.emailServerUrl) {
+      try {
+        const healthUrl = this.emailServerUrl.replace('/send-email', '/health');
+        const response = await axios.get(healthUrl, { timeout: 5000 });
+        return response.status === 200;
+      } catch (error: unknown) {
+        console.error('Email server health check failed:', error);
+        return false;
+      }
+    } else if (this.fallbackTransporter) {
+      try {
+        await this.fallbackTransporter.verify();
+        return true;
+      } catch (error: unknown) {
+        console.error('SMTP connection failed:', error);
+        return false;
+      }
     }
+    return false;
   }
 }
