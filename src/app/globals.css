@@ -256,6 +256,420 @@ body {
   border-color: color-mix(in srgb, var(--primary) 30%, transparent);
 }
 
-.link-primary:hover {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 20%, white), color-mix(in srgb, var(--secondary) 20%, white));
+/* Admin Components Styles */
+.admin-loading-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+}
+
+.admin-loading-skeleton {
+  background-color: var(--muted);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.admin-error-card {
+  background-color: var(--card);
+  border: 1px solid var(--destructive);
+}
+
+.admin-error-text {
+  color: var(--destructive);
+}
+
+.admin-stat-card {
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  transition: all 0.2s ease-in-out;
+}
+
+.admin-stat-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary) 15%, transparent);
+}
+
+.admin-stat-card--blue {
+  border-left: 4px solid var(--primary);
+}
+
+.admin-stat-card--emerald {
+  border-left: 4px solid var(--secondary);
+}
+
+.admin-stat-card--violet {
+  border-left: 4px solid var(--accent);
+}
+
+.admin-stat-card--orange {
+  border-left: 4px solid color-mix(in srgb, var(--primary) 60%, var(--accent));
+}
+
+.admin-stat-title {
+  color: var(--foreground);
+}
+
+.admin-stat-icon-container {
+  background-color: var(--muted);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.admin-stat-value {
+  color: var(--foreground);
+}
+
+.admin-stat-description {
+  color: var(--muted-foreground);
+}
+
+.admin-trend-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.admin-trend-badge--positive {
+  background-color: color-mix(in srgb, var(--secondary) 20%, white);
+  color: var(--secondary);
+}
+
+.admin-trend-badge--negative {
+  background-color: color-mix(in srgb, var(--destructive) 20%, white);
+  color: var(--destructive);
+}
+
+.admin-trend-badge--neutral {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* Admin Icons */
+.admin-icon-primary {
+  color: var(--primary);
+}
+
+.admin-icon-secondary {
+  color: var(--secondary);
+}
+
+.admin-icon-accent {
+  color: var(--accent);
+}
+
+.admin-icon-orange {
+  color: color-mix(in srgb, var(--primary) 60%, var(--accent));
+}
+
+.admin-icon-muted {
+  color: var(--muted-foreground);
+}
+
+.admin-icon-destructive {
+  color: var(--destructive);
+}
+
+.admin-icon-warning {
+  color: color-mix(in srgb, var(--primary) 70%, var(--accent));
+}
+
+.admin-icon-success {
+  color: var(--secondary);
+}
+
+/* Admin Maturity Colors */
+.admin-maturity-idea {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+.admin-maturity-prototype {
+  background-color: color-mix(in srgb, var(--primary) 15%, white);
+  color: var(--primary);
+}
+
+.admin-maturity-mvp {
+  background-color: color-mix(in srgb, var(--primary) 25%, var(--accent) 10%, white);
+  color: color-mix(in srgb, var(--primary) 70%, var(--accent));
+}
+
+.admin-maturity-early {
+  background-color: color-mix(in srgb, var(--primary) 35%, var(--accent) 15%, white);
+  color: color-mix(in srgb, var(--primary) 60%, var(--accent));
+}
+
+.admin-maturity-growth {
+  background-color: color-mix(in srgb, var(--secondary) 20%, white);
+  color: var(--secondary);
+}
+
+.admin-maturity-mature {
+  background-color: color-mix(in srgb, var(--accent) 20%, white);
+  color: var(--accent);
+}
+
+.admin-maturity-scaleup {
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--accent) 10%, white);
+  color: var(--primary);
+}
+
+/* Admin Category Colors */
+.admin-category-funding {
+  background-color: color-mix(in srgb, var(--secondary) 15%, white);
+  color: var(--secondary);
+}
+
+.admin-category-partnership {
+  background-color: color-mix(in srgb, var(--primary) 15%, white);
+  color: var(--primary);
+}
+
+.admin-category-award {
+  background-color: color-mix(in srgb, var(--primary) 25%, var(--accent) 10%, white);
+  color: color-mix(in srgb, var(--primary) 70%, var(--accent));
+}
+
+.admin-category-launch {
+  background-color: color-mix(in srgb, var(--accent) 15%, white);
+  color: var(--accent);
+}
+
+.admin-category-expansion {
+  background-color: color-mix(in srgb, var(--primary) 35%, var(--accent) 15%, white);
+  color: color-mix(in srgb, var(--primary) 60%, var(--accent));
+}
+
+.admin-category-recognition {
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--accent) 15%, white);
+  color: color-mix(in srgb, var(--primary) 50%, var(--accent));
+}
+
+.admin-category-acquisition {
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--accent) 10%, white);
+  color: var(--primary);
+}
+
+.admin-category-default {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* Admin Event Colors */
+.admin-event-pitch {
+  background-color: color-mix(in srgb, var(--destructive) 15%, white);
+  color: var(--destructive);
+}
+
+.admin-event-webinar {
+  background-color: color-mix(in srgb, var(--primary) 15%, white);
+  color: var(--primary);
+}
+
+.admin-event-workshop {
+  background-color: color-mix(in srgb, var(--secondary) 15%, white);
+  color: var(--secondary);
+}
+
+.admin-event-conference {
+  background-color: color-mix(in srgb, var(--accent) 15%, white);
+  color: var(--accent);
+}
+
+.admin-event-networking {
+  background-color: color-mix(in srgb, var(--primary) 35%, var(--accent) 15%, white);
+  color: color-mix(in srgb, var(--primary) 60%, var(--accent));
+}
+
+.admin-event-summit {
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--accent) 10%, white);
+  color: var(--primary);
+}
+
+.admin-event-panel {
+  background-color: color-mix(in srgb, var(--primary) 20%, var(--accent) 15%, white);
+  color: color-mix(in srgb, var(--primary) 50%, var(--accent));
+}
+
+.admin-event-expo {
+  background-color: color-mix(in srgb, var(--primary) 25%, var(--accent) 10%, white);
+  color: color-mix(in srgb, var(--primary) 70%, var(--accent));
+}
+
+.admin-event-competition {
+  background-color: color-mix(in srgb, var(--secondary) 20%, white);
+  color: var(--secondary);
+}
+
+.admin-event-masterclass {
+  background-color: color-mix(in srgb, var(--accent) 20%, white);
+  color: var(--accent);
+}
+
+.admin-event-educational {
+  background-color: color-mix(in srgb, var(--primary) 15%, var(--secondary) 10%, white);
+  color: color-mix(in srgb, var(--primary) 60%, var(--secondary));
+}
+
+.admin-event-default {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* Admin Severity Colors */
+.admin-severity-high {
+  background-color: color-mix(in srgb, var(--destructive) 15%, white);
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 30%, transparent);
+}
+
+.admin-severity-medium {
+  background-color: color-mix(in srgb, var(--primary) 25%, var(--accent) 10%, white);
+  color: color-mix(in srgb, var(--primary) 70%, var(--accent));
+  border-color: color-mix(in srgb, var(--primary) 40%, var(--accent) 20%, transparent);
+}
+
+.admin-severity-low {
+  background-color: color-mix(in srgb, var(--secondary) 15%, white);
+  color: var(--secondary);
+  border-color: color-mix(in srgb, var(--secondary) 30%, transparent);
+}
+
+.admin-severity-default {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border-color: var(--border);
+}
+
+/* Admin Text Colors */
+.admin-text-primary {
+  color: var(--primary);
+}
+
+.admin-text-secondary {
+  color: var(--secondary);
+}
+
+.admin-text-accent {
+  color: var(--accent);
+}
+
+.admin-text-orange {
+  color: color-mix(in srgb, var(--primary) 60%, var(--accent));
+}
+
+.admin-text-muted {
+  color: var(--muted-foreground);
+}
+
+/* Admin role colors */
+.admin-role-admin {
+  background-color: color-mix(in srgb, var(--destructive) 10%, transparent);
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+.admin-role-moderator {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.admin-role-user {
+  background-color: color-mix(in srgb, var(--secondary) 10%, transparent);
+  color: var(--secondary-foreground);
+  border-color: color-mix(in srgb, var(--secondary) 20%, transparent);
+}
+
+.admin-role-investor {
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.admin-role-founder {
+  background-color: color-mix(in srgb, var(--primary) 15%, var(--accent) 5%);
+  color: color-mix(in srgb, var(--primary) 80%, var(--accent) 20%);
+  border-color: color-mix(in srgb, var(--primary) 25%, var(--accent) 10%);
+}
+
+.admin-role-partner {
+  background-color: color-mix(in srgb, var(--primary) 8%, var(--secondary) 4%);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 15%, var(--secondary) 8%);
+}
+
+.admin-role-guest {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border-color: color-mix(in srgb, var(--muted) 20%, transparent);
+}
+
+/* Admin action buttons */
+.admin-action-button {
+  color: var(--primary);
+}
+
+.admin-action-button:hover {
+  color: color-mix(in srgb, var(--primary) 80%, transparent);
+}
+
+/* Admin required field indicator */
+.admin-required {
+  color: var(--destructive);
+}
+
+/* Admin stats colors */
+.admin-stat-views {
+  color: var(--accent);
+}
+
+/* Admin status badges */
+.admin-status-active {
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.admin-status-inactive {
+  background-color: var(--muted);
+  color: var(--muted-foreground);
+  border-color: color-mix(in srgb, var(--muted) 20%, transparent);
+}
+
+.admin-status-pending {
+  background-color: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border-color: color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.admin-status-approved {
+  background-color: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.admin-status-rejected {
+  background-color: color-mix(in srgb, var(--destructive) 10%, transparent);
+  color: var(--destructive);
+  border-color: color-mix(in srgb, var(--destructive) 20%, transparent);
+}
+
+/* Admin permission modal styles - using design system colors */
+.admin-permission-section {
+  background: color-mix(in srgb, var(--muted) 95%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+
+.admin-permission-existing {
+  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, transparent);
+}
+
+.admin-permission-templates {
+  background: color-mix(in srgb, var(--accent) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.admin-permission-form {
+  background: color-mix(in srgb, var(--secondary) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--secondary) 20%, transparent);
 }
