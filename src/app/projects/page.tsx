@@ -161,7 +161,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
         <div className="h-screen bg-background pt-14 overflow-y-auto">
           <div className="h-screen overflow-y-auto flex items-center justify-center bg-gray-50">
             <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
               <p className="mt-4 text-gray-600 text-sm">Loading startups...</p>
             </div>
           </div>
@@ -183,7 +183,20 @@ import ProjectCard from '@/components/ui/ProjectCard';
                   <button onClick={() => setShowAdvanced(v => !v)} className="text-sm px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition">
                     {showAdvanced ? 'Hide advanced filters' : 'Advanced filters'}
                   </button>
-                  <button onClick={clearAll} className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-blue-600 text-white hover:bg-blue-700 transition">
+                  <button 
+                    onClick={clearAll} 
+                    className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-primary text-white hover:opacity-90 transition"
+                    style={{ 
+                      backgroundColor: 'var(--primary)',
+                      '--hover-bg': 'var(--brand-btn-bg-hover)'
+                    } as React.CSSProperties}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--brand-btn-bg-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--primary)';
+                    }}
+                  >
                     ✕ Reset
                   </button>
                 </div>
@@ -195,23 +208,23 @@ import ProjectCard from '@/components/ui/ProjectCard';
                     placeholder="Search (name, description)..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div className="flex gap-4 flex-wrap">
-                  <select value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="All">All sectors</option>
                     {uniqueSectors.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="All">All maturities</option>
                     {uniqueStages.map(st => <option key={st} value={st}>{st}</option>)}
                   </select>
-                  <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="All">All countries</option>
                     {uniqueCountries.map(country => <option key={country} value={country}>{country}</option>)}
                   </select>
-                  <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="name-asc">Name (A-Z)</option>
                     <option value="name-desc">Name (Z-A)</option>
                     <option value="likes-desc">Likes (desc)</option>
@@ -237,14 +250,14 @@ import ProjectCard from '@/components/ui/ProjectCard';
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-gray-600">Project status</label>
-                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="All">All</option>
                       {uniqueStatuses.map(st => <option key={st} value={st}>{st}</option>)}
                     </select>
                   </div>
                   <div className="flex items-end gap-2 md:col-span-2 lg:col-span-1">
                     <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer select-none">
-                      <input type="checkbox" checked={hasWebsite} onChange={e => setHasWebsite(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                      <input type="checkbox" checked={hasWebsite} onChange={e => setHasWebsite(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
                       With website
                     </label>
                   </div>
@@ -271,7 +284,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
             ) : (
               <div className="text-center py-24 max-w-6xl mx-auto">
                 <div className="text-gray-500 text-base">{error ? "Unable to display projects." : 'No projects match the filters.'}</div>
-                <button onClick={clearAll} className="mt-6 inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700">
+                <button onClick={clearAll} className="mt-6 inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark transition">
                   Reset filters
                 </button>
               </div>
