@@ -1,20 +1,9 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
-import eventsJson from "@/mocks/events.json";
-import { EventApiResponse } from "@/domain/interfaces/Event";
+import { useState, useEffect } from "react";
 import { NewsDetailApiResponse } from "@/domain/interfaces/News";
 import { StartupDetailApiResponse } from "@/domain/interfaces";
-import { useAuth } from "@/context/AuthContext";
-
-interface EventForm {
-  name: string;
-  dates?: string;
-  location?: string;
-  description?: string;
-  event_type?: string;
-  target_audience?: string;
-}
+import { apiService } from "@/context/auth";
 
 interface NewsForm {
   title: string;
@@ -29,22 +18,11 @@ interface EventsNewsManagerProps {
 }
 
 export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
-  const { user } = useAuth();
-  const [events, setEvents] = useState<EventApiResponse[]>(() => eventsJson.map(e => ({ ...e })));
   const [news, setNews] = useState<NewsDetailApiResponse[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
   const [newsError, setNewsError] = useState<string | null>(null);
   const [newsSubmitting, setNewsSubmitting] = useState(false);
   const [newsSuccess, setNewsSuccess] = useState<string | null>(null);
-
-  const [eventForm, setEventForm] = useState<EventForm>({
-    name: "",
-    dates: "",
-    location: startup?.address || "",
-    description: "",
-    event_type: "",
-    target_audience: ""
-  });
   const [newsForm, setNewsForm] = useState<NewsForm>({
     title: "",
     news_date: "",
@@ -61,14 +39,13 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
         setNewsError(null);
         
         // If we have a startup, fetch news for that startup specifically
-        const url = startup?.id ? `/api/news?startupId=${startup.id}` : '/api/news';
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (data.success) {
-          setNews(data.data || []);
+        const url = startup?.id ? `/news?startupId=${startup.id}` : '/news';
+        const response = await apiService.get<NewsDetailApiResponse[]>(url);
+
+        if (response.success) {
+          setNews(response.data || []);
         } else {
-          setNewsError(data.error || 'Failed to fetch news');
+          setNewsError(response.error || 'Failed to fetch news');
         }
       } catch (error) {
         console.error('Error fetching news:', error);
@@ -84,10 +61,6 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
   // Update form defaults when startup data becomes available
   useEffect(() => {
     if (startup) {
-      setEventForm(prev => ({
-        ...prev,
-        location: prev.location || startup.address || "",
-      }));
       setNewsForm(prev => ({
         ...prev,
         location: prev.location || startup.address || "",
@@ -95,20 +68,6 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
       }));
     }
   }, [startup]);
-
-  const nextEventId = useMemo(() => (events.reduce((m, e) => Math.max(m, e.id), 0) + 1), [events]);
-
-  function addEvent(e: React.FormEvent) {
-    e.preventDefault();
-    const payload: EventApiResponse = {
-      id: nextEventId,
-      ...eventForm,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    setEvents((prev) => [payload, ...prev]);
-    setEventForm({ name: "", dates: "", location: startup?.address || "", description: "", event_type: "", target_audience: "" });
-  }
 
   function addNews(e: React.FormEvent) {
     e.preventDefault();
@@ -119,28 +78,25 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
         setNewsError(null);
         setNewsSuccess(null);
         
+        if (!startup?.id) {
+          setNewsError('Aucune startup sélectionnée. Veuillez créer ou sélectionner votre startup avant de publier une news.');
+          return;
+        }
+        
         const payload = {
           title: newsForm.title,
-          news_date: newsForm.news_date,
+          news_date: newsForm.news_date ? new Date(newsForm.news_date).toISOString() : undefined,
           location: newsForm.location,
           category: newsForm.category,
           description: newsForm.description || "",
-          startup_id: startup?.id || (user?.id ? parseInt(user.id.toString()) : undefined),
+          startup_id: startup.id,
         };
 
-        const response = await fetch('/api/news', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
-
-        const data = await response.json();
+        const data = await apiService.post<NewsDetailApiResponse>('/news', payload);
         
-        if (data.success) {
+        if (data.success && data.data) {
           // Add the new news to the beginning of the list
-          setNews((prev) => [data.data, ...prev]);
+          setNews((prev) => [data.data as NewsDetailApiResponse, ...prev]);
           // Reset form
           setNewsForm({ 
             title: "", 
@@ -154,8 +110,7 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
           setTimeout(() => setNewsSuccess(null), 3000);
         } else {
           console.error('Failed to create news:', data.error);
-          const errorMessage = typeof data.error === 'string' ? data.error : 
-                             data.error?.message || 'Failed to create news';
+          const errorMessage = data.error || 'Failed to create news';
           setNewsError(errorMessage);
         }
       } catch (error) {
@@ -171,42 +126,7 @@ export default function EventsNewsManager({ startup }: EventsNewsManagerProps) {
   }
 
   return (
-    <section className="grid grid-cols-1 gap-4 lg:grid-cols-2 pb-16">
-      <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-foreground">Events</h2>
-          <p className="text-sm text-muted-foreground">
-            {startup ? `Create and manage upcoming events for ${startup.name}.` : "Create and manage upcoming events."}
-          </p>
-        </div>
-        <form onSubmit={addEvent} className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Name" value={eventForm.name} onChange={(e) => setEventForm({ ...eventForm, name: e.target.value })} required />
-          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Date (YYYY-MM-DD)" value={eventForm.dates} onChange={(e) => setEventForm({ ...eventForm, dates: e.target.value })} />
-          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Location" value={eventForm.location} onChange={(e) => setEventForm({ ...eventForm, location: e.target.value })} />
-          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Type" value={eventForm.event_type} onChange={(e) => setEventForm({ ...eventForm, event_type: e.target.value })} />
-          <input className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 sm:col-span-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Target audience" value={eventForm.target_audience} onChange={(e) => setEventForm({ ...eventForm, target_audience: e.target.value })} />
-          <textarea className="rounded-2xl border border-border bg-background/80 backdrop-blur-md text-foreground placeholder:text-muted-foreground px-3 py-2 sm:col-span-2 outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200" placeholder="Description" value={eventForm.description} onChange={(e) => setEventForm({ ...eventForm, description: e.target.value })} />
-          <div className="sm:col-span-2 flex justify-end">
-            <button type="submit" className="rounded-2xl bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90 transition-all duration-200 border border-primary/20">Add event</button>
-          </div>
-        </form>
-
-        <hr className="mt-5"/>
-
-        <div className="divide-y">
-          {events.map((e) => (
-            <div key={e.id} className="py-3 flex items-start justify-between">
-              <div>
-                <p className="font-medium text-gray-900">{e.name}</p>
-                <p className="text-sm text-gray-700">{e.dates} • {e.location} • {e.event_type}</p>
-                {e.description && <p className="text-sm text-gray-800 mt-1">{e.description}</p>}
-              </div>
-               <span className="text-xs text-gray-700">{new Date(e.created_at).toLocaleDateString()}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
+    <section className="grid grid-cols-1 gap-4 pb-16">
       <div className="rounded-2xl border border-border/20 bg-card/80 backdrop-blur-md p-4 shadow-sm animate-card transition-all duration-300">
         <div className="mb-4">
           <h2 className="text-lg font-semibold text-foreground">News</h2>
