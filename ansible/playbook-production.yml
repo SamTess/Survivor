@@ -55,6 +55,15 @@
         - git_clone_prod.changed or env_file_prod.changed
       ignore_errors: yes
 
+    - name: Set NEXT_PUBLIC_APP_URL in .env file (production)
+      lineinfile:
+        path: "{{ repository.app_directory }}/Docker/.env"
+        regexp: '^NEXT_PUBLIC_APP_URL='
+        line: "NEXT_PUBLIC_APP_URL=http://{{ ansible_default_ipv4.address }}:{{ app_port }}"
+        create: yes
+        mode: '0644'
+      when: compose_file_check_prod.stat.exists
+
     - name: Build and start Docker containers (production)
       community.docker.docker_compose_v2:
         project_src: "{{ repository.app_directory }}/Docker"
