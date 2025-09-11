@@ -183,20 +183,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
                   <button onClick={() => setShowAdvanced(v => !v)} className="text-sm px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition">
                     {showAdvanced ? 'Hide advanced filters' : 'Advanced filters'}
                   </button>
-                  <button 
-                    onClick={clearAll} 
-                    className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-primary text-white hover:opacity-90 transition"
-                    style={{ 
-                      backgroundColor: 'var(--primary)',
-                      '--hover-bg': 'var(--brand-btn-bg-hover)'
-                    } as React.CSSProperties}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--brand-btn-bg-hover)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--primary)';
-                    }}
-                  >
+                  <button onClick={clearAll} className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-primary text-white btn-hover transition">
                     ✕ Reset
                   </button>
                 </div>
