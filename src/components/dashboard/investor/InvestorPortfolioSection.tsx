@@ -109,7 +109,7 @@ export default function InvestorPortfolioSection({ investor }: InvestorPortfolio
         const months = selectedTimeframe === '3M' ? 3 : selectedTimeframe === '6M' ? 6 : selectedTimeframe === '1Y' ? 12 : 24;
         const res = await fetch(`/api/portfolio?investorId=${investor.id}&months=${months}`);
         const json = await res.json();
-        if (!json.success) throw new Error(json.error || 'Erreur API');
+  if (!json.success) throw new Error(json.error || 'API error');
         setPortfolioData(json.data as PortfolioData);
       } catch (error) {
         console.error('Error fetching portfolio data:', error);
