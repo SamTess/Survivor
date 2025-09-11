@@ -1,6 +1,6 @@
 <h1 align="center">Survivor Platform</h1>
 <p align="center">
-	<img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg" style="display:inline-block;" />&nbsp;
+	<img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-green.svg" style="display:inline-block;" />
 	<img alt="Node.js >=20" src="https://img.shields.io/badge/node-%3E=20-brightgreen" style="display:inline-block;" />&nbsp;
 	<img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-black" style="display:inline-block;" />&nbsp;
 	<img alt="Turbopack Enabled" src="https://img.shields.io/badge/Turbopack-enabled-orange" style="display:inline-block;" />&nbsp;
