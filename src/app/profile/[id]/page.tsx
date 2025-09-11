@@ -97,9 +97,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         setEditedUser(response.data);
         setIsEditing(false);
 
-        if (isCurrentUserAdmin && !isOwnProfile) {
-          console.log('User profile updated successfully by admin');
-        }
       } else {
         const errorMessage = response.error || 'Failed to update user';
         setError(errorMessage);
