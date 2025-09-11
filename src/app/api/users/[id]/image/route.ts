@@ -107,6 +107,83 @@ export async function GET(
   }
 }
 
+/**
+ * @openapi
+ * /users/{id}/image:
+ *   put:
+ *     summary: Upload user profile image
+ *     description: Upload a new profile image for the specified user. Only the user themselves or an admin can upload.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: User ID
+ *         example: 12
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file (JPEG, PNG, WebP, or GIF, max 5MB)
+ *             required:
+ *               - image
+ *     responses:
+ *       200:
+ *         description: Profile picture updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: "Profile picture updated successfully" }
+ *       400:
+ *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed" }
+ *       403:
+ *         description: Authentication required or insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Authentication required or insufficient permissions" }
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "User not found" }
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Failed to upload image" }
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -206,6 +283,70 @@ export async function PUT(
   }
 }
 
+/**
+ * @openapi
+ * /users/{id}/image:
+ *   delete:
+ *     summary: Delete user profile image
+ *     description: Remove the profile image for the specified user. Only the user themselves or an admin can delete.
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: User ID
+ *         example: 12
+ *     responses:
+ *       200:
+ *         description: Profile picture deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: true }
+ *                 message: { type: string, example: "Profile picture deleted successfully" }
+ *       400:
+ *         description: Invalid user ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Invalid user ID" }
+ *       403:
+ *         description: Authentication required or insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Authentication required or insufficient permissions" }
+ *       404:
+ *         description: User or image not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "No profile picture to delete" }
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean, example: false }
+ *                 error: { type: string, example: "Failed to delete image" }
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
