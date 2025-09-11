@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface DarkModeToggleProps {
   className?: string;
@@ -43,13 +44,20 @@ export default function DarkModeToggle({
   );
 
   return (
-    <Button
-      size="sm"
-      onClick={toggleDarkMode}
-      aria-label="Toggle dark mode"
-      className={`${className} group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105`}
-    >
-      {icon}
-    </Button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          size="sm"
+          onClick={toggleDarkMode}
+          aria-label="Toggle dark mode"
+          className={`${className} group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105`}
+        >
+          {icon}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{darkMode ? "Switch to light mode" : "Switch to dark mode"}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };

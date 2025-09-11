@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Search, Menu, X, Sparkles, CircleUser, LogOut, Upload } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/utils/utils"
 import { useAuth } from "@/context"
 import DarkModeToggle from "../layout/DarkModeToggle"
@@ -96,19 +97,26 @@ export function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               {/* Search Dropdown */}
               <div className="relative" ref={refs.searchDropdownRef}>
-                <Button
-                  ref={refs.searchButtonRef}
-                  size="sm"
-                  onClick={toggleSearchDropdown}
-                  aria-expanded={state.isSearchOpen}
-                  aria-haspopup="dialog"
-                  aria-controls="search-dropdown"
-                  aria-label="Open user search"
-                  className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                >
-                  <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
-                  <ScreenReaderOnly>Search for users</ScreenReaderOnly>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      ref={refs.searchButtonRef}
+                      size="sm"
+                      onClick={toggleSearchDropdown}
+                      aria-expanded={state.isSearchOpen}
+                      aria-haspopup="dialog"
+                      aria-controls="search-dropdown"
+                      aria-label="Open user search"
+                      className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    >
+                      <Search className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
+                      <ScreenReaderOnly>Search for users</ScreenReaderOnly>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Search for users</p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {state.isSearchOpen && (
                   <div
@@ -135,21 +143,28 @@ export function Navbar() {
 
               {/* Profile Dropdown */}
               <div className="relative" ref={refs.profileDropdownRef}>
-                <Button
-                  ref={refs.profileButtonRef}
-                  size="sm"
-                  onClick={toggleProfileDropdown}
-                  aria-expanded={state.isProfileDropdownOpen}
-                  aria-haspopup="menu"
-                  aria-controls="profile-menu"
-                  aria-label={isAuthenticated ? "Open user menu" : "Login"}
-                  className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                >
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center">
-                    <CircleUser className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
-                  </div>
-                  <ScreenReaderOnly>{isAuthenticated ? "User menu" : "Login"}</ScreenReaderOnly>
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      ref={refs.profileButtonRef}
+                      size="sm"
+                      onClick={toggleProfileDropdown}
+                      aria-expanded={state.isProfileDropdownOpen}
+                      aria-haspopup="menu"
+                      aria-controls="profile-menu"
+                      aria-label={isAuthenticated ? "Open user menu" : "Login"}
+                      className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    >
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center">
+                        <CircleUser className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" aria-hidden="true" />
+                      </div>
+                      <ScreenReaderOnly>{isAuthenticated ? "User menu" : "Login"}</ScreenReaderOnly>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>{isAuthenticated ? "User menu" : "Sign in"}</p>
+                  </TooltipContent>
+                </Tooltip>
 
                 {state.isProfileDropdownOpen && isAuthenticated && (
                   <div
@@ -222,22 +237,29 @@ export function Navbar() {
               }
             </div>
 
-            <Button
-              ref={refs.menuButtonRef}
-              variant="ghost"
-              size="sm"
-              onClick={toggleMenu}
-              aria-expanded={state.isMenuOpen}
-              aria-controls="mobile-menu"
-              aria-label={state.isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              className="md:hidden rounded-full w-10 h-10 p-0 hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-            >
-              {state.isMenuOpen ?
-                <X className="h-5 w-5 text-foreground" aria-hidden="true" /> :
-                <Menu className="h-5 w-5 text-foreground" aria-hidden="true" />
-              }
-              <ScreenReaderOnly>{state.isMenuOpen ? "Close menu" : "Open menu"}</ScreenReaderOnly>
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  ref={refs.menuButtonRef}
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMenu}
+                  aria-expanded={state.isMenuOpen}
+                  aria-controls="mobile-menu"
+                  aria-label={state.isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                  className="md:hidden rounded-full w-10 h-10 p-0 hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                >
+                  {state.isMenuOpen ?
+                    <X className="h-5 w-5 text-foreground" aria-hidden="true" /> :
+                    <Menu className="h-5 w-5 text-foreground" aria-hidden="true" />
+                  }
+                  <ScreenReaderOnly>{state.isMenuOpen ? "Close menu" : "Open menu"}</ScreenReaderOnly>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{state.isMenuOpen ? "Close menu" : "Open menu"}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           {state.isMenuOpen && (
