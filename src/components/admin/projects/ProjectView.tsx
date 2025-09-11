@@ -48,7 +48,7 @@ export const ProjectView: React.FC<ProjectViewProps> = ({ project }) => {
         </div>
         <div className="space-y-1">
           <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Views</label>
-          <p className="text-sm font-medium text-green-600">{project.viewsCount}</p>
+          <p className="text-sm font-medium admin-stat-views">{project.viewsCount}</p>
         </div>
       </div>
       <div className="space-y-1">
