@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { UserService } from '../../../../application/services/users/UserService';
 import { UserRepositoryPrisma } from '../../../../infrastructure/persistence/prisma/UserRepositoryPrisma';
+import { getCurrentUser, canEditUserProfile } from '../../auth-utils';
 
 const userRepository = new UserRepositoryPrisma();
 const userService = new UserService(userRepository);
@@ -151,6 +152,14 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: 'Invalid user ID' },
         { status: 400 }
+      );
+    }
+
+    const currentUser = await getCurrentUser(request);
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
       );
     }
 
@@ -351,7 +360,39 @@ export async function PUT(
       );
     }
 
+    const canEdit = await canEditUserProfile(request, id);
+    if (!canEdit) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required or insufficient permissions' },
+        { status: 403 }
+      );
+    }
+
+    const currentUser = await getCurrentUser(request);
+    if (!currentUser) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
+    const isOwnProfile = currentUser.id === id;
+    const isAdmin = currentUser.role === 'admin';
+
+    if (isOwnProfile && body.role === 'admin' && currentUser.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'You cannot grant yourself admin privileges' },
+        { status: 403 }
+      );
+    }
+
+    if (!isOwnProfile && body.role === 'admin' && !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Only administrators can grant admin privileges' },
+        { status: 403 }
+      );
+    }
 
     const user = await userService.updateUser(id, body);
 

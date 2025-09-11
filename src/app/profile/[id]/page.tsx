@@ -8,6 +8,7 @@ import { formatDate } from '@/utils/dateUtils';
 import { ProtectedRoute, useAuth } from '@/context/auth';
 import { apiService } from '@/infrastructure/services/ApiService';
 import UserAvatar from '@/components/ui/UserAvatar';
+import ProfilePictureUpload from '@/components/ui/ProfilePictureUpload';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -34,6 +35,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
   }, [isAuthenticated, router, id]);
 
   const isOwnProfile = user?.id === currentUser?.id;
+  const isCurrentUserAdmin = currentUser?.role === 'admin';
+  const canEdit = isOwnProfile || isCurrentUserAdmin;
+  const canEditRole = isCurrentUserAdmin || isOwnProfile;
+  const canSetAdminRole = isCurrentUserAdmin && !isOwnProfile;
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -76,18 +81,25 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     setError(null);
 
     try {
-      const response = await apiService.put<UserApiResponse>(`/users/${user.id}`, {
+      const updateData: Partial<UserApiResponse> = {
         name: editedUser.name,
         email: editedUser.email,
-        role: editedUser.role,
-      });
+      };
+
+      if (canEditRole) {
+        updateData.role = editedUser.role;
+      }
+
+      const response = await apiService.put<UserApiResponse>(`/users/${user.id}`, updateData);
 
       if (response.success && response.data) {
         setUser(response.data);
         setEditedUser(response.data);
         setIsEditing(false);
+
       } else {
-        setError(response.error || 'Failed to update user');
+        const errorMessage = response.error || 'Failed to update user';
+        setError(errorMessage);
       }
     } catch (error) {
       console.error('Error updating user:', error);
@@ -123,20 +135,19 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         return 'bg-accent/10 text-accent border border-accent/20';
       case 'admin':
         return 'bg-secondary/10 text-secondary border border-secondary/20';
-      case 'mentor':
-        return 'bg-primary/20 text-primary border border-primary/30';
+      case 'visitor':
+        return 'bg-muted/50 text-foreground border border-border/20';
       default:
         return 'bg-muted/50 text-foreground border border-border/20';
     }
   };
 
   const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => {
-    // Use a responsive approach: show smaller avatar on mobile, larger on desktop
     const [avatarSize, setAvatarSize] = useState(64);
+    const [refreshKey, setRefreshKey] = useState<number>(Date.now());
 
     useEffect(() => {
       const updateSize = () => {
-        // 64px (16*4) on mobile, 96px (24*4) on sm screens and up
         setAvatarSize(window.innerWidth >= 640 ? 96 : 64);
       };
 
@@ -155,10 +166,30 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       return () => window.removeEventListener('resize', debouncedHandler);
     }, []);
 
+    const handleUploadSuccess = () => {
+      setRefreshKey(Date.now());
+      setError(null);
+    };
+
+    const handleUploadError = (errorMessage: string) => {
+      setError(errorMessage);
+    };
+
     return (
       <div className="w-16 h-16 sm:w-24 sm:h-24">
         {uid ? (
-          <UserAvatar uid={uid} name={name} size={avatarSize} />
+          canEdit && isEditing ? (
+            <ProfilePictureUpload
+              userId={uid}
+              userName={name}
+              size={avatarSize}
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+              disabled={saving}
+            />
+          ) : (
+            <UserAvatar uid={uid} name={name} size={avatarSize} refreshKey={refreshKey} />
+          )
         ) : (
           <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-muted" />
         )}
@@ -195,7 +226,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <ProtectedRoute requireAuth={true}>
-      <div className="min-h-screen bg-background py-5 overflow-y-auto">
+      <div className="h-screen bg-background py-5 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-6 sm:px-6 lg:px-8 pt-20">
           {/* Error Display */}
           {error && (
@@ -223,7 +254,14 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
                   {/* Avatar */}
-                  <ProfileAvatar uid={user?.id} name={user?.name || undefined} />
+                  <div className="relative">
+                    <ProfileAvatar uid={user?.id} name={user?.name || undefined} />
+                    {canEdit && isEditing && (
+                      <p className="text-xs text-muted-foreground mt-2 text-center max-w-24">
+                        Click to upload
+                      </p>
+                    )}
+                  </div>
 
                   {/* Basic Info */}
                   <div>
@@ -248,7 +286,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
                 {/* Action Buttons */}
                 <div className="flex space-x-3">
-                  {isOwnProfile ? (
+                  {/* Edit buttons - show if user can edit */}
+                  {canEdit && (
                     <>
                       {isEditing ? (
                         <>
@@ -279,7 +318,9 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                             <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                             <path d="m15 5 4 4"/>
                           </svg>
-                          <span className="hidden sm:inline">Edit Profile</span>
+                          <span className="hidden sm:inline">
+                            {isOwnProfile ? 'Edit Profile' : 'Edit User (Admin)'}
+                          </span>
                         </button>
                       )}
                       {user?.role === 'founder' && (
@@ -296,7 +337,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                         </Link>
                       )}
                     </>
-                  ) : (
+                  )}
+
+                  {/* Start Conversation button - show for other users' profiles */}
+                  {!isOwnProfile && (
                     <button
                       onClick={handleStartConversation}
                       className="bg-accent text-accent-foreground sm:px-4 px-3 py-2 rounded-2xl hover:bg-accent/90 transition-all duration-200 border border-accent/20 backdrop-blur-md flex items-center gap-2"
@@ -311,6 +355,28 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               </div>
             </div>
           </div>
+
+          {/* Admin Notice */}
+          {isCurrentUserAdmin && !isOwnProfile && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 animate-fade-down">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600">
+                    <path d="M12 9v4"/>
+                    <path d="m12 15 .01 0"/>
+                    <path d="M8.5 8.5a2.5 2.5 0 1 1 7 0"/>
+                    <path d="M4.5 12.5a2.5 2.5 0 1 0 0-5h-.5v5h.5z"/>
+                    <path d="M19.5 12.5a2.5 2.5 0 1 0 0-5h.5v5h-.5z"/>
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-amber-700">
+                    <strong>Admin View:</strong> You are viewing and can edit another user&apos;s profile. You can also change their role.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Profile Details */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -342,17 +408,26 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                     <label className="block text-sm font-medium text-foreground mb-2">
                       Role
                     </label>
-                    {isEditing ? (
-                      <select
-                        value={editedUser?.role || ''}
-                        onChange={(e) => handleInputChange('role', e.target.value)}
-                        className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary bg-background/80 backdrop-blur-md text-foreground transition-all duration-200"
-                      >
-                        <option value="founder">Founder</option>
-                        <option value="investor">Investor</option>
-                        <option value="mentor">Mentor</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                    {isEditing && canEditRole ? (
+                      <div>
+                        <select
+                          value={editedUser?.role || ''}
+                          onChange={(e) => handleInputChange('role', e.target.value)}
+                          className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary bg-background/80 backdrop-blur-md text-foreground transition-all duration-200"
+                        >
+                          <option value="visitor">Visitor</option>
+                          <option value="founder">Founder</option>
+                          <option value="investor">Investor</option>
+                          {/* Only show admin option if user can set admin role */}
+                          {canSetAdminRole && <option value="admin">Admin</option>}
+                        </select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {isOwnProfile
+                            ? "You can change your role to any option except admin"
+                            : "As an admin, you can change this user's role"
+                          }
+                        </p>
+                      </div>
                     ) : (
                       <p className="text-foreground capitalize">{user?.role || 'User'}</p>
                     )}
