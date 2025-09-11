@@ -5,3 +5,5 @@ export * from './Event';
 export * from './News';
 export * from './Startup';
 export * from './Partner';
+export * from './Auth';
+export * from './Statistics';

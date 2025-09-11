@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import EventCard from '@/components/cards/EventCard';
+import MonthlyCalendar from '@/components/calendar/MonthlyCalendar';
 import { EventApiResponse } from '@/domain/interfaces/Event';
-import EventsCalendar from '@/components/events/EventsCalendar';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventApiResponse[]>([]);
@@ -11,7 +11,20 @@ export default function EventsPage() {
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'upcoming' | 'past'>('all');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [loading, setLoading] = useState(true);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('calendar');
+
+  const parseEventDate = (value?: string): Date | null => {
+    if (!value) return null;
+    const m = value.match(/^([0-9]{4})-([0-9]{2})-([0-9]{2})(?:$|T)/);
+    if (m) {
+      const y = Number(m[1]);
+      const mo = Number(m[2]) - 1;
+      const d = Number(m[3]);
+      return new Date(y, mo, d);
+    }
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  };
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -40,25 +53,29 @@ export default function EventsPage() {
     let filtered = [...events];
 
     if (selectedFilter === 'upcoming') {
-      filtered = filtered.filter(event => event.dates && new Date(event.dates) > new Date());
+      const today = new Date(); today.setHours(0,0,0,0);
+      filtered = filtered.filter(event => {
+        const d = parseEventDate(event.dates);
+        if (!d) return false;
+        d.setHours(0,0,0,0);
+        return d.getTime() > today.getTime();
+      });
     } else if (selectedFilter === 'past') {
-      filtered = filtered.filter(event => event.dates && new Date(event.dates) <= new Date());
+      const today = new Date(); today.setHours(0,0,0,0);
+      filtered = filtered.filter(event => {
+        const d = parseEventDate(event.dates);
+        if (!d) return false;
+        d.setHours(0,0,0,0);
+        return d.getTime() <= today.getTime();
+      });
     }
 
     if (selectedType !== 'all') {
       filtered = filtered.filter(event => event.event_type && event.event_type.toLowerCase() === selectedType.toLowerCase());
     }
 
-    if (selectedDate) {
-      filtered = filtered.filter(event => {
-        if (!event.dates) return false;
-        const iso = new Date(event.dates).toISOString().split('T')[0];
-        return iso === selectedDate;
-      });
-    }
-
     setFilteredEvents(filtered);
-  }, [events, selectedFilter, selectedType, selectedDate]);
+  }, [events, selectedFilter, selectedType]);
 
   const eventTypes = [...new Set(events.map(event => event.event_type).filter(Boolean))];
 
@@ -106,31 +123,39 @@ export default function EventsPage() {
             {/* Results Count */}
             <div className="text-sm text-muted-foreground ml-auto font-medium flex items-center gap-3">
               <span>Showing {filteredEvents.length} of {events.length} events</span>
-              {selectedDate && (
-                <button
-                  onClick={() => setSelectedDate(null)}
-                  className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition"
-                >Clear date</button>
-              )}
+            </div>
+
+            {/* View Mode Toggle */}
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setViewMode('calendar')}
+                className={`px-3 py-2 rounded-full border text-sm ${viewMode === 'calendar' ? 'border-primary text-primary' : 'border-border text-foreground/80 hover:border-primary/50'}`}
+              >
+                Calendar
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-2 rounded-full border text-sm ${viewMode === 'list' ? 'border-primary text-primary' : 'border-border text-foreground/80 hover:border-primary/50'}`}
+              >
+                List
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Calendar Section */}
-        <div className="mb-10">
-          <EventsCalendar
-            events={events}
-            selectedDate={selectedDate}
-            onSelectDate={(d) => setSelectedDate(d)}
-          />
-        </div>
+        {/* Calendar View */}
+        {viewMode === 'calendar' && (
+          <MonthlyCalendar events={filteredEvents} />
+        )}
 
         {/* Events Grid */}
-        {loading ? (
+  {loading ? (
           <div className="text-center py-12">
             <div className="text-gray-400 text-lg mb-2">Loading events...</div>
           </div>
-        ) : filteredEvents.length > 0 ? (
+  ) : viewMode === 'list' && filteredEvents.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEvents.map((event) => (
               <EventCard
@@ -146,7 +171,7 @@ export default function EventsPage() {
               />
             ))}
           </div>
-        ) : (
+  ) : viewMode === 'list' ? (
           <div className="text-center py-12 bg-card/30 backdrop-blur-md border border-border/20 rounded-2xl transition-all duration-300">
             <div className="text-muted-foreground text-lg mb-2 font-medium">No events found</div>
             <p className="text-muted-foreground/70">
@@ -155,7 +180,7 @@ export default function EventsPage() {
                 : 'Check back later for upcoming events.'}
             </p>
           </div>
-        )}
+  ) : null}
       </div>
     </div>
   );

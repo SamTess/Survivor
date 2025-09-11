@@ -7,6 +7,122 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum OpportunityDirection {
+  S_TO_I
+  S_TO_P
+  I_TO_S
+  P_TO_S
+}
+
+enum EntityType {
+  STARTUP
+  INVESTOR
+  PARTNER
+}
+
+enum OpportunityStatus {
+  NEW
+  QUALIFIED
+  CONTACTED
+  IN_DISCUSSION
+  PILOT
+  DEAL
+  LOST
+}
+
+enum DealType {
+  EQUITY
+  CONVERTIBLE
+  SAFE
+  GRANT
+  REVENUE_BASED
+  PARTNERSHIP
+  PILOT
+  LICENSE
+  COMMERCIAL
+}
+
+enum BudgetFit {
+  BELOW_RANGE
+  WITHIN_RANGE
+  ABOVE_RANGE
+  UNKNOWN
+}
+
+enum PilotBudgetFit {
+  WITHIN
+  OVER
+  UNDER
+  UNKNOWN
+}
+
+enum Round {
+  PRE_SEED
+  SEED
+  A
+  B
+  C
+  GROWTH
+}
+
+enum OpportunityEventType {
+  AUTO_CREATED
+  RESCORED
+  STATUS_CHANGED
+  NOTE
+  EMAIL_SENT
+  MEETING
+  PILOT_STARTED
+  DEAL_SIGNED
+}
+
+model OPPORTUNITY {
+  id             String              @id @default(uuid())
+  direction      OpportunityDirection
+  source_type    EntityType
+  source_id      Int
+  target_type    EntityType
+  target_id      Int
+  score          Decimal?            @db.Decimal(5, 2)
+  score_breakdown Json?
+  status         OpportunityStatus   @default(NEW)
+  reason         String?
+  next_action    String?
+  owner_user_id  Int?
+  deal_type               DealType?
+  round                   Round?
+  proposed_amount_eur     Decimal? @db.Decimal(18, 2)
+  valuation_pre_money_eur Decimal? @db.Decimal(18, 2)
+  ownership_target_pct    Decimal? @db.Decimal(5, 2)
+  fund_id                 String?
+  budget_fit              BudgetFit?
+  budget_fit_score        Decimal? @db.Decimal(5, 2)
+  pilot_estimated_cost_eur Decimal? @db.Decimal(18, 2)
+  pilot_budget_fit        PilotBudgetFit?
+  term_deadline           DateTime?
+  created_at     DateTime            @default(now())
+  updated_at     DateTime            @updatedAt
+
+  events OPPORTUNITY_EVENT[]
+
+  @@index([status])
+  @@index([direction])
+  @@unique([direction, source_type, source_id, target_type, target_id])
+}
+
+model OPPORTUNITY_EVENT {
+  id             String                 @id @default(uuid())
+  opportunity_id String
+  occurred_at    DateTime               @default(now())
+  type           OpportunityEventType
+  payload        Json?
+
+  opportunity OPPORTUNITY @relation(fields: [opportunity_id], references: [id], onDelete: Cascade)
+
+  @@index([occurred_at])
+  @@index([type])
+}
+
 model S_STARTUP {
   id           Int      @id @default(autoincrement())
   name         String
@@ -27,6 +143,16 @@ model S_STARTUP {
   bookmarksCount Int      @default(0)
   sharesCount    Int      @default(0)
   followersCount Int      @default(0)
+  fundraising_status String?
+  round              String?
+  ask_currency       String? @db.Char(3)
+  ask_min            Decimal? @db.Decimal(18, 2)
+  ask_max            Decimal? @db.Decimal(18, 2)
+  ask_min_eur        Decimal? @db.Decimal(18, 2)
+  ask_max_eur        Decimal? @db.Decimal(18, 2)
+  use_of_funds       String?
+  revenue_arr_eur    Decimal? @db.Decimal(18, 2)
+  runway_months      Int?
 }
 
 model S_STARTUP_DETAIL {
@@ -59,6 +185,7 @@ model S_USER {
   permissions   S_PERMISSION[]
   messages      S_MESSAGE[] @relation("SenderMessages")
   conversation_users S_CONVERSATION_USER[]
+  message_reactions S_MESSAGE_REACTION[]
   sessions      S_SESSION[]
   interactionEvents S_INTERACTION_EVENT[]
   follows       S_FOLLOW[]
@@ -68,6 +195,8 @@ model S_USER {
   passwordResets S_PASSWORD_RESET[]
   followersCount Int      @default(0)
   roles         S_USER_ROLE[]
+  mediaFiles    S_MEDIA_STORAGE[]
+  storageQuota  S_USER_STORAGE_QUOTA?
 }
 
 model S_FOUNDER {
@@ -90,6 +219,7 @@ model S_INVESTOR {
   investment_focus String?
   user_id          Int?
   user             S_USER?  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  funds            INVESTMENT_FUND[]
 
   @@unique([user_id])
   created_at       DateTime @default(now())
@@ -114,6 +244,10 @@ model S_PARTNER {
   created_at       DateTime @default(now())
   updated_at       DateTime @updatedAt
   @@index([partnership_type])
+  budget_cycle         String?
+  pilot_budget_min_eur Decimal? @db.Decimal(18, 2)
+  pilot_budget_max_eur Decimal? @db.Decimal(18, 2)
+  program_names        String[]
 }
 
 model S_NEWS {
@@ -194,6 +328,22 @@ model S_MESSAGE {
   sent_at         DateTime @default(now())
   conversation    S_CONVERSATION @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   sender          S_USER         @relation("SenderMessages", fields: [sender_id], references: [id], onDelete: Cascade)
+  reactions       S_MESSAGE_REACTION[]
+}
+
+model S_MESSAGE_REACTION {
+  id         Int      @id @default(autoincrement())
+  message_id Int
+  user_id    Int
+  emoji      String
+  created_at DateTime @default(now())
+
+  message    S_MESSAGE @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  user       S_USER    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([message_id, user_id, emoji])
+  @@index([message_id])
+  @@index([user_id])
 }
 
 enum ContentType {
@@ -327,7 +477,6 @@ model S_DAILY_CONTENT_METRICS {
   shares Int @default(0)
   followers Int @default(0)
 
-
   @@unique([day, contentType, contentId])
   @@index([day])
   @@index([contentType])
@@ -345,10 +494,8 @@ model S_PAGE_VIEW {
   utmMedium String?
   utmCampaign String?
 
-
   session S_SESSION? @relation(fields: [sessionId], references: [id])
   user S_USER? @relation(fields: [userId], references: [id])
-
 
   @@index([occurredAt])
   @@index([sessionId])
@@ -366,7 +513,6 @@ model S_DAILY_ACQUISITION_METRICS {
   sessions Int @default(0)
   users Int @default(0)
   signups Int @default(0)
-
 
   @@index([day])
   @@index([utmSource, utmCampaign, day])
@@ -394,4 +540,72 @@ model S_USER_ROLE {
 
   @@id([user_id, role])
   @@index([role])
+}
+
+model FEATURE_VECTOR {
+  id           String     @id @default(uuid())
+  entity_type  EntityType
+  entity_id    Int
+  tags         String[]
+  tfidf        Json
+  updated_at   DateTime   @updatedAt
+  created_at   DateTime   @default(now())
+
+  @@unique([entity_type, entity_id])
+  @@index([entity_type])
+}
+
+model INVESTMENT_FUND {
+  id                      String   @id @default(uuid())
+  investor_id             Int
+  name                    String
+  vintage                 Int?
+  aum_eur                 Decimal? @db.Decimal(18, 2)
+  dry_powder_eur          Decimal? @db.Decimal(18, 2)
+  investment_period_start DateTime?
+  investment_period_end   DateTime?
+  ticket_min_eur          Decimal? @db.Decimal(18, 2)
+  ticket_max_eur          Decimal? @db.Decimal(18, 2)
+  follow_on_ratio         Decimal? @db.Decimal(4, 2)
+  sector_focus            String[]
+  geo_focus               String[]
+  stage_focus             String[]
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  investor S_INVESTOR @relation(fields: [investor_id], references: [id], onDelete: Cascade)
+
+  @@index([investor_id])
+}
+
+model S_MEDIA_STORAGE {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  filename      String
+  original_name String
+  file_type     String
+  mime_type     String
+  file_size     Int
+  file_path     String
+  description   String?
+  tags          String?
+  is_public     Boolean  @default(false)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          S_USER   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([file_type])
+  @@index([is_public])
+  @@index([created_at])
+}
+
+model S_USER_STORAGE_QUOTA {
+  user_id       Int      @id
+  used_bytes    BigInt   @default(0)
+  max_bytes     BigInt   @default(2147483648) // 2GB default
+  last_updated  DateTime @default(now()) @updatedAt
+  user          S_USER   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([used_bytes])
 }

@@ -2,15 +2,33 @@
 
 import React, { useEffect, useState } from 'react'
 import AdminNavigationTabs from '@/components/admin/AdminNavigationTabs'
+import { useAuth } from '@/context'
+import { useRouter } from 'next/navigation'
 
 export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true)
+  const {isAdmin} = useAuth()
+  const router = useRouter()
 
   useEffect(() => {
-    // Simulate loading data
     const timer = setTimeout(() => setIsLoading(false), 1000)
     return () => clearTimeout(timer)
   }, [])
+
+  useEffect(() => {
+    if (!isAdmin && !isLoading) {
+      router.push('/login')
+    }
+  }, [isAdmin, isLoading, router])
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center h-screen w-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <p className="ml-4 text-muted-foreground">Checking permissions...</p>
+      </div>
+    )
+  }
 
   if (isLoading) {
     return (

@@ -42,7 +42,7 @@ export function FeaturedStartups() {
         const res = await fetch('/api/startups?limit=6', { cache: 'no-store' });
         const json = await res.json();
         if (!json.success || !Array.isArray(json.data)) {
-          throw new Error(json.error || 'Réponse invalide');
+          throw new Error(json.error || 'Invalid response');
         }
         const list: CardStartup[] = json.data
           .sort((a: ApiStartup, b: ApiStartup) => {
@@ -99,7 +99,7 @@ export function FeaturedStartups() {
           </div>
         )}
         {!loading && error && (
-          <div className="text-sm text-destructive">Impossible de charger les startups: {error}</div>
+          <div className="text-sm text-destructive">Unable to load startups: {error}</div>
         )}
         {!loading && !error && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">

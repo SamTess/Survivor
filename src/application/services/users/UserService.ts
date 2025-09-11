@@ -50,6 +50,14 @@ export class UserService {
     return this.userRepository.getByRole(role.trim());
   }
 
+  async getByDateRange(startDate: Date, endDate: Date): Promise<User[]> {
+    if (startDate > endDate) {
+      throw new Error("Start date cannot be after end date");
+    }
+
+    return this.userRepository.getByDateRange(startDate, endDate);
+  }
+
   async getFounders(): Promise<User[]> {
     return this.userRepository.getFounders();
   }
@@ -64,6 +72,26 @@ export class UserService {
     }
 
     return this.userRepository.search(query.trim());
+  }
+
+  async searchUsersWithFilters(query: string, filters: { role?: string; limit?: number }): Promise<User[]> {
+    if (!query || query.trim().length < 2) {
+      throw new Error("Search query must be at least 2 characters long");
+    }
+
+    let users = await this.userRepository.search(query.trim());
+
+    if (filters.role) {
+      users = users.filter(user =>
+        user.role.toLowerCase() === filters.role!.toLowerCase()
+      );
+    }
+
+    if (filters.limit && filters.limit > 0) {
+      users = users.slice(0, filters.limit);
+    }
+
+    return users;
   }
 
   async updateUser(id: number, updates: Partial<Omit<User, 'id' | 'created_at' | 'updated_at'>>): Promise<User | null> {

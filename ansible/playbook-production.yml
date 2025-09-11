@@ -1,0 +1,214 @@
+- name: Deploy Production Environment
+  hosts: survivor_prod
+  vars_files:
+    - config.yml
+  tags:
+    - deploy
+    - production
+  vars:
+    deploy_env: "production"
+    git_branch: "{{ repository.git_branch_prod }}"
+    compose_file: "{{ docker.prod_compose_file }}"
+    app_port: "{{ docker.prod_port }}"
+    env_file: "{{ env_files.prod_env_file }}"
+  tasks:
+    - name: Create application directory
+      file:
+        path: "{{ repository.app_directory }}"
+        state: directory
+        mode: '0755'
+
+    - name: Clone/Update repository (production branch)
+      git:
+        repo: "{{ repository.git_url }}"
+        dest: "{{ repository.app_directory }}"
+        version: "{{ git_branch }}"
+        depth: 1
+        force: yes
+        update: yes
+      register: git_clone_prod
+
+    - name: Copy production environment file
+      template:
+        src: "{{ env_file }}.j2"
+        dest: "{{ repository.app_directory }}/Docker/.env"
+        mode: '0644'
+        backup: yes
+      when: env_file is defined
+      register: env_file_prod
+      ignore_errors: yes
+
+    - name: Check if docker-compose file exists
+      stat:
+        path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
+      register: compose_file_check_prod
+
+    - name: Stop existing Docker containers (production)
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - "docker-compose.prod.yml"
+        state: absent
+        remove_orphans: yes
+      when:
+        - compose_file_check_prod.stat.exists
+        - git_clone_prod.changed or env_file_prod.changed
+      ignore_errors: yes
+
+    - name: Build and start Docker containers (production)
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - "docker-compose.prod.yml"
+        build: "{{ 'always' if (git_clone_prod.changed or env_file_prod.changed) else 'policy' }}"
+        state: present
+        recreate: auto
+      when: compose_file_check_prod.stat.exists
+      register: prod_deploy_result
+
+    - name: Wait for database to be ready (production)
+      pause:
+        seconds: 15
+      when: prod_deploy_result.changed
+
+    - name: Check if migration files exist (production)
+      command: docker compose -f docker-compose.prod.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: prod_deploy_result.changed
+      register: prod_migration_files_check
+      ignore_errors: yes
+
+    - name: Create database schema from Prisma schema (production - first time)
+      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma db push --accept-data-loss
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when:
+        - prod_deploy_result.changed
+        - prod_migration_files_check.stdout is defined
+        - prod_migration_files_check.stdout | int <= 2
+      register: prod_db_push_result
+      ignore_errors: yes
+
+    - name: Run Prisma database migration (production - if migrations exist)
+      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when:
+        - prod_deploy_result.changed
+        - prod_migration_files_check.stdout is defined
+        - prod_migration_files_check.stdout | int > 2
+      register: prod_migration_result
+      ignore_errors: yes
+
+    - name: Generate Prisma client (production)
+      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma generate
+      args:
+        chdir: "{{ repository.app_directory }}/Docker"
+      when: prod_deploy_result.changed
+      register: prod_generate_result
+      ignore_errors: yes
+
+    - name: Display migration status (production)
+      debug:
+        msg: |
+          Production migration status:
+          {% if prod_db_push_result is defined and prod_db_push_result.rc is defined %}
+          DB Push (first time): {{ 'SUCCESS' if prod_db_push_result.rc == 0 else 'FAILED' }}
+          {% if prod_db_push_result.rc != 0 %}
+          DB Push error: {{ prod_db_push_result.stderr | default('Unknown error') }}
+          {% endif %}
+          {% elif prod_db_push_result is defined %}
+          DB Push (first time): SKIPPED or FAILED (no rc)
+          {% else %}
+          DB Push (first time): NOT RUN
+          {% endif %}
+          {% if prod_migration_result is defined and prod_migration_result.rc is defined %}
+          Migration: {{ 'SUCCESS' if prod_migration_result.rc == 0 else 'FAILED' }}
+          {% if prod_migration_result.rc != 0 %}
+          Migration error: {{ prod_migration_result.stderr | default('Unknown error') }}
+          {% endif %}
+          {% elif prod_migration_result is defined %}
+          Migration: SKIPPED or FAILED (no rc)
+          {% else %}
+          Migration: NOT RUN
+          {% endif %}
+          {% if prod_generate_result is defined and prod_generate_result.rc is defined %}
+          Generate: {{ 'SUCCESS' if prod_generate_result.rc == 0 else 'FAILED' }}
+          {% if prod_generate_result.rc != 0 %}
+          Generate error: {{ prod_generate_result.stderr | default('Unknown error') }}
+          {% endif %}
+          {% elif prod_generate_result is defined %}
+          Generate: SKIPPED or FAILED (no rc)
+          {% else %}
+          Generate: NOT RUN
+          {% endif %}
+      when: prod_deploy_result.changed
+
+    - name: Wait for production application to be ready
+      uri:
+        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/health"
+        method: GET
+        status_code: 200
+        timeout: 10
+      register: prod_health_check
+      until: prod_health_check.status == 200
+      retries: 30
+      delay: 10
+      when: prod_deploy_result.changed
+      ignore_errors: yes
+
+    - name: Check if production containers are running (fallback health check)
+      command: docker ps --filter "name={{ application.app_name }}" --format "table {% raw %}{{.Names}}\t{{.Status}}{% endraw %}"
+      register: prod_container_status
+      when: prod_health_check is failed or prod_health_check is skipped
+      changed_when: false
+
+    - name: Display production deployment status
+      debug:
+        msg: |
+          Production deployment completed!
+          URL: http://{{ ansible_default_ipv4.address }}:{{ app_port }}
+          Branch: {{ git_branch }}
+          Health check: {{ 'PASSED' if (prod_health_check.status is defined and prod_health_check.status == 200) else 'FAILED/SKIPPED' }}
+          {% if prod_container_status is defined and prod_container_status.stdout is defined %}
+          Container status: {{ prod_container_status.stdout }}
+          {% endif %}
+
+    - name: Check if production containers are running before API call
+      command: docker ps --format "{% raw %}{{.Names}}\t{{.Status}}{% endraw %}"
+      register: prod_running_check
+      when: prod_deploy_result is defined
+      changed_when: false
+
+    - name: Force external data sync via API (production)
+      uri:
+        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/api/sync/external"
+        method: POST
+        body_format: json
+        body: "{}"
+        headers:
+          Content-Type: "application/json"
+        status_code: [200, 201, 202]
+        timeout: 30
+      register: prod_sync_api_result
+      when:
+        - prod_deploy_result is defined
+        - prod_running_check.stdout is defined
+        - prod_running_check.stdout != ""
+        - "'Up' in prod_running_check.stdout or 'healthy' in prod_running_check.stdout"
+      ignore_errors: yes
+
+    - name: Display sync API result (production)
+      debug:
+        msg: |
+          Production external sync API call result:
+          {% if prod_sync_api_result is defined and prod_sync_api_result.status is defined %}
+          Status: {{ prod_sync_api_result.status }}
+          Response: {{ prod_sync_api_result.json | default('No JSON response') }}
+          {% elif prod_sync_api_result is defined %}
+          Result: FAILED - {{ prod_sync_api_result.msg | default('Unknown error') }}
+          {% else %}
+          Result: SKIPPED (containers not running or deployment unchanged)
+          {% endif %}
+      when: prod_deploy_result is defined

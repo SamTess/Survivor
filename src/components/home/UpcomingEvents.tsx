@@ -20,7 +20,7 @@ export function UpcomingEvents() {
             setEvents(json.data.slice(0,3));
         }
   } catch {
-        if (!cancelled) setError('Impossible de charger les événements');
+        if (!cancelled) setError('Unable to load events');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -36,7 +36,7 @@ export function UpcomingEvents() {
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Upcoming Events</h2>
         </div>
         {loading ? (
-          <div className="text-sm text-muted-foreground">Chargement...</div>
+          <div className="text-sm text-muted-foreground">Loading...</div>
         ) : error ? (
           <div className="text-sm text-red-500">{error}</div>
         ) : (

@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Rocket, Users, TrendingUp } from "lucide-react"
+import Link from "next/link"
 
 export function HeroSection() {
   return (
@@ -17,13 +18,17 @@ export function HeroSection() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button size="lg" className="text-lg px-8">
-              Explore Startups
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button variant="outline" size="lg" className="text-lg px-8 bg-transparent">
-              Apply to Join
-            </Button>
+            <Link href={"/projects"}>
+              <Button size="lg" className="text-lg px-8">
+                Explore Startups
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
+            <Link href={"/signup?"}>
+              <Button variant="outline" size="lg" className="text-lg px-8 bg-transparent">
+                Apply to Join
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}

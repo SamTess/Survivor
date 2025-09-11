@@ -6,18 +6,19 @@ import { Prisma } from "@prisma/client";
 export class InvestorRepositoryPrisma implements InvestorRepository {
   private mapPrismaToInvestor(prismaInvestor: Prisma.S_INVESTORGetPayload<{ include: { user: true } }>): Investor {
     const u = prismaInvestor.user;
+    const inv = prismaInvestor;
     return {
-      id: prismaInvestor.id,
-      email: u?.email || "",
-      name: u?.name || "",
-      description: u?.description || undefined,
-      phone: u?.phone || undefined,
-      address: u?.address || undefined,
-      legal_status: u?.legal_status || undefined,
-      investor_type: prismaInvestor.investor_type || undefined,
-      investment_focus: prismaInvestor.investment_focus || undefined,
-      created_at: u?.created_at || new Date(0),
-      updated_at: u?.created_at || new Date(0),
+      id: inv.id,
+      email: u?.email || inv.email || "",
+      name: u?.name || inv.name || "",
+      description: (u?.description ?? undefined) || (inv.description ?? undefined),
+      phone: u?.phone || inv.phone || undefined,
+      address: u?.address || inv.address || undefined,
+      legal_status: u?.legal_status || inv.legal_status || undefined,
+      investor_type: inv.investor_type || undefined,
+      investment_focus: inv.investment_focus || undefined,
+      created_at: inv.created_at,
+      updated_at: inv.updated_at,
     };
   }
 
@@ -90,6 +91,18 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
           email,
         },
       },
+      include: {
+        user: true,
+      },
+    });
+
+    if (!investor) return null;
+    return this.mapPrismaToInvestor(investor);
+  }
+
+  async getByUserId(userId: number): Promise<Investor | null> {
+    const investor = await prisma.s_INVESTOR.findFirst({
+      where: { user_id: userId },
       include: {
         user: true,
       },
@@ -205,7 +218,7 @@ export class InvestorRepositoryPrisma implements InvestorRepository {
 
   async getPaginated(page: number, limit: number): Promise<{ investors: Investor[], total: number }> {
     const skip = (page - 1) * limit;
-    
+
     const [investors, total] = await Promise.all([
       prisma.s_INVESTOR.findMany({
         skip,
