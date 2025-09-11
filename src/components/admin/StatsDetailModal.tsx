@@ -33,24 +33,24 @@ const getStatusBadge = (status: string, type: string) => {
   if (type === 'user') {
     switch (status) {
       case 'active':
-        return `${baseClasses} bg-green-100 dark:bg-green-800/60 text-green-800 dark:text-green-200`
+        return `${baseClasses} admin-status-active`
       case 'inactive':
-        return `${baseClasses} bg-gray-100 dark:bg-gray-800/60 text-gray-800 dark:text-gray-200`
+        return `${baseClasses} admin-status-inactive`
       case 'pending':
-        return `${baseClasses} bg-yellow-100 dark:bg-yellow-800/60 text-yellow-800 dark:text-yellow-200`
+        return `${baseClasses} admin-status-pending`
     }
   }
 
   if (type === 'project') {
     switch (status) {
       case 'active':
-        return `${baseClasses} bg-blue-100 dark:bg-blue-800/60 text-blue-800 dark:text-blue-200`
+        return `${baseClasses} admin-status-active`
       case 'pending':
-        return `${baseClasses} bg-yellow-100 dark:bg-yellow-800/60 text-yellow-800 dark:text-yellow-200`
+        return `${baseClasses} admin-status-pending`
       case 'approved':
-        return `${baseClasses} bg-green-100 dark:bg-green-800/60 text-green-800 dark:text-green-200`
+        return `${baseClasses} admin-status-approved`
       case 'rejected':
-        return `${baseClasses} bg-red-100 dark:bg-red-800/60 text-red-800 dark:text-red-200`
+        return `${baseClasses} admin-status-rejected`
     }
   }
 
@@ -60,13 +60,13 @@ const getStatusBadge = (status: string, type: string) => {
 const getRoleIcon = (role: string) => {
   switch (role) {
     case 'Entrepreneur':
-      return <FaProjectDiagram className="text-blue-500" size={14} />
+      return <FaProjectDiagram className="admin-icon-primary" size={14} />
     case 'Investor':
-      return <FaCrown className="text-yellow-500" size={14} />
+      return <FaCrown className="admin-icon-secondary" size={14} />
     case 'Mentor':
-      return <FaUsers className="text-green-500" size={14} />
+      return <FaUsers className="admin-icon-accent" size={14} />
     default:
-      return <FaUsers className="text-gray-500" size={14} />
+      return <FaUsers className="admin-icon-muted" size={14} />
   }
 }
 
@@ -76,7 +76,7 @@ function UsersContent({ users }: { users: UserDetail[] }) {
       <div className="space-y-4">
         <div className="bg-muted/30 p-4 rounded-lg">
           <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-            <FaArrowUp className="text-green-500" />
+            <FaArrowUp className="admin-icon-accent" />
             Recent Registrations
           </h4>
           <p className="text-sm text-muted-foreground">No recent user registrations found</p>
@@ -89,7 +89,7 @@ function UsersContent({ users }: { users: UserDetail[] }) {
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
         <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-          <FaArrowUp className="text-green-500" />
+          <FaArrowUp className="admin-icon-accent" />
           Recent Registrations
         </h4>
         <p className="text-sm text-muted-foreground">Latest users who joined the platform</p>
@@ -133,7 +133,7 @@ function ProjectsContent({ projects }: { projects: ProjectDetail[] }) {
       <div className="space-y-4">
         <div className="bg-muted/30 p-4 rounded-lg">
           <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-            <FaProjectDiagram className="text-emerald-500" />
+            <FaProjectDiagram className="admin-icon-accent" />
             Active Projects
           </h4>
           <p className="text-sm text-muted-foreground">No active projects found</p>
@@ -146,7 +146,7 @@ function ProjectsContent({ projects }: { projects: ProjectDetail[] }) {
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
         <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-          <FaProjectDiagram className="text-emerald-500" />
+          <FaProjectDiagram className="admin-icon-accent" />
           Active Projects
         </h4>
         <p className="text-sm text-muted-foreground">Latest startup projects on the platform</p>
@@ -174,7 +174,7 @@ function ProjectsContent({ projects }: { projects: ProjectDetail[] }) {
               <div className="flex items-center gap-4">
                 <span>Created: {getTimeAgo(project.createdDate)}</span>
                 {project.funding > 0 && (
-                  <span className="text-green-600 dark:text-green-400 font-medium">
+                  <span className="admin-text-accent font-medium">
                     Funding: ${project.funding.toLocaleString()}
                   </span>
                 )}
@@ -193,7 +193,7 @@ function NewsContent({ news }: { news: NewsDetail[] }) {
       <div className="space-y-4">
         <div className="bg-muted/30 p-4 rounded-lg">
           <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-            <FaNewspaper className="text-violet-500" />
+            <FaNewspaper className="admin-icon-secondary" />
             Recent Articles
           </h4>
           <p className="text-sm text-muted-foreground">No recent articles found</p>
@@ -206,7 +206,7 @@ function NewsContent({ news }: { news: NewsDetail[] }) {
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
         <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-          <FaNewspaper className="text-violet-500" />
+          <FaNewspaper className="admin-icon-secondary" />
           Recent Articles
         </h4>
         <p className="text-sm text-muted-foreground">Latest news and content performance</p>
@@ -249,7 +249,7 @@ function EventsContent({ events }: { events: EventDetail[] }) {
       <div className="space-y-4">
         <div className="bg-muted/30 p-4 rounded-lg">
           <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-            <FaCalendarAlt className="text-orange-500" />
+            <FaCalendarAlt className="admin-icon-primary" />
             Upcoming Events
           </h4>
           <p className="text-sm text-muted-foreground">No upcoming events found</p>
@@ -262,7 +262,7 @@ function EventsContent({ events }: { events: EventDetail[] }) {
     <div className="space-y-4">
       <div className="bg-muted/30 p-4 rounded-lg">
         <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
-          <FaCalendarAlt className="text-orange-500" />
+          <FaCalendarAlt className="admin-icon-primary" />
           Upcoming Events
         </h4>
         <p className="text-sm text-muted-foreground">Events scheduled and participant tracking</p>
@@ -310,25 +310,25 @@ export default function StatsDetailModal({ isOpen, onClose, type }: StatsDetailM
       case 'users':
         return {
           title: 'User Statistics',
-          icon: <FaUsers className="text-blue-500" />,
+          icon: <FaUsers className="admin-icon-primary" />,
           content: data ? <UsersContent users={data.recentUsers} /> : null
         }
       case 'projects':
         return {
           title: 'Project Statistics',
-          icon: <FaProjectDiagram className="text-emerald-500" />,
+          icon: <FaProjectDiagram className="admin-icon-accent" />,
           content: data ? <ProjectsContent projects={data.recentProjects} /> : null
         }
       case 'news':
         return {
           title: 'Content Statistics',
-          icon: <FaNewspaper className="text-violet-500" />,
+          icon: <FaNewspaper className="admin-icon-secondary" />,
           content: data ? <NewsContent news={data.recentNews} /> : null
         }
       case 'events':
         return {
           title: 'Events Statistics',
-          icon: <FaCalendarAlt className="text-orange-500" />,
+          icon: <FaCalendarAlt className="admin-icon-primary" />,
           content: data ? <EventsContent events={data.upcomingEvents} /> : null
         }
       default:

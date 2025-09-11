@@ -129,7 +129,7 @@ export default function NewsModal({ isOpen, onClose, newsItem }: NewsModalProps)
                   </div>
                   <button
                     onClick={onClose}
-                    className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                    className="px-6 py-2 bg-primary text-white rounded-md btn-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                     aria-label="Close news modal"
                   >
                     Close

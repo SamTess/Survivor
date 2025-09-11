@@ -92,14 +92,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <div className="h-screen bg-background pt-14 overflow-y-auto">
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50 to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-purple-50">
         {/* Header with cover image */}
         <div className="relative h-96 overflow-hidden">
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url(${coverImage})` }}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-indigo-900 via-purple-900 to-transparent opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-900 via-purple-900 to-transparent opacity-80" />
           <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-30" />
 
           {/* Header content */}
@@ -108,12 +108,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
                 {/* Title and main information */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3 text-indigo-200">
-                    <div className="flex items-center gap-2 bg-indigo-600 bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full border border-indigo-300 border-opacity-30">
+                  <div className="flex items-center gap-3" style={{ color: 'var(--primary)' }}>
+                    <div className="flex items-center gap-2 backdrop-blur-sm px-3 py-1 rounded-full border border-opacity-30" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 20%, transparent)', borderColor: 'color-mix(in srgb, var(--primary) 30%, transparent)' }}>
                       <span className="text-lg">🚀</span>
                       <span className="text-sm font-medium">{project.sector}</span>
                     </div>
-                    <div className="flex items-center gap-2 bg-purple-600 bg-opacity-20 backdrop-blur-sm px-3 py-1 rounded-full border border-purple-300 border-opacity-30">
+                    <div className="flex items-center gap-2 backdrop-blur-sm px-3 py-1 rounded-full border border-opacity-30" style={{ backgroundColor: 'color-mix(in srgb, var(--accent) 20%, transparent)', borderColor: 'color-mix(in srgb, var(--accent) 30%, transparent)' }}>
                       <span className="text-lg">📈</span>
                       <span className="text-sm font-medium">{project.maturity}</span>
                     </div>
@@ -121,7 +121,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                   <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight">
                     {project.name}
                   </h1>
-                  <p className="text-xl text-indigo-100 max-w-2xl leading-relaxed">
+                  <p className="text-xl max-w-2xl leading-relaxed" style={{ color: 'color-mix(in srgb, var(--primary) 80%, white)' }}>
                     {project.description}
                   </p>
                 </div>
@@ -204,7 +204,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {detail?.description && (
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--primary), var(--accent))' }}>
                       <span className="text-2xl">📝</span>
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Detailed Description</h2>
@@ -217,7 +217,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {detail?.needs && (
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 70%, #000000))' }}>
                       <span className="text-2xl">🎯</span>
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Our Needs</h2>
@@ -242,12 +242,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     {(project.founders || [])
                       .filter((founder: ProjectFounder) => founder.user)
                       .map((founder: ProjectFounder) => (
-                        <div key={founder.id} className="bg-gradient-to-br from-gray-50 to-indigo-50 border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-300">
+                        <div key={founder.id} className="bg-gradient-to-br from-gray-50 to-purple-50 border border-gray-200 rounded-xl p-6 hover:shadow-md transition-all duration-300">
                           <div className="flex items-center gap-4">
                             <UserAvatar uid={founder.user!.id} name={founder.user!.name} size={56} />
                             <div>
                               <h3 className="font-bold text-gray-900 text-lg">{founder.user!.name}</h3>
-                              <p className="text-indigo-600 font-medium">{founder.user!.email}</p>
+                              <p className="font-medium" style={{ color: 'var(--primary)' }}>{founder.user!.email}</p>
                               {founder.user!.phone && (
                                 <p className="text-gray-600 text-sm mt-1">📞 {founder.user!.phone}</p>
                               )}
@@ -273,7 +273,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {/* Key information */}
               <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--primary), var(--secondary))' }}>
                     <span className="text-2xl">ℹ️</span>
                   </div>
                   <h2 className="text-2xl font-bold text-gray-900">Information</h2>
@@ -281,7 +281,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: 'color-mix(in srgb, var(--primary) 20%, white)' }}>
                       <span className="text-lg">🏢</span>
                     </div>
                     <div>
@@ -364,7 +364,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                       startupId={project.id}
                       startupName={project.name}
                       founderUserIds={founderUserIds}
-                      className="inline-flex w-full items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex w-full items-center justify-center gap-2 px-4 py-2 rounded-md text-white disabled:opacity-50 disabled:cursor-not-allowed btn-hover"
                     />
                   </div>
                 </div>
@@ -375,7 +375,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               {(detail?.website_url || detail?.social_media_url) && (
                 <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 hover:shadow-xl transition-shadow duration-300">
                   <div className="flex items-center gap-3 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--secondary), var(--primary))' }}>
                       <span className="text-2xl">🔗</span>
                     </div>
         <h2 className="text-2xl font-bold text-gray-900">Links</h2>
@@ -387,14 +387,14 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         href={detail.website_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-4 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-cyan-100 transition-all duration-300 group"
+                        className="flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 group link-primary"
                       >
                         <span className="text-xl">🌐</span>
                         <div>
-          <p className="font-semibold text-blue-900 group-hover:text-blue-800">Website</p>
-          <p className="text-blue-600 text-sm group-hover:text-blue-700">Visit site</p>
+          <p className="font-semibold group-hover:text-blue-800" style={{ color: 'var(--primary)' }}>Website</p>
+          <p className="text-sm group-hover:text-blue-700" style={{ color: 'color-mix(in srgb, var(--primary) 70%, transparent)' }}>Visit site</p>
                         </div>
-                        <span className="ml-auto text-blue-500 group-hover:translate-x-1 transition-transform">→</span>
+                        <span className="ml-auto group-hover:translate-x-1 transition-transform" style={{ color: 'var(--primary)' }}>→</span>
                       </a>
                     )}
 

@@ -189,11 +189,31 @@ export default function AdminUsersSection() {
 
   const handleCreateUser = () => {
     setEditingUser(null)
+    setUserFormData({
+      name: '',
+      email: '',
+      address: '',
+      phone: '',
+      legal_status: '',
+      description: '',
+      role: 'user',
+      password: ''
+    })
     setIsUserModalOpen(true)
   }
 
   const handleEditUser = (user: User) => {
     setEditingUser(user)
+    setUserFormData({
+      name: user.name,
+      email: user.email,
+      address: user.address,
+      phone: user.phone || '',
+      legal_status: user.legal_status || '',
+      description: user.description || '',
+      role: user.role,
+      password: '' // Don't prefill password for security
+    })
     setIsUserModalOpen(true)
   }
 
@@ -338,13 +358,13 @@ export default function AdminUsersSection() {
 
   const getRoleColor = (role: string) => {
     const colors = {
-      'admin': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      'moderator': 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
-      'user': 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      'investor': 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      'founder': 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      'partner': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-      'guest': 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
+      'admin': 'admin-role-admin',
+      'moderator': 'admin-role-moderator',
+      'user': 'admin-role-user',
+      'investor': 'admin-role-investor',
+      'founder': 'admin-role-founder',
+      'partner': 'admin-role-partner',
+      'guest': 'admin-role-guest'
     }
     return colors[role as keyof typeof colors] || colors['user']
   }
@@ -462,9 +482,9 @@ export default function AdminUsersSection() {
                       <td className="py-3 px-2">{user.followersCount}</td>
                       <td className="py-3 px-2">
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-8 w-8 p-0"
                             onClick={() => handleViewUser(user)}
                           >
@@ -481,7 +501,7 @@ export default function AdminUsersSection() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700"
+                            className="h-8 w-8 p-0 admin-action-button"
                             onClick={() => handleManagePermissions(user)}
                             title="Manage Permissions"
                           >
@@ -512,13 +532,14 @@ export default function AdminUsersSection() {
         onClose={() => setIsUserModalOpen(false)}
         onSubmit={handleSubmitUser}
         title={editingUser ? 'Edit User' : 'New User'}
+        submitLabel={editingUser ? 'Update User' : 'Create User'}
         loading={isSubmitting}
       >
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="user-name" className="block text-sm font-medium mb-1">
-                Name <span className="text-red-500">*</span>
+                Name <span className="admin-required">*</span>
               </label>
               <input
                 id="user-name"
@@ -538,7 +559,7 @@ export default function AdminUsersSection() {
 
             <div>
               <label htmlFor="user-email" className="block text-sm font-medium mb-1">
-                Email <span className="text-red-500">*</span>
+                Email <span className="admin-required">*</span>
               </label>
               <input
                 id="user-email"
@@ -558,7 +579,7 @@ export default function AdminUsersSection() {
 
             <div>
               <label htmlFor="user-password" className="block text-sm font-medium mb-1">
-                Password {editingUser ? '(leave empty to keep unchanged)' : <span className="text-red-500">*</span>}
+                Password {editingUser ? '(leave empty to keep unchanged)' : <span className="admin-required">*</span>}
               </label>
               <input
                 id="user-password"
@@ -578,7 +599,7 @@ export default function AdminUsersSection() {
 
             <div>
               <label htmlFor="user-role" className="block text-sm font-medium mb-1">
-                Role <span className="text-red-500">*</span>
+                Role <span className="admin-required">*</span>
               </label>
               <select
                 id="user-role"
@@ -638,7 +659,7 @@ export default function AdminUsersSection() {
 
           <div>
             <label htmlFor="user-address" className="block text-sm font-medium mb-1">
-              Address <span className="text-red-500">*</span>
+              Address <span className="admin-required">*</span>
             </label>
             <input
               id="user-address"
@@ -675,127 +696,246 @@ export default function AdminUsersSection() {
         </div>
       </FormModal>
 
-      {/* Modal de gestion des permissions */}
       {isPermissionModalOpen && selectedUserForPermissions && (
         <UniversalModal
           isOpen={isPermissionModalOpen}
           onClose={() => setIsPermissionModalOpen(false)}
-          title={`Permissions pour ${selectedUserForPermissions.name}`}
+          title={`Manage Permissions - ${selectedUserForPermissions.name}`}
           size="xl"
           actions={[
             {
-              label: "Fermer",
+              label: "Close",
               onClick: () => setIsPermissionModalOpen(false),
               variant: "outline"
             }
           ]}
         >
           <div className="space-y-6">
-            {/* Permission templates */}
-            <div>
-              <h4 className="text-sm font-medium mb-3">Modèles de permissions rapides</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {/* User Information Section */}
+            <div className="admin-permission-section p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <Users className="h-5 w-5 admin-icon-primary" />
+                User Information
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Name:</span>
+                    <span className="text-sm font-semibold">{selectedUserForPermissions.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Email:</span>
+                    <span className="text-sm break-all">{selectedUserForPermissions.email}</span>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Role:</span>
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(selectedUserForPermissions.role)}`}>
+                      {selectedUserForPermissions.role}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">Created:</span>
+                    <span className="text-sm">{formatDate(selectedUserForPermissions.created_at)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Existing Permissions Section */}
+            {selectedUserForPermissions.permissions && selectedUserForPermissions.permissions.length > 0 && (
+              <div className="admin-permission-existing p-4 rounded-lg">
+                <h4 className="text-md font-semibold mb-3 flex items-center gap-2">
+                  <Shield className="h-4 w-4 admin-icon-primary" />
+                  Current Permissions ({selectedUserForPermissions.permissions.length})
+                </h4>
+                <div className="space-y-2">
+                  {selectedUserForPermissions.permissions.map((permission) => (
+                    <div key={permission.id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-md border">
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{permission.name}</div>
+                        {permission.description && (
+                          <div className="text-xs text-muted-foreground">{permission.description}</div>
+                        )}
+                      </div>
+                      <div className="flex gap-2">
+                        {permission.can_create && (
+                          <span className="px-2 py-1 admin-status-active text-xs rounded-full font-medium">
+                            Create
+                          </span>
+                        )}
+                        {permission.can_read && (
+                          <span className="px-2 py-1 admin-status-pending text-xs rounded-full font-medium">
+                            Read
+                          </span>
+                        )}
+                        {permission.can_update && (
+                          <span className="px-2 py-1 admin-status-approved text-xs rounded-full font-medium">
+                            Update
+                          </span>
+                        )}
+                        {permission.can_delete && (
+                          <span className="px-2 py-1 admin-status-rejected text-xs rounded-full font-medium">
+                            Delete
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Permission Templates */}
+            <div className="admin-permission-templates p-4 rounded-lg">
+              <h4 className="text-md font-semibold mb-3 flex items-center gap-2">
+                <Plus className="h-4 w-4 admin-icon-accent" />
+                Quick Permission Templates
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {PERMISSION_TEMPLATES.map((template, index) => (
                   <Button
                     key={index}
                     variant="outline"
                     size="sm"
                     onClick={() => applyPermissionTemplate(template)}
-                    className="justify-start text-left h-auto p-3"
+                    className="justify-start text-left h-auto p-4 hover:bg-accent/10 border-accent/20 dark:border-accent/30"
                   >
-                    <div>
-                      <div className="font-medium">{template.name}</div>
-                      <div className="text-xs text-muted-foreground">{template.description}</div>
+                    <div className="w-full">
+                      <div className="font-semibold text-sm mb-1">{template.name}</div>
+                      <div className="text-xs text-muted-foreground mb-2">{template.description}</div>
+                      <div className="flex gap-1 flex-wrap">
+                        {template.can_create && <span className="px-2 py-0.5 admin-status-active text-xs rounded">C</span>}
+                        {template.can_read && <span className="px-2 py-0.5 admin-status-pending text-xs rounded">R</span>}
+                        {template.can_update && <span className="px-2 py-0.5 admin-status-approved text-xs rounded">U</span>}
+                        {template.can_delete && <span className="px-2 py-0.5 admin-status-rejected text-xs rounded">D</span>}
+                      </div>
                     </div>
                   </Button>
                 ))}
               </div>
             </div>
 
-            {/* Custom permission form */}
-            <form onSubmit={handleSubmitPermission} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Nom de la permission *</label>
-                <input
-                  type="text"
-                  required
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={permissionFormData.name}
-                  onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
-                />
-              </div>
+            {/* Custom Permission Form */}
+            <div className="admin-permission-form p-4 rounded-lg">
+              <h4 className="text-md font-semibold mb-4 flex items-center gap-2">
+                <Edit className="h-4 w-4 admin-icon-primary" />
+                Add Custom Permission
+              </h4>
+              <form onSubmit={handleSubmitPermission} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-semibold text-foreground">
+                      Permission Name <span className="admin-required">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g., User Management, Content Creation"
+                      className="w-full px-4 py-3 border-2 border-input bg-background rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm"
+                      value={permissionFormData.name}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, name: e.target.value })}
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  className="w-full px-3 py-2 border border-input bg-background rounded-md"
-                  value={permissionFormData.description}
-                  onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-3">Droits d&apos;accès</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={permissionFormData.can_create}
-                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
-                      className="rounded"
+                  <div className="space-y-2 md:col-span-2">
+                    <label className="block text-sm font-semibold text-foreground">
+                      Description <span className="text-muted-foreground">(optional)</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      placeholder="Describe what this permission allows the user to do..."
+                      className="w-full px-4 py-3 border-2 border-input bg-background rounded-lg focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-200 text-sm resize-none"
+                      value={permissionFormData.description}
+                      onChange={(e) => setPermissionFormData({ ...permissionFormData, description: e.target.value })}
                     />
-                    <span className="text-sm">Créer</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={permissionFormData.can_read}
-                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_read: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span className="text-sm">Lire</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={permissionFormData.can_update}
-                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span className="text-sm">Modifier</span>
-                  </label>
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={permissionFormData.can_delete}
-                      onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span className="text-sm">Supprimer</span>
-                  </label>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsPermissionModalOpen(false)}
-                  disabled={isSubmitting}
-                >
-                  Fermer
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="flex items-center gap-2">
-                  {isSubmitting ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <Shield size={16} />
-                  )}
-                  Ajouter la permission
-                </Button>
-              </div>
-            </form>
+                <div className="space-y-4">
+                  <label className="block text-sm font-semibold text-foreground">
+                    Access Rights
+                  </label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <label className="group flex items-center space-x-3 p-3 rounded-lg border-2 border-input hover:border-primary/50 transition-all duration-200 cursor-pointer bg-background">
+                      <input
+                        type="checkbox"
+                        checked={permissionFormData.can_create}
+                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_create: e.target.checked })}
+                        className="w-4 h-4 text-primary border-2 border-input rounded focus:ring-primary focus:ring-2"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium group-hover:text-primary transition-colors">Create</span>
+                        <span className="text-xs text-muted-foreground">Add new items</span>
+                      </div>
+                    </label>
+
+                    <label className="group flex items-center space-x-3 p-3 rounded-lg border-2 border-input hover:border-primary/50 transition-all duration-200 cursor-pointer bg-background">
+                      <input
+                        type="checkbox"
+                        checked={permissionFormData.can_read}
+                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_read: e.target.checked })}
+                        className="w-4 h-4 text-primary border-2 border-input rounded focus:ring-primary focus:ring-2"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium group-hover:text-primary transition-colors">Read</span>
+                        <span className="text-xs text-muted-foreground">View content</span>
+                      </div>
+                    </label>
+
+                    <label className="group flex items-center space-x-3 p-3 rounded-lg border-2 border-input hover:border-primary/50 transition-all duration-200 cursor-pointer bg-background">
+                      <input
+                        type="checkbox"
+                        checked={permissionFormData.can_update}
+                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_update: e.target.checked })}
+                        className="w-4 h-4 text-primary border-2 border-input rounded focus:ring-primary focus:ring-2"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium group-hover:text-primary transition-colors">Update</span>
+                        <span className="text-xs text-muted-foreground">Edit existing items</span>
+                      </div>
+                    </label>
+
+                    <label className="group flex items-center space-x-3 p-3 rounded-lg border-2 border-input hover:border-primary/50 transition-all duration-200 cursor-pointer bg-background">
+                      <input
+                        type="checkbox"
+                        checked={permissionFormData.can_delete}
+                        onChange={(e) => setPermissionFormData({ ...permissionFormData, can_delete: e.target.checked })}
+                        className="w-4 h-4 text-primary border-2 border-input rounded focus:ring-primary focus:ring-2"
+                      />
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium group-hover:text-primary transition-colors">Delete</span>
+                        <span className="text-xs text-muted-foreground">Remove items</span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsPermissionModalOpen(false)}
+                    className="px-6"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-6 flex items-center gap-2 bg-primary hover:bg-primary/90"
+                  >
+                    {isSubmitting ? (
+                      <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                      <Shield size={16} />
+                    )}
+                    Add Permission
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         </UniversalModal>
       )}
@@ -820,7 +960,7 @@ export default function AdminUsersSection() {
               </div>
               <div className="space-y-1">
                 <label className="block text-xs font-medium text-muted-foreground uppercase tracking-wide">Role</label>
-                <span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(viewingUser.role)}`}>
                   {viewingUser.role}
                 </span>
               </div>

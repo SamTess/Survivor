@@ -182,6 +182,7 @@ export default function AdminProjectsSection() {
         onClose={closeAllModals}
         onSubmit={handleSubmit}
         title={editingProject ? 'Edit Project' : 'New Project'}
+        submitLabel={editingProject ? 'Update Project' : 'Create Project'}
         loading={isSubmitting}
       >
         <ProjectForm

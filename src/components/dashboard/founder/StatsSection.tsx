@@ -382,19 +382,19 @@ export default function StatsSection({ scope = 'user' }: StatsSectionProps) {
           <h3 className="text-sm font-medium text-foreground mb-3">Platform Overview</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{formatNumber(stats.platform.totalStartups)}</p>
+              <p className="text-2xl font-bold">{formatNumber(stats.platform.totalStartups)}</p>
               <p className="text-xs text-muted-foreground">Startups</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-500">{formatNumber(stats.platform.totalEvents)}</p>
+              <p className="text-2xl font-bold">{formatNumber(stats.platform.totalEvents)}</p>
               <p className="text-xs text-muted-foreground">Events</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-500">{formatNumber(stats.platform.totalNews)}</p>
+              <p className="text-2xl font-bold">{formatNumber(stats.platform.totalNews)}</p>
               <p className="text-xs text-muted-foreground">News Articles</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-purple-500">{formatNumber(stats.platform.totalUsers)}</p>
+              <p className="text-2xl font-bold">{formatNumber(stats.platform.totalUsers)}</p>
               <p className="text-xs text-muted-foreground">Users</p>
             </div>
           </div>

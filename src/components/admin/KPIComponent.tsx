@@ -105,7 +105,7 @@ export default function KPISection() {
       title: "Total Users",
       value: stats.totalUsers.value,
       description: stats.totalUsers.description,
-      icon: <FaUsers className="text-blue-700 dark:text-blue-300" size={20} />,
+      icon: <FaUsers className="admin-icon-primary" size={20} />,
       colorClasses: "admin-stat-card admin-stat-card--blue cursor-pointer hover:scale-105 transition-transform",
       trend: stats.totalUsers.trend,
       type: 'users'
@@ -114,7 +114,7 @@ export default function KPISection() {
       title: "Active Projects",
       value: stats.activeProjects.value,
       description: stats.activeProjects.description,
-      icon: <FaProjectDiagram className="text-emerald-700 dark:text-emerald-300" size={20} />,
+      icon: <FaProjectDiagram className="admin-icon-secondary" size={20} />,
       colorClasses: "admin-stat-card admin-stat-card--emerald cursor-pointer hover:scale-105 transition-transform",
       trend: stats.activeProjects.trend,
       type: 'projects'
@@ -123,7 +123,7 @@ export default function KPISection() {
       title: "News Articles",
       value: stats.newsArticles.value,
       description: stats.newsArticles.description,
-      icon: <FaNewspaper className="text-violet-700 dark:text-violet-300" size={20} />,
+      icon: <FaNewspaper className="admin-icon-accent" size={20} />,
       colorClasses: "admin-stat-card admin-stat-card--violet cursor-pointer hover:scale-105 transition-transform",
       trend: stats.newsArticles.trend,
       type: 'news'
@@ -132,7 +132,7 @@ export default function KPISection() {
       title: "Upcoming Events",
       value: stats.upcomingEvents.value,
       description: stats.upcomingEvents.description,
-      icon: <FaCalendarAlt className="text-orange-700 dark:text-orange-300" size={20} />,
+      icon: <FaCalendarAlt className="admin-icon-orange" size={20} />,
       colorClasses: "admin-stat-card admin-stat-card--orange cursor-pointer hover:scale-105 transition-transform",
       trend: stats.upcomingEvents.trend,
       type: 'events'

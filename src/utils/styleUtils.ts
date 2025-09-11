@@ -6,21 +6,21 @@
 export const getNewsCategoryColor = (category: string): string => {
   switch (category.toLowerCase()) {
     case 'funding':
-      return 'bg-green-100 text-green-800';
+      return 'admin-category-funding';
     case 'partnership':
-      return 'bg-blue-100 text-blue-800';
+      return 'admin-category-partnership';
     case 'award':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'admin-category-award';
     case 'product launch':
-      return 'bg-purple-100 text-purple-800';
+      return 'admin-category-launch';
     case 'expansion':
-      return 'bg-orange-100 text-orange-800';
+      return 'admin-category-expansion';
     case 'recognition':
-      return 'bg-pink-100 text-pink-800';
+      return 'admin-category-recognition';
     case 'acquisition':
-      return 'bg-indigo-100 text-indigo-800';
+      return 'admin-category-acquisition';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'admin-category-default';
   }
 };
 
@@ -32,28 +32,28 @@ export const getNewsCategoryColor = (category: string): string => {
 export const getEventTypeColor = (type: string): string => {
   switch (type.toLowerCase()) {
     case 'pitch':
-      return 'bg-red-100 text-red-800';
+      return 'admin-event-pitch';
     case 'webinar':
-      return 'bg-blue-100 text-blue-800';
+      return 'admin-event-webinar';
     case 'workshop':
-      return 'bg-green-100 text-green-800';
+      return 'admin-event-workshop';
     case 'conference':
-      return 'bg-purple-100 text-purple-800';
+      return 'admin-event-conference';
     case 'networking':
-      return 'bg-orange-100 text-orange-800';
+      return 'admin-event-networking';
     case 'summit':
-      return 'bg-indigo-100 text-indigo-800';
+      return 'admin-event-summit';
     case 'panel':
-      return 'bg-pink-100 text-pink-800';
+      return 'admin-event-panel';
     case 'expo':
-      return 'bg-yellow-100 text-yellow-800';
+      return 'admin-event-expo';
     case 'competition':
-      return 'bg-emerald-100 text-emerald-800';
+      return 'admin-event-competition';
     case 'masterclass':
-      return 'bg-violet-100 text-violet-800';
+      return 'admin-event-masterclass';
     case 'educational':
-      return 'bg-cyan-100 text-cyan-800';
+      return 'admin-event-educational';
     default:
-      return 'bg-gray-100 text-gray-800';
+      return 'admin-event-default';
   }
 };

@@ -20,7 +20,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="project-name" className="block text-sm font-medium mb-1">
-            Name <span className="text-red-500">*</span>
+            Name <span className="admin-required">*</span>
           </label>
           <Input
             id="project-name"
@@ -39,7 +39,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
 
         <div>
           <label htmlFor="project-email" className="block text-sm font-medium mb-1">
-            Email <span className="text-red-500">*</span>
+            Email <span className="admin-required">*</span>
           </label>
           <Input
             id="project-email"
@@ -58,7 +58,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
 
         <div>
           <label htmlFor="project-legal-status" className="block text-sm font-medium mb-1">
-            Legal status <span className="text-red-500">*</span>
+            Legal status <span className="admin-required">*</span>
           </label>
           <Select
             value={formData.legal_status}
@@ -82,7 +82,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
 
         <div>
           <label htmlFor="project-sector" className="block text-sm font-medium mb-1">
-            Sector <span className="text-red-500">*</span>
+            Sector <span className="admin-required">*</span>
           </label>
           <Select
             value={formData.sector}
@@ -106,7 +106,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
 
         <div>
           <label htmlFor="project-maturity" className="block text-sm font-medium mb-1">
-            Maturity <span className="text-red-500">*</span>
+            Maturity <span className="admin-required">*</span>
           </label>
           <Select
             value={formData.maturity}
@@ -147,7 +147,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
 
       <div>
         <label htmlFor="project-address" className="block text-sm font-medium mb-1">
-          Address <span className="text-red-500">*</span>
+          Address <span className="admin-required">*</span>
         </label>
         <Input
           id="project-address"
@@ -166,7 +166,7 @@ export const ProjectForm: React.FC<ProjectFormProps> = ({ formData, onChange }) 
 
       <div>
         <label htmlFor="project-description" className="block text-sm font-medium mb-1">
-          Description <span className="text-red-500">*</span>
+          Description <span className="admin-required">*</span>
         </label>
         <textarea
           id="project-description"

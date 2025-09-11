@@ -37,7 +37,7 @@ export default function DashboardControls({
       label: 'Executive KPIs',
       icon: FaChartLine,
       description: 'Key performance indicators',
-      color: 'blue'
+      color: 'violet'
     },
     {
       key: 'showRecentActivity' as keyof DashboardSettings,
