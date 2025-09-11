@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import EventCard from '@/components/cards/EventCard';
 import MonthlyCalendar from '@/components/calendar/MonthlyCalendar';
 import { EventApiResponse } from '@/domain/interfaces/Event';
+import EventsCalendar from '@/components/events/EventsCalendar';
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventApiResponse[]>([]);
@@ -74,15 +75,22 @@ export default function EventsPage() {
       filtered = filtered.filter(event => event.event_type && event.event_type.toLowerCase() === selectedType.toLowerCase());
     }
 
-    setFilteredEvents(filtered);
-  }, [events, selectedFilter, selectedType]);
+    if (selectedDate) {
+      filtered = filtered.filter(event => {
+        if (!event.dates) return false;
+        const iso = new Date(event.dates).toISOString().split('T')[0];
+        return iso === selectedDate;
+      });
+    }
 
-  // Get unique event types for filter dropdown
+    setFilteredEvents(filtered);
+  }, [events, selectedFilter, selectedType, selectedDate]);
+
   const eventTypes = [...new Set(events.map(event => event.event_type).filter(Boolean))];
 
   return (
     <div className="h-screen bg-background pt-14 overflow-y-auto">
-      <div className="px-6 py-8 max-w-6xl mx-auto">
+  <div className="px-6 py-8 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4 transition-all duration-300">Events</h1>
@@ -122,8 +130,14 @@ export default function EventsPage() {
             </div>
 
             {/* Results Count */}
-            <div className="text-sm text-muted-foreground ml-auto font-medium">
-              Showing {filteredEvents.length} of {events.length} events
+            <div className="text-sm text-muted-foreground ml-auto font-medium flex items-center gap-3">
+              <span>Showing {filteredEvents.length} of {events.length} events</span>
+              {selectedDate && (
+                <button
+                  onClick={() => setSelectedDate(null)}
+                  className="text-xs px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition"
+                >Clear date</button>
+              )}
             </div>
 
             {/* View Mode Toggle */}
