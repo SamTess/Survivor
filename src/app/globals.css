@@ -216,6 +216,46 @@ body {
 .event-chip--conference { color: var(--event-conference); border-color: color-mix(in oklch, var(--event-conference) 30%, transparent); background: color-mix(in oklch, var(--event-conference) 12%, transparent); }
 .event-chip--webinar { color: var(--event-webinar); border-color: color-mix(in oklch, var(--event-webinar) 30%, transparent); background: color-mix(in oklch, var(--event-webinar) 12%, transparent); }
 .event-chip--pitch { color: var(--event-pitch); border-color: color-mix(in oklch, var(--event-pitch) 30%, transparent); background: color-mix(in oklch, var(--event-pitch) 12%, transparent); }
-.btn-hover:hover {
+.btn-primary {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-primary:hover {
   background-color: var(--btn-hover);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-accent {
+  color: var(--accent);
+}
+
+.bg-primary-light {
+  background-color: color-mix(in srgb, var(--primary) 10%, white);
+}
+
+.bg-accent-light {
+  background-color: color-mix(in srgb, var(--accent) 10%, white);
+}
+
+.link-primary {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 10%, white), color-mix(in srgb, var(--secondary) 10%, white));
+  border-color: color-mix(in srgb, var(--primary) 30%, transparent);
+}
+
+.link-primary:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 20%, white), color-mix(in srgb, var(--secondary) 20%, white));
 }
