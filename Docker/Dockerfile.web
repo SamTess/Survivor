@@ -44,11 +44,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/public ./public
 
 COPY --chown=nextjs:nodejs Docker/.env .env
-COPY --chown=nextjs:nodejs scripts/start-prod.sh ./scripts/start-prod.sh
+# Copier tout le dossier des scripts (docs-watch.sh, migrations utilitaires, etc.)
+COPY --chown=nextjs:nodejs scripts ./scripts
 
-RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads
-
-RUN chmod +x ./scripts/start-prod.sh
+RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads \
+	&& find ./scripts -type f -name "*.sh" -exec sed -i 's/\r$//' {} + \
+	&& chmod +x ./scripts/*.sh
 
 USER nextjs
 

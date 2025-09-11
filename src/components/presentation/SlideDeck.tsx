@@ -21,9 +21,10 @@ interface SlideDeckProps {
   showControls?: boolean;
   showDots?: boolean;
   showCounter?: boolean;
+  fullBleed?: boolean; // nouveau mode plein écran décoratif
 }
 
-export const SlideDeck: React.FC<SlideDeckProps> = ({ slides, autoPlayMs = 0, className, tall = false, showProgress = true, showControls = true, showDots = true, showCounter = true }) => {
+export const SlideDeck: React.FC<SlideDeckProps> = ({ slides, autoPlayMs = 0, className, tall = false, showProgress = true, showControls = true, showDots = true, showCounter = true, fullBleed = false }) => {
   const [index, setIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const total = slides.length;
@@ -67,29 +68,63 @@ export const SlideDeck: React.FC<SlideDeckProps> = ({ slides, autoPlayMs = 0, cl
   return (
     <div className={cn('relative w-full h-full flex flex-col', className)}>
       {/* Progress Bar */}
-      {showProgress && (
+      {showProgress && !fullBleed && (
         <div className="h-1 w-full bg-muted/40 overflow-hidden rounded-full mb-2">
           <div className="h-full bg-gradient-to-r from-primary to-accent transition-all" style={{width: progress + '%'}} />
         </div>
       )}
 
-      <div className={cn('flex-1 relative overflow-hidden rounded-3xl border border-border/40 bg-gradient-to-br from-background to-muted shadow-inner', tall && 'min-h-[88vh]')}> 
-        <div className="absolute inset-0 opacity-[0.15] pointer-events-none bg-[radial-gradient(circle_at_30%_30%,theme(colors.primary)/0.3,transparent_60%),radial-gradient(circle_at_70%_70%,theme(colors.accent)/0.25,transparent_55%)]" />
+      <div className={cn(
+        'flex-1 relative overflow-hidden transition-all',
+        !fullBleed && 'rounded-3xl border border-border/40 bg-gradient-to-br from-background to-muted shadow-inner',
+        fullBleed && 'rounded-none border-0 bg-gradient-to-br from-background via-background to-background'
+      )}>
+        <div className={cn(
+          'absolute inset-0 pointer-events-none',
+          fullBleed
+            ? 'opacity-40 bg-[radial-gradient(circle_at_20%_25%,theme(colors.primary)/0.25,transparent_60%),radial-gradient(circle_at_80%_70%,theme(colors.accent)/0.25,transparent_65%),linear-gradient(to_bottom_right,theme(colors.primary/10),transparent)]'
+            : 'opacity-[0.15] bg-[radial-gradient(circle_at_30%_30%,theme(colors.primary)/0.3,transparent_60%),radial-gradient(circle_at_70%_70%,theme(colors.accent)/0.25,transparent_55%)]'
+        )} />
+        {fullBleed && (
+          <>
+            <div className="absolute inset-0 pointer-events-none mix-blend-overlay opacity-30 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:80px_80px]" />
+            <div className="absolute -inset-[20%] animate-spin-slow pointer-events-none bg-[conic-gradient(from_0deg,theme(colors.primary/5),transparent_40%,theme(colors.accent/7),transparent_70%)]" />
+          </>
+        )}
 
-        <div key={slide.id} className={cn('w-full h-full p-8 md:p-14 flex flex-col gap-6 animate-fade-in-up overflow-hidden', tall && 'pb-16')}> 
+        <div
+          key={slide.id}
+          className={cn(
+            'w-full h-full flex flex-col gap-4 animate-fade-in-up overflow-hidden',
+            fullBleed ? 'p-4 md:p-8' : 'p-8 md:p-14',
+            tall && 'pb-16'
+          )}
+        >
           {slide.title && (
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-balance">
-              {slide.title} {slide.subtitle && <span className="block text-lg md:text-2xl font-normal text-primary mt-2">{slide.subtitle}</span>}
+            <h2 className={cn(
+              'font-bold tracking-tight text-balance',
+              fullBleed ? 'text-3xl md:text-4xl leading-[1.1]' : 'text-3xl md:text-5xl',
+            )}>
+              {slide.title}
+              {slide.subtitle && (
+                <span className={cn(
+                  'block font-normal text-primary mt-2',
+                  fullBleed ? 'text-base md:text-lg' : 'text-lg md:text-2xl'
+                )}>{slide.subtitle}</span>
+              )}
             </h2>
           )}
           <div className="flex-1 flex flex-col min-h-0">
-            <div className="flex-1 h-full w-full overflow-auto prose prose-invert max-w-none text-foreground/90 leading-relaxed text-base md:text-lg slide-content">{slide.content}</div>
+            <div className={cn(
+              'flex-1 h-full w-full overflow-auto max-w-none text-foreground/90 slide-content',
+              fullBleed ? 'text-lg md:text-[1.35rem] leading-[1.25]' : 'prose prose-invert leading-relaxed text-base md:text-lg'
+            )}>{slide.content}</div>
           </div>
         </div>
       </div>
 
       {/* Controls */}
-      {showControls && (
+      {showControls && !fullBleed && (
         <div className="mt-4 flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => go(-1)} disabled={index===0} className="rounded-full bg-transparent">
