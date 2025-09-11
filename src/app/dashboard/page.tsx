@@ -253,7 +253,7 @@ export default function Dashboard() {
               onClick: () => goTo(1)
             },
             {
-              label: "News & Events",
+              label: "News",
               icon: <FaNewspaper className={`${active == 2 ? "text-white text-xl" : "text-gray-400 text-md"}`} />,
               onClick: () => goTo(2)
             },
