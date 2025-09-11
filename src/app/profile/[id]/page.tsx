@@ -8,6 +8,7 @@ import { formatDate } from '@/utils/dateUtils';
 import { ProtectedRoute, useAuth } from '@/context/auth';
 import { apiService } from '@/infrastructure/services/ApiService';
 import UserAvatar from '@/components/ui/UserAvatar';
+import ProfilePictureUpload from '@/components/ui/ProfilePictureUpload';
 
 interface ProfilePageProps {
   params: Promise<{
@@ -146,6 +147,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 
   const ProfileAvatar: React.FC<{ uid?: number; name?: string }> = ({ uid, name }) => {
     const [avatarSize, setAvatarSize] = useState(64);
+    const [refreshKey, setRefreshKey] = useState<number>(Date.now());
 
     useEffect(() => {
       const updateSize = () => {
@@ -167,10 +169,31 @@ export default function ProfilePage({ params }: ProfilePageProps) {
       return () => window.removeEventListener('resize', debouncedHandler);
     }, []);
 
+    const handleUploadSuccess = () => {
+      // Trigger a refresh of the avatar image
+      setRefreshKey(Date.now());
+      setError(null);
+    };
+
+    const handleUploadError = (errorMessage: string) => {
+      setError(errorMessage);
+    };
+
     return (
       <div className="w-16 h-16 sm:w-24 sm:h-24">
         {uid ? (
-          <UserAvatar uid={uid} name={name} size={avatarSize} />
+          canEdit && isEditing ? (
+            <ProfilePictureUpload
+              userId={uid}
+              userName={name}
+              size={avatarSize}
+              onUploadSuccess={handleUploadSuccess}
+              onUploadError={handleUploadError}
+              disabled={saving}
+            />
+          ) : (
+            <UserAvatar uid={uid} name={name} size={avatarSize} refreshKey={refreshKey} />
+          )
         ) : (
           <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-muted" />
         )}
@@ -235,7 +258,14 @@ export default function ProfilePage({ params }: ProfilePageProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-6">
                   {/* Avatar */}
-                  <ProfileAvatar uid={user?.id} name={user?.name || undefined} />
+                  <div className="relative">
+                    <ProfileAvatar uid={user?.id} name={user?.name || undefined} />
+                    {canEdit && isEditing && (
+                      <p className="text-xs text-muted-foreground mt-2 text-center max-w-24">
+                        Click to upload
+                      </p>
+                    )}
+                  </div>
 
                   {/* Basic Info */}
                   <div>
@@ -397,7 +427,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                           {canSetAdminRole && <option value="admin">Admin</option>}
                         </select>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {isOwnProfile 
+                          {isOwnProfile
                             ? "You can change your role to any option except admin"
                             : "As an admin, you can change this user's role"
                           }
