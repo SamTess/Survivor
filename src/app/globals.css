@@ -5,24 +5,21 @@
   --foreground: oklch(0.205 0 0);
   --card: oklch(0.985 0 0);
   --card-foreground: oklch(0.205 0 0);
-  --primary: var(--brand-btn-bg);
-  --primary-foreground: var(--brand-btn-text);
+  --primary: var(--palette-p9, #C174F2);
+  --primary-foreground: #000000;
   --secondary: oklch(0.556 0 0);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.985 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: var(--brand-btn-accent);
-  --accent-foreground: var(--brand-btn-text);
+  --accent: var(--palette-p8, #CB90F1);
+  --accent-foreground: #000000;
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.985 0 0);
   --ring: oklch(0.646 0.222 280.116 / 0.5);
   --radius: 0.5rem;
-  --brand-btn-bg: var(--palette-p9, #C174F2);
-  --brand-btn-accent: var(--palette-p8, #CB90F1);
-  --brand-btn-text: #000000;
-  --brand-btn-bg-hover: color-mix(in srgb, var(--brand-btn-bg) 82%, #000000 18%);
+  --btn-hover: color-mix(in srgb, var(--palette-p9, #C174F2) 82%, #000000 18%);
 }
 
 .dark {
@@ -47,6 +44,7 @@
   --brand-btn-accent: var(--palette-p8, #CB90F1);
   --brand-btn-text: #000000;
   --brand-btn-bg-hover: color-mix(in srgb, var(--brand-btn-bg) 82%, #000000 18%);
+  --btn-hover: color-mix(in srgb, var(--palette-p9, #C174F2) 82%, #000000 18%);
 }
 
 @theme inline {
@@ -218,4 +216,6 @@ body {
 .event-chip--conference { color: var(--event-conference); border-color: color-mix(in oklch, var(--event-conference) 30%, transparent); background: color-mix(in oklch, var(--event-conference) 12%, transparent); }
 .event-chip--webinar { color: var(--event-webinar); border-color: color-mix(in oklch, var(--event-webinar) 30%, transparent); background: color-mix(in oklch, var(--event-webinar) 12%, transparent); }
 .event-chip--pitch { color: var(--event-pitch); border-color: color-mix(in oklch, var(--event-pitch) 30%, transparent); background: color-mix(in oklch, var(--event-pitch) 12%, transparent); }
-.event-chip--other { color: var(--event-other); border-color: color-mix(in oklch, var(--event-other) 30%, transparent); background: color-mix(in oklch, var(--event-other) 12%, transparent); }
+.btn-hover:hover {
+  background-color: var(--btn-hover);
+}
