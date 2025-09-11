@@ -12,6 +12,7 @@ function isPublic(path: string): boolean {
   if (path.startsWith('/api/sync/')) return true;
   if (path.startsWith('/api/events')) return true;
   if (path.startsWith('/api/startups')) return true;
+  if (path.startsWith('/api/opportunities')) return true;
   if (path.startsWith('/api/news')) return true;
   if (path.startsWith('/api/investors')) return true;
   if (path.startsWith('/api/partners')) return true;

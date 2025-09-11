@@ -6,3 +6,4 @@ export { UserService } from './users/UserService';
 export { FounderService } from './founders/FounderService';
 export { InvestorService } from './investors/InvestorService';
 export { PartnerService } from './partners/PartnerService';
+export { ScoringService } from './opportunities/ScoringService';

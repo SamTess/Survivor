@@ -1,0 +1,45 @@
+import { EntityType, OpportunityDirection, OpportunityStatus } from "../enums/Opportunities";
+
+export type Opportunity = {
+  id: string;
+  direction: OpportunityDirection;
+  source_type: EntityType;
+  source_id: number;
+  source_name?: string | null;
+  target_type: EntityType;
+  target_id: number;
+  target_name?: string | null;
+  score?: number | null;
+  score_breakdown?: Record<string, number> | null;
+  status: OpportunityStatus;
+  reason?: string | null;
+  next_action?: string | null;
+  owner_user_id?: number | null;
+  deal_type?: string | null;
+  round?: string | null;
+  proposed_amount_eur?: unknown;
+  valuation_pre_money_eur?: unknown;
+  ownership_target_pct?: unknown;
+  fund_id?: string | null;
+  budget_fit?: string | null;
+  budget_fit_score?: unknown;
+  pilot_estimated_cost_eur?: unknown;
+  pilot_budget_fit?: string | null;
+  term_deadline?: Date | null;
+  startup_investment_history?: Array<{
+    dt: string | Date;
+    amount_eur: unknown;
+    round?: string | null;
+    deal_type?: string | null;
+  }>;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type OpportunityEvent = {
+  id: string;
+  opportunity_id: string;
+  occurred_at: Date;
+  type: string;
+  payload?: Record<string, unknown> | null;
+};
