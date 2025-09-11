@@ -5,7 +5,6 @@ import startupData from "@/mocks/startup.json";
 import { StartupDetailApiResponse } from "@/domain/interfaces";
 import { apiService } from "@/context/auth";
 
-// Champs finance présents dans le schéma Prisma S_STARTUP
 type FinanceFields = {
   fundraising_status?: string;
   round?: string;
@@ -71,7 +70,6 @@ export default function StartupForm({ startup }: StartupFormProps) {
   const [error, setError] = useState<string | null>(null);
   const initialFormRef = useRef<StartupFormState | null>(null);
 
-  // Update form when startup prop changes
   useEffect(() => {
     if (startup) {
       const fin = fromStartupFinance(startup);
@@ -88,7 +86,6 @@ export default function StartupForm({ startup }: StartupFormProps) {
         needs: startup?.needs,
         project_status: startup?.project_status,
         founders: startup?.founders?.map(f => f.name) || [],
-        // Finance (si disponibles dans la payload du backend)
         fundraising_status: fin.fundraising_status ?? "",
         round: fin.round ?? "",
         ask_currency: fin.ask_currency ?? "EUR",
@@ -103,12 +100,10 @@ export default function StartupForm({ startup }: StartupFormProps) {
     }
   }, [startup]);
 
-  // Store initial form only once
   if (initialFormRef.current === null) {
     initialFormRef.current = { ...form };
   }
 
-  // Compute dirty state when form changes
   useEffect(() => {
     const initial = initialFormRef.current!;
     const normalize = (f: StartupFormState) => ({
@@ -136,7 +131,6 @@ export default function StartupForm({ startup }: StartupFormProps) {
     setError(null);
 
     try {
-      // Prepare the data to send to the API
       const updateData = {
         name: form.name,
         email: form.email,
@@ -149,16 +143,14 @@ export default function StartupForm({ startup }: StartupFormProps) {
         maturity: form.maturity || null,
         needs: form.needs || null,
         project_status: form.project_status || null,
-  // Finance - conversions sûres (string vide => null)
-  fundraising_status: form.fundraising_status || null,
-  round: form.round || null,
-  ask_currency: (form.ask_currency || "").toString().slice(0,3).toUpperCase() || null,
-  ask_min: form.ask_min === "" || form.ask_min === undefined ? null : Number(form.ask_min),
-  ask_max: form.ask_max === "" || form.ask_max === undefined ? null : Number(form.ask_max),
-  use_of_funds: form.use_of_funds || null,
-  revenue_arr_eur: form.revenue_arr_eur === "" || form.revenue_arr_eur === undefined ? null : Number(form.revenue_arr_eur),
-  runway_months: form.runway_months === "" || form.runway_months === undefined ? null : Number(form.runway_months),
-        // Note: founders will be handled separately if needed
+        fundraising_status: form.fundraising_status || null,
+        round: form.round || null,
+        ask_currency: (form.ask_currency || "").toString().slice(0,3).toUpperCase() || null,
+        ask_min: form.ask_min === "" || form.ask_min === undefined ? null : Number(form.ask_min),
+        ask_max: form.ask_max === "" || form.ask_max === undefined ? null : Number(form.ask_max),
+        use_of_funds: form.use_of_funds || null,
+        revenue_arr_eur: form.revenue_arr_eur === "" || form.revenue_arr_eur === undefined ? null : Number(form.revenue_arr_eur),
+        runway_months: form.runway_months === "" || form.runway_months === undefined ? null : Number(form.runway_months),
       };
 
       const response = await apiService.put(`/startups/${startup.id}`, updateData);
