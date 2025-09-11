@@ -171,17 +171,17 @@ export default function Dashboard() {
             ) : user?.role === 'investor' ? (
               <>
                 <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
-                  <div className="space-y-6 max-w-6xl px-4">
+                  <div className="space-y-6 w-full max-w-none px-4 md:px-6 lg:px-8">
                     <InvestorPortfolioSection investor={userInvestor} />
                   </div>
                 </section>
                 <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
-                  <div className="space-y-6 max-w-6xl px-4 ">
+                  <div className="space-y-6 w-full max-w-none px-4 md:px-6 lg:px-8 ">
                     <InvestmentOpportunities investor={userInvestor} />
                   </div>
                 </section>
                 <section className="snap-start pt-20 shrink-0 w-full h-full overflow-y-auto justify-center flex">
-                  <div className="space-y-6 max-w-6xl px-4 ">
+                  <div className="space-y-6 w-full max-w-none px-4 md:px-6 lg:px-8 ">
                     <MarketInsights investor={userInvestor} />
                   </div>
                 </section>
