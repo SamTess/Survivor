@@ -138,8 +138,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
         return 'bg-accent/10 text-accent border border-accent/20';
       case 'admin':
         return 'bg-secondary/10 text-secondary border border-secondary/20';
-      case 'mentor':
-        return 'bg-primary/20 text-primary border border-primary/30';
+      case 'visitor':
+        return 'bg-muted/50 text-foreground border border-border/20';
       default:
         return 'bg-muted/50 text-foreground border border-border/20';
     }
@@ -170,7 +170,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
     }, []);
 
     const handleUploadSuccess = () => {
-      // Trigger a refresh of the avatar image
       setRefreshKey(Date.now());
       setError(null);
     };
@@ -420,7 +419,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
                           className="w-full px-3 py-2 border border-border rounded-2xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary bg-background/80 backdrop-blur-md text-foreground transition-all duration-200"
                         >
                           <option value="visitor">Visitor</option>
-                          <option value="user">User</option>
                           <option value="founder">Founder</option>
                           <option value="investor">Investor</option>
                           {/* Only show admin option if user can set admin role */}
