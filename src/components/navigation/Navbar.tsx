@@ -2,7 +2,6 @@
 
 import React from "react"
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Search, Menu, X, Sparkles, CircleUser, LogOut, Upload } from "lucide-react"
@@ -21,7 +20,6 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false)
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const [avatarFailed, setAvatarFailed] = useState(false)
   const pathname = usePathname()
   const { isAuthenticated, isAdmin, user, logout } = useAuth()
   const profileDropdownRef = useRef<HTMLDivElement>(null)
@@ -47,6 +45,7 @@ export function Navbar() {
     }
 
     document.addEventListener('mousedown', handleClickOutside)
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
@@ -126,6 +125,8 @@ export function Navbar() {
               )}
             </div>
 
+            <DarkModeToggle className="text-muted-foreground hover:text-primary" />
+
             {/* Profile Dropdown */}
             <div className="relative" ref={profileDropdownRef}>
               <Button
@@ -134,18 +135,7 @@ export function Navbar() {
                 className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200 hover:scale-105"
               >
                 <div className="w-10 h-10 rounded-full flex items-center justify-center">
-                  {isAuthenticated && user?.id && !avatarFailed ? (
-                    <Image
-                      src={`/api/users/${user.id}/image`}
-                      alt={user?.name || "Avatar"}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover rounded-full"
-                      onError={() => setAvatarFailed(true)}
-                    />
-                  ) : (
-                    <CircleUser className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
-                  )}
+                  <CircleUser className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
               </Button>
 
@@ -193,7 +183,6 @@ export function Navbar() {
               )}
             </div>
 
-            <DarkModeToggle className="text-muted-foreground hover:text-primary" />
             {isAdmin &&
               <Button
                 asChild
@@ -291,18 +280,7 @@ export function Navbar() {
                       className="group rounded-full w-10 h-10 p-0 bg-muted/20 hover:bg-muted/40 border-0 transition-all duration-200"
                     >
                       <div className="w-10 h-10 rounded-full flex items-center justify-center">
-                        {isAuthenticated && user?.id && !avatarFailed ? (
-                          <Image
-                            src={`/api/users/${user.id}/image`}
-                            alt={user?.name || "Avatar"}
-                            width={40}
-                            height={40}
-                            className="w-full h-full object-cover rounded-full"
-                            onError={() => setAvatarFailed(true)}
-                          />
-                        ) : (
-                          <CircleUser className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                        )}
+                        <CircleUser className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
                       </div>
                     </Button>
                   </Link>

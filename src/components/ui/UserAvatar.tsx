@@ -81,4 +81,6 @@ export function UserAvatar({ uid, name, size = 56, className, refreshKey }: Prop
             )}
         </div>
     );
-}export default UserAvatar;
+}
+
+export default UserAvatar;
