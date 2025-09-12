@@ -230,7 +230,7 @@ The `deploy.sh` script provides a user-friendly interface:
 # Staging only
 terraform apply -var='deploy_environments=["staging"]'
 
-# Production only
+# For production only
 terraform apply -var='deploy_environments=["prod"]'
 
 # Both environments
@@ -285,62 +285,69 @@ ansible all -m ping
 
 ## 🛡️ Security Notes
 
-- **Never commit `terraform.tfvars`** to version control
-- SSH keys are automatically added to `~/.ssh/known_hosts`
-- Firewall rules restrict access to necessary ports only
-- API tokens should be kept secure and rotated regularly
+- **SSH Key Security**: Use strong SSH keys and protect your private keys
+- **Firewall Configuration**: Configure UFW or iptables on your servers
+- **SSH Hardening**: Consider disabling password authentication and root login
+- **Network Security**: Use private networks if available
+- **Regular Updates**: Keep your servers updated with security patches
 
 ## 🔄 Workflow Examples
 
-### Development Workflow
-1. Deploy staging: `./deploy.sh` → Option 1
-2. Test application on staging
-3. Deploy production: `./deploy.sh` → Option 2
+### Setup Workflow
+1. Provision private servers with Ubuntu 22.04
+2. Configure SSH key access
+3. Set up firewall rules
+4. Update `terraform.tfvars` with server IPs
+5. Run `terraform apply` to generate Ansible inventory
+6. Deploy with Ansible: `cd ../ansible && ./deploy.sh`
 
-### Cost-Optimized Workflow
-1. Work on staging only during development
-2. Deploy production only for releases
-3. Use destroy script to clean up unused environments
-
-### Full Environment Refresh
-1. Destroy both: `./destroy.sh` → Option 3
-2. Deploy both: `./deploy.sh` → Option 3
+### Update Workflow
+1. Make changes to server configuration
+2. Update IPs in `terraform.tfvars` if needed
+3. Run `terraform apply` to update inventory
+4. Redeploy with Ansible if necessary
 
 ## 📋 Troubleshooting
 
 ### Common Issues
 
-**Terraform init fails:**
-- Check internet connection
-- Verify Terraform version compatibility
+**SSH connection fails:**
+- Verify SSH key is in `~/.ssh/authorized_keys` on servers
+- Check SSH service is running: `sudo systemctl status ssh`
+- Test manual connection: `ssh -i <private_key> <user>@<server_ip>`
 
-**API authentication errors:**
-- Verify `do_token` in `terraform.tfvars`
-- Check DigitalOcean API token permissions
+**Server not accessible:**
+- Check firewall rules: `sudo ufw status`
+- Verify server IP addresses are correct
+- Ensure servers are running and network is configured
 
-**SSH connection issues:**
-- Ensure SSH key is uploaded to DigitalOcean
-- Verify `ssh_key_id` matches the key ID (not fingerprint)
-- Check `private_key_path` points to correct file
+**Ansible inventory not generated:**
+- Check `terraform.tfvars` has correct server IPs
+- Run `terraform apply` to regenerate inventory
+- Verify `deploy_environments` variable is set correctly
 
-**Resource conflicts:**
-- Use `terraform state list` to see current resources
-- Consider renaming resources if conflicts occur
+**Permission denied:**
+- Check SSH private key permissions: `chmod 600 ~/.ssh/id_ed25519`
+- Verify SSH user has sudo privileges
+- Check SSH public key is correctly added to server
 
 ### Useful Commands
 
 ```bash
-# Check current state
+# Test SSH connection to servers
+ssh -i /path/to/private/key user@server_ip
+
+# Check firewall status
+sudo ufw status
+
+# View generated inventory
+cat ../ansible/hosts.ini
+
+# Test Ansible connectivity
+cd ../ansible && ansible all -m ping
+
+# Check Terraform state
 terraform state list
-
-# View detailed plan
-terraform plan -detailed-exitcode
-
-# Format configuration files
-terraform fmt
-
-# Validate configuration
-terraform validate
 
 # Show current outputs
 terraform output

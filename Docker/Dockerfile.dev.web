@@ -12,7 +12,7 @@ COPY Docker/.env .env
 
 COPY . .
 
-RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads
+RUN mkdir -p /app/uploads/media
 
 RUN dos2unix ./scripts/start-dev.sh && chmod +x ./scripts/start-dev.sh
 
