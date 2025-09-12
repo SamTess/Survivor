@@ -180,10 +180,16 @@ import ProjectCard from '@/components/ui/ProjectCard';
                   <p className="text-sm text-muted-foreground max-w-2xl">Explore, filter and compare startups by sector, maturity, traction and more.</p>
                 </div>
                 <div className="flex items-center gap-2 md:self-end">
-                  <button onClick={() => setShowAdvanced(v => !v)} className="text-sm px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted/5 transition">
+                  <button
+                    onClick={() => setShowAdvanced(v => !v)}
+                    className="text-sm px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted/5 transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
                     {showAdvanced ? 'Hide advanced filters' : 'Advanced filters'}
                   </button>
-                  <button onClick={clearAll} className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-primary text-white btn-hover transition">
+                  <button
+                    onClick={clearAll}
+                    className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-primary text-white btn-hover transition focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
                     ✕ Reset
                   </button>
                 </div>
