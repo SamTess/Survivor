@@ -159,10 +159,10 @@ import ProjectCard from '@/components/ui/ProjectCard';
     if (loading) {
       return (
         <div className="h-screen bg-background pt-14 overflow-y-auto">
-          <div className="h-screen overflow-y-auto flex items-center justify-center bg-gray-50">
+    <div className="h-screen overflow-y-auto flex items-center justify-center bg-background">
             <div className="text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto" />
-              <p className="mt-4 text-gray-600 text-sm">Loading startups...</p>
+              <p className="mt-4 text-muted-foreground text-sm">Loading startups...</p>
             </div>
           </div>
         </div>
@@ -171,16 +171,16 @@ import ProjectCard from '@/components/ui/ProjectCard';
 
     return (
       <div className="h-screen bg-background pt-14 overflow-y-auto">
-        <div className="h-screen overflow-y-auto flex flex-col bg-gray-50">
-          <div className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+        <div className="h-screen overflow-y-auto flex flex-col bg-background">
+          <div className="bg-background border-b border-border sticky top-0 z-30 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-4">
               <div className="flex flex-col md:flex-row md:items-end gap-4 justify-between">
                 <div className="space-y-1">
-                  <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Startup Projects</h1>
-                  <p className="text-sm text-gray-600 max-w-2xl">Explore, filter and compare startups by sector, maturity, traction and more.</p>
+                  <h1 className="text-3xl font-bold text-foreground tracking-tight">Startup Projects</h1>
+                  <p className="text-sm text-muted-foreground max-w-2xl">Explore, filter and compare startups by sector, maturity, traction and more.</p>
                 </div>
                 <div className="flex items-center gap-2 md:self-end">
-                  <button onClick={() => setShowAdvanced(v => !v)} className="text-sm px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition">
+                  <button onClick={() => setShowAdvanced(v => !v)} className="text-sm px-3 py-1.5 rounded-md border border-border bg-background hover:bg-muted/5 transition">
                     {showAdvanced ? 'Hide advanced filters' : 'Advanced filters'}
                   </button>
                   <button onClick={clearAll} className="text-sm px-3 py-1.5 rounded-md border border-transparent bg-primary text-white btn-hover transition">
@@ -195,23 +195,23 @@ import ProjectCard from '@/components/ui/ProjectCard';
                     placeholder="Search (name, description)..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                    className="w-full px-4 py-2 text-sm border border-border rounded-lg bg-input text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div className="flex gap-4 flex-wrap">
-                  <select value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                  <select value={sectorFilter} onChange={(e) => setSectorFilter(e.target.value)} className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="All">All sectors</option>
                     {uniqueSectors.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                  <select value={stageFilter} onChange={(e) => setStageFilter(e.target.value)} className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="All">All maturities</option>
                     {uniqueStages.map(st => <option key={st} value={st}>{st}</option>)}
                   </select>
-                  <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                  <select value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)} className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="All">All countries</option>
                     {uniqueCountries.map(country => <option key={country} value={country}>{country}</option>)}
                   </select>
-                  <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                  <select value={sortOption} onChange={(e) => setSortOption(e.target.value)} className="px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                     <option value="name-asc">Name (A-Z)</option>
                     <option value="name-desc">Name (Z-A)</option>
                     <option value="likes-desc">Likes (desc)</option>
@@ -224,32 +224,32 @@ import ProjectCard from '@/components/ui/ProjectCard';
               {showAdvanced && (
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 pt-2" aria-label="Advanced filters">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Min likes</label>
-                    <input type="number" min={likeBounds.min} max={likeBounds.max} value={minLikes} onChange={e => setMinLikes(Number(e.target.value) || 0)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none" />
+                    <label className="text-xs font-medium text-muted-foreground">Min likes</label>
+                    <input type="number" min={likeBounds.min} max={likeBounds.max} value={minLikes} onChange={e => setMinLikes(Number(e.target.value) || 0)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground placeholder:text-muted-foreground focus:outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Max likes</label>
-                    <input type="number" min={likeBounds.min} max={likeBounds.max} value={maxLikes ?? ''} onChange={e => setMaxLikes(e.target.value === '' ? null : Number(e.target.value))} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none" />
+                    <label className="text-xs font-medium text-muted-foreground">Max likes</label>
+                    <input type="number" min={likeBounds.min} max={likeBounds.max} value={maxLikes ?? ''} onChange={e => setMaxLikes(e.target.value === '' ? null : Number(e.target.value))} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground placeholder:text-muted-foreground focus:outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Founders (min)</label>
-                    <input type="number" min={0} value={minFounders} onChange={e => setMinFounders(Number(e.target.value) || 0)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none" />
+                    <label className="text-xs font-medium text-muted-foreground">Founders (min)</label>
+                    <input type="number" min={0} value={minFounders} onChange={e => setMinFounders(Number(e.target.value) || 0)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground placeholder:text-muted-foreground focus:outline-none" />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-600">Project status</label>
-                    <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <label className="text-xs font-medium text-muted-foreground">Project status</label>
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-input text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="All">All</option>
                       {uniqueStatuses.map(st => <option key={st} value={st}>{st}</option>)}
                     </select>
                   </div>
                   <div className="flex items-end gap-2 md:col-span-2 lg:col-span-1">
-                    <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer select-none">
-                      <input type="checkbox" checked={hasWebsite} onChange={e => setHasWebsite(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                    <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground cursor-pointer select-none">
+                      <input type="checkbox" checked={hasWebsite} onChange={e => setHasWebsite(e.target.checked)} className="h-4 w-4 rounded border-border text-primary focus:ring-primary" />
                       With website
                     </label>
                   </div>
                   <div className="md:col-span-3 lg:col-span-4">
-                    <p className="text-[11px] text-gray-500 flex flex-wrap gap-4">
+                    <p className="text-[11px] text-muted-foreground flex flex-wrap gap-4">
                       <span><strong>{filteredStartups.length}</strong> result(s) / {startups.length} total</span>
                       <span>Likes range: {likeBounds.min} - {likeBounds.max}</span>
                     </p>
@@ -270,7 +270,7 @@ import ProjectCard from '@/components/ui/ProjectCard';
               </div>
             ) : (
               <div className="text-center py-24 max-w-6xl mx-auto">
-                <div className="text-gray-500 text-base">{error ? "Unable to display projects." : 'No projects match the filters.'}</div>
+                <div className="text-muted-foreground text-base">{error ? "Unable to display projects." : 'No projects match the filters.'}</div>
                 <button onClick={clearAll} className="mt-6 inline-flex items-center gap-2 text-sm px-4 py-2 rounded-md bg-primary text-white hover:bg-primary-dark transition">
                   Reset filters
                 </button>
