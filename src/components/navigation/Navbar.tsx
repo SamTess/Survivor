@@ -30,6 +30,7 @@ export function Navbar() {
     { href: '/projects', label: 'Projects' },
     { href: '/news', label: 'News' },
     { href: '/events', label: 'Events' },
+    { href: '/presentation?slide=communication', label: 'Présentation' },
     { href: '/about', label: 'About' },
   ]
   if (isAuthenticated)

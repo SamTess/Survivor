@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/navigation/Navbar";
 import { AuthProvider } from "../context/AuthContext";
-import { Toaster } from "@/components/ui/sonner";
-import { ChatLauncher } from "@/components/chat/ChatLauncher";
+import { Chrome } from '@/components/layout/Chrome';
 
 
 export const metadata: Metadata = {
@@ -22,10 +20,7 @@ export default function RootLayout({
         className={` antialiased min-h-screen overflow-hidden`}
       >
           <AuthProvider>
-          <Navbar />
-          {children}
-          <Toaster />
-          <ChatLauncher />
+          <Chrome>{children}</Chrome>
         </AuthProvider>
       </body>
     </html>

@@ -17,7 +17,7 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.922 0 0);
   --input: oklch(0.985 0 0);
-  --ring: oklch(0.646 0.222 280.116 / 0.5);
+  --ring: rgb(213, 168, 242);
   --radius: 0.5rem;
   --btn-hover: color-mix(in srgb, var(--palette-p9, #C174F2) 82%, #000000 18%);
 }

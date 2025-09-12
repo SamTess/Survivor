@@ -46,6 +46,7 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/docs/api ./docs/api
 
 COPY --chown=nextjs:nodejs Docker/.env .env
+
 COPY --chown=nextjs:nodejs scripts ./scripts
 
 RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads
