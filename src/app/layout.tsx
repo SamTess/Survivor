@@ -4,6 +4,7 @@ import { Navbar } from "@/components/navigation/Navbar";
 import { AuthProvider } from "../context/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import { ChatLauncher } from "@/components/chat/ChatLauncher";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 
 export const metadata: Metadata = {
@@ -21,12 +22,14 @@ export default function RootLayout({
       <body
         className={` antialiased min-h-screen overflow-hidden`}
       >
+        <TooltipProvider>
           <AuthProvider>
-          <Navbar />
-          {children}
-          <Toaster />
-          <ChatLauncher />
-        </AuthProvider>
+            <Navbar />
+            {children}
+            <Toaster />
+            <ChatLauncher />
+          </AuthProvider>
+        </TooltipProvider>
       </body>
     </html>
   );

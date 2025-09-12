@@ -28,12 +28,12 @@
     "docs:watch": "bash scripts/docs-watch.sh",
     "docs:build": "npm run docs:generate && echo '✅ API Documentation built successfully'",
     "docs:dev": "concurrently \"npm run docs:watch\" \"npm run docs:serve\"",
-    "docs:help": "tsx scripts/conversion-guide.ts",
-    "cleanup-tokens": "tsx scripts/cleanup-tokens.ts"
+    "docs:help": "tsx scripts/conversion-guide.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
     "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tooltip": "^1.2.8",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.16",
     "@types/marked": "^6.0.0",

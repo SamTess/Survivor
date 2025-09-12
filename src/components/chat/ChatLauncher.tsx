@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { Trash2, MessageCircle } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import UserAvatar from "@/components/ui/UserAvatar";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 const ConversationClient = dynamic<{
   cid: number;
@@ -311,22 +312,29 @@ export function ChatLauncher(): React.ReactElement {
   );
 
   const btn = (
-    <button
-      aria-label={open ? "Close messages" : "Open messages"}
-      className="hidden md:flex fixed z-50 w-12 h-12 rounded-full bg-primary/90 text-primary-foreground shadow-xl items-center justify-center hover:bg-primary hover:shadow-2xl transition-all duration-200 hover:scale-110 border border-border/20 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-      style={{ position: 'fixed', right: 16, bottom: 16, left: 'auto' }}
-      onClick={() => setOpen((v) => !v)}
-      type="button"
-    >
-      <>
-        <MessageCircle size={17} />
-        {totalUnread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] leading-[20px] text-center font-bold border-2 border-background shadow-lg">
-            {String(Math.min(totalUnread, 99))}
-          </span>
-        )}
-      </>
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          aria-label={open ? "Close messages" : "Open messages"}
+          className="hidden md:flex fixed z-50 w-12 h-12 rounded-full bg-primary/90 text-primary-foreground shadow-xl items-center justify-center hover:bg-primary hover:shadow-2xl transition-all duration-200 hover:scale-110 border border-border/20 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          style={{ position: 'fixed', right: 16, bottom: 16, left: 'auto' }}
+          onClick={() => setOpen((v) => !v)}
+          type="button"
+        >
+          <>
+            <MessageCircle size={17} />
+            {totalUnread > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] leading-[20px] text-center font-bold border-2 border-background shadow-lg">
+                {String(Math.min(totalUnread, 99))}
+              </span>
+            )}
+          </>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent>
+        <p>{open ? "Close messages" : "Open messages"}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 
   if (typeof window !== 'undefined' && document?.body) {
