@@ -22,10 +22,17 @@ interface SlideDeckProps {
   showDots?: boolean;
   showCounter?: boolean;
   fullBleed?: boolean; // nouveau mode plein écran décoratif
+  initialSlide?: string; // id de la slide initiale
 }
 
-export const SlideDeck: React.FC<SlideDeckProps> = ({ slides, autoPlayMs = 0, className, tall = false, showProgress = true, showControls = true, showDots = true, showCounter = true, fullBleed = false }) => {
-  const [index, setIndex] = useState(0);
+export const SlideDeck: React.FC<SlideDeckProps> = ({ slides, autoPlayMs = 0, className, tall = false, showProgress = true, showControls = true, showDots = true, showCounter = true, fullBleed = false, initialSlide }) => {
+  const [index, setIndex] = useState(() => {
+    if (initialSlide) {
+      const slideIndex = slides.findIndex(slide => slide.id === initialSlide);
+      return slideIndex !== -1 ? slideIndex : 0;
+    }
+    return 0;
+  });
   const [isPlaying, setIsPlaying] = useState(false);
   const total = slides.length;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
