@@ -170,8 +170,8 @@ import ProjectCard from '@/components/ui/ProjectCard';
     }
 
     return (
-      <div className="h-screen bg-background pt-14 overflow-y-auto">
-        <div className="h-screen overflow-y-auto flex flex-col bg-background">
+      <div className="h-screen bg-background pt-14 ">
+        <div className="h-screen flex flex-col bg-background">
           <div className="bg-background border-b border-border sticky top-0 z-30 shadow-sm">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col gap-4">
               <div className="flex flex-col md:flex-row md:items-end gap-4 justify-between">
