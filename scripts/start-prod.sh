@@ -11,19 +11,20 @@ else
   npx prisma db push
 fi
 
-echo "[start-prod] Generating initial API documentation..."
-npx tsx scripts/generate-swagger-docs.ts || echo "[start-prod] Swagger generation failed (non-blocking)"
 
-echo "[start-prod] Starting documentation watcher and static server in background..."
-if [ -f scripts/docs-watch.sh ]; then
-  sh scripts/docs-watch.sh &
+API_DIR="src/app/api"
+if [ -d "$API_DIR" ]; then
+  echo "Generating initial API documentation..."
+  npx tsx scripts/generate-swagger-docs.ts || echo "Swagger generation skipped or failed." 1>&2
+  echo "Starting documentation watcher and server in background..."
+  bash scripts/docs-watch.sh &
 else
-  echo "[start-prod] docs-watch.sh not found, skipping watcher"
+  echo "⚠ API source directory ($API_DIR) not present in runtime image; skipping live doc generation/watch." 1>&2
 fi
-if [ -d docs/api ]; then
+if [ -d "docs/api" ]; then
   npx http-server docs/api -p 8080 --cors -c-1 &
 else
-  echo "[start-prod] docs/api directory missing, skipping http-server"
+  echo "⚠ No pre-generated docs found to serve on 8080." 1>&2
 fi
 
 echo "[start-prod] Starting Next.js production server..."

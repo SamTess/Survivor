@@ -41,7 +41,12 @@ const options = {
   apis: [] as string[],
 };
 
-const files = getTypeScriptFiles('./src/app/api');
+const apiRoot = path.join(process.cwd(), 'src', 'app', 'api');
+if (!fs.existsSync(apiRoot)) {
+  console.warn(`⚠ API source directory not found at ${apiRoot} - skipping Swagger generation.`);
+  process.exit(0);
+}
+const files = getTypeScriptFiles(apiRoot);
 const validFiles: string[] = [];
 
 files.forEach((file: string) => {

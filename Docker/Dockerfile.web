@@ -23,6 +23,7 @@ ENV NODE_ENV=$NODE_ENV
 ENV NEXT_TELEMETRY_DISABLED=$NEXT_TELEMETRY_DISABLED
 
 RUN npm run build
+RUN npm run docs:generate
 
 # Production stage
 FROM node:20-alpine AS runner
@@ -42,14 +43,15 @@ COPY --from=builder /app/prisma ./prisma/
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/docs/api ./docs/api
 
 COPY --chown=nextjs:nodejs Docker/.env .env
-# Copier tout le dossier des scripts (docs-watch.sh, migrations utilitaires, etc.)
+
 COPY --chown=nextjs:nodejs scripts ./scripts
 
-RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads \
-	&& find ./scripts -type f -name "*.sh" -exec sed -i 's/\r$//' {} + \
-	&& chmod +x ./scripts/*.sh
+RUN mkdir -p /app/uploads/media && chown -R nextjs:nodejs /app/uploads
+
+RUN chmod +x ./scripts/start-prod.sh ./scripts/docs-watch.sh
 
 USER nextjs
 

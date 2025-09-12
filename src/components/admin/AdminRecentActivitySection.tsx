@@ -24,41 +24,41 @@ const getTimeAgo = (timestamp: string) => {
 const getActivityIcon = (type: string) => {
   switch (type) {
     case 'user':
-      return <FaUsers className="text-blue-700 dark:text-blue-300" size={16} />
+      return <FaUsers className="admin-icon-primary" size={16} />
     case 'project':
-      return <FaProjectDiagram className="text-emerald-700 dark:text-emerald-300" size={16} />
+      return <FaProjectDiagram className="admin-icon-secondary" size={16} />
     case 'news':
-      return <FaNewspaper className="text-violet-700 dark:text-violet-300" size={16} />
+      return <FaNewspaper className="admin-icon-accent" size={16} />
     case 'event':
-      return <FaCalendarAlt className="text-orange-700 dark:text-orange-300" size={16} />
+      return <FaCalendarAlt className="admin-icon-orange" size={16} />
     default:
-      return <FaInfoCircle className="text-slate-600 dark:text-slate-300" size={16} />
+      return <FaInfoCircle className="admin-icon-muted" size={16} />
   }
 }
 
 const getSeverityIcon = (severity: string) => {
   switch (severity) {
     case 'high':
-      return <FaExclamationTriangle className="text-red-700 dark:text-red-300" size={12} />
+      return <FaExclamationTriangle className="admin-icon-destructive" size={12} />
     case 'medium':
-      return <FaInfoCircle className="text-yellow-700 dark:text-yellow-300" size={12} />
+      return <FaInfoCircle className="admin-icon-warning" size={12} />
     case 'low':
-      return <FaCheckCircle className="text-green-700 dark:text-green-300" size={12} />
+      return <FaCheckCircle className="admin-icon-success" size={12} />
     default:
-      return <FaInfoCircle className="text-slate-600 dark:text-slate-300" size={12} />
+      return <FaInfoCircle className="admin-icon-muted" size={12} />
   }
 }
 
 const getSeverityBadgeStyle = (severity: string) => {
   switch (severity) {
     case 'high':
-      return 'bg-red-100 dark:bg-red-900 text-red-900 dark:text-red-100 border-red-300 dark:border-red-700'
+      return 'admin-severity-high'
     case 'medium':
-      return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100 border-yellow-300 dark:border-yellow-700'
+      return 'admin-severity-medium'
     case 'low':
-      return 'bg-green-100 dark:bg-green-900 text-green-900 dark:text-green-100 border-green-300 dark:border-green-700'
+      return 'admin-severity-low'
     default:
-      return 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100 border-slate-300 dark:border-slate-600'
+      return 'admin-severity-default'
   }
 }
 
@@ -243,10 +243,10 @@ export default function AdminRecentActivitySection() {
           aria-pressed={filters.type === 'user'}
         >
           <div className="flex items-center justify-center gap-1 mb-1">
-            <FaUsers className="text-blue-700 dark:text-blue-300" size={14} aria-hidden="true" />
-            <div className="text-sm font-bold text-blue-700 dark:text-blue-300">{data?.summary.userActions || 0}</div>
+            <FaUsers className="admin-icon-primary" size={14} aria-hidden="true" />
+            <div className="text-sm font-bold admin-text-primary">{data?.summary.userActions || 0}</div>
           </div>
-          <div className="text-xs text-slate-600 dark:text-slate-300">Users</div>
+          <div className="text-xs admin-text-muted">Users</div>
         </Card>
         <Card
           className={`admin-stat-card admin-stat-card--emerald p-3 text-center cursor-pointer hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${filters.type === 'project' ? 'admin-stat-card--active' : ''}`}
@@ -258,10 +258,10 @@ export default function AdminRecentActivitySection() {
           aria-pressed={filters.type === 'project'}
         >
           <div className="flex items-center justify-center gap-1 mb-1">
-            <FaProjectDiagram className="text-emerald-700 dark:text-emerald-300" size={14} aria-hidden="true" />
-            <div className="text-sm font-bold text-emerald-700 dark:text-emerald-300">{data?.summary.projectChanges || 0}</div>
+            <FaProjectDiagram className="admin-icon-secondary" size={14} aria-hidden="true" />
+            <div className="text-sm font-bold admin-text-secondary">{data?.summary.projectChanges || 0}</div>
           </div>
-          <div className="text-xs text-slate-600 dark:text-slate-300">Projects</div>
+          <div className="text-xs admin-text-muted">Projects</div>
         </Card>
         <Card
           className={`admin-stat-card admin-stat-card--violet p-3 text-center cursor-pointer hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${filters.type === 'news' ? 'admin-stat-card--active' : ''}`}
@@ -273,10 +273,10 @@ export default function AdminRecentActivitySection() {
           aria-pressed={filters.type === 'news'}
         >
           <div className="flex items-center justify-center gap-1 mb-1">
-            <FaNewspaper className="text-violet-700 dark:text-violet-300" size={14} aria-hidden="true" />
-            <div className="text-sm font-bold text-violet-700 dark:text-violet-300">{data?.summary.contentUpdates || 0}</div>
+            <FaNewspaper className="admin-icon-accent" size={14} aria-hidden="true" />
+            <div className="text-sm font-bold admin-text-accent">{data?.summary.contentUpdates || 0}</div>
           </div>
-          <div className="text-xs text-slate-600 dark:text-slate-300">News</div>
+          <div className="text-xs admin-text-muted">News</div>
         </Card>
         <Card
           className={`admin-stat-card admin-stat-card--orange p-3 text-center cursor-pointer hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 ${filters.type === 'event' ? 'admin-stat-card--active' : ''}`}
@@ -288,10 +288,10 @@ export default function AdminRecentActivitySection() {
           aria-pressed={filters.type === 'event'}
         >
           <div className="flex items-center justify-center gap-1 mb-1">
-            <FaCalendarAlt className="text-orange-700 dark:text-orange-300" size={14} aria-hidden="true" />
-            <div className="text-sm font-bold text-orange-700 dark:text-orange-300">{data?.summary.eventsModified || 0}</div>
+            <FaCalendarAlt className="admin-icon-orange" size={14} aria-hidden="true" />
+            <div className="text-sm font-bold admin-text-orange">{data?.summary.eventsModified || 0}</div>
           </div>
-          <div className="text-xs text-slate-600 dark:text-slate-300">Events</div>
+          <div className="text-xs admin-text-muted">Events</div>
         </Card>
       </div>
 

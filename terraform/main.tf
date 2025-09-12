@@ -42,69 +42,6 @@ resource "digitalocean_droplet" "survivor_prod" {
   tags     = ["survivor", "prod"]
 }
 
-resource "digitalocean_firewall" "survivor_fw" {
-  name = "survivor-fw"
-
-  droplet_ids = concat(
-    contains(var.deploy_environments, "staging") ? digitalocean_droplet.survivor_staging[*].id : [],
-    contains(var.deploy_environments, "prod") ? digitalocean_droplet.survivor_prod[*].id : []
-  )
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "22"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "80"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "443"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "tcp"
-    port_range            = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "udp"
-    port_range            = "all"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "8080"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  outbound_rule {
-    protocol              = "tcp"
-    port_range            = "8080"
-    destination_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "3000"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-  inbound_rule {
-    protocol         = "tcp"
-    port_range       = "5432"
-    source_addresses = ["0.0.0.0/0", "::/0"]
-  }
-
-}
 
 resource "digitalocean_project_resources" "assign_vm" {
   project = digitalocean_project.survivor.id

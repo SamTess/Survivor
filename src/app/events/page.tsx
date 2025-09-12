@@ -77,12 +77,11 @@ export default function EventsPage() {
     setFilteredEvents(filtered);
   }, [events, selectedFilter, selectedType]);
 
-  // Get unique event types for filter dropdown
   const eventTypes = [...new Set(events.map(event => event.event_type).filter(Boolean))];
 
   return (
     <div className="h-screen bg-background pt-14 overflow-y-auto">
-      <div className="px-6 py-8 max-w-6xl mx-auto">
+  <div className="px-6 py-8 max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-foreground mb-4 transition-all duration-300">Events</h1>
@@ -122,8 +121,8 @@ export default function EventsPage() {
             </div>
 
             {/* Results Count */}
-            <div className="text-sm text-muted-foreground ml-auto font-medium">
-              Showing {filteredEvents.length} of {events.length} events
+            <div className="text-sm text-muted-foreground ml-auto font-medium flex items-center gap-3">
+              <span>Showing {filteredEvents.length} of {events.length} events</span>
             </div>
 
             {/* View Mode Toggle */}
