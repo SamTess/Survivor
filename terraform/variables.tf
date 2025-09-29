@@ -25,3 +25,8 @@ variable "deploy_environments" {
     error_message = "Allowed values for deploy_environments are 'staging' and 'prod'."
   }
 }
+
+variable "domain_name" {
+  description = "The domain name for DNS records"
+  type        = string
+}

@@ -100,7 +100,7 @@ run_dependencies() {
     echo
     echo -e "${GREEN}🔧 Installing Dependencies on All Hosts${NC}"
     echo -e "${YELLOW}📋 Running: ansible-playbook playbook.yml${NC}"
-    ansible-playbook playbook.yml
+    ansible-playbook playbook.yml -v
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Dependencies installed successfully!${NC}"

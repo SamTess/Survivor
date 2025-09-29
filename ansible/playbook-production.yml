@@ -38,33 +38,128 @@
       register: env_file_prod
       ignore_errors: yes
 
-    - name: Check if docker-compose file exists
+    - name: Ensure scripts directory exists
+      file:
+        path: "{{ repository.app_directory }}/scripts"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy SSL initialization script
+      copy:
+        src: "{{ playbook_dir }}/../scripts/init-ssl.sh"
+        dest: "{{ repository.app_directory }}/scripts/init-ssl.sh"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Check if compose file exists
       stat:
         path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
       register: compose_file_check_prod
+
+    - name: Wait for DNS propagation before SSL setup
+      shell: |
+        echo "Checking DNS propagation for {{ production.domain }}..."
+        echo "Expected IP: {{ ansible_host }}"
+        dig +short @8.8.8.8 {{ production.domain }} | grep -q "{{ ansible_host }}"
+      register: dns_propagation_check_prod
+      until: dns_propagation_check_prod.rc == 0
+      retries: 30
+      delay: 10
+      when: compose_file_check_prod.stat.exists
+
+    - name: Retry DNS propagation check after DNS update
+      shell: |
+        echo "Retrying DNS propagation check after DNS update..."
+        dig +short @8.8.8.8 {{ production.domain }} | grep -q "{{ ansible_host }}"
+      register: dns_retry_check_prod
+      until: dns_retry_check_prod.rc == 0
+      retries: 12
+      delay: 10
+      when:
+        - compose_file_check_prod.stat.exists
+        - dns_propagation_check_prod is failed
+
+    - name: Display DNS propagation status
+      debug:
+        msg: |
+          ✅ DNS propagation completed!
+          Domain: {{ production.domain }}
+          Expected IP: {{ ansible_host }}
+          DNS check passed after {{ (dns_propagation_check_prod.attempts | default(0)) + (dns_retry_check_prod.attempts | default(0)) }} attempts
+          {% if dns_propagation_check_prod is failed and dns_retry_check_prod is succeeded %}
+          DNS update was required
+          {% endif %}
+      when: dns_propagation_check_prod is succeeded or dns_retry_check_prod is succeeded
 
     - name: Stop existing Docker containers (production)
       community.docker.docker_compose_v2:
         project_src: "{{ repository.app_directory }}/Docker"
         files:
-          - "docker-compose.prod.yml"
+          - "{{ compose_file }}"
         state: absent
         remove_orphans: yes
-      when:
-        - compose_file_check_prod.stat.exists
-        - git_clone_prod.changed or env_file_prod.changed
+      when: compose_file_check_prod.stat.exists
       ignore_errors: yes
 
-    - name: Build and start Docker containers (production)
-      community.docker.docker_compose_v2:
-        project_src: "{{ repository.app_directory }}/Docker"
-        files:
-          - "docker-compose.https.yml"
-        build: "{{ 'always' if (git_clone_prod.changed or env_file_prod.changed) else 'policy' }}"
-        state: present
-        recreate: auto
+    - name: Run SSL initialization script (handles everything)
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        ../scripts/init-ssl.sh {{ production.ssl_staging | default(0) | int }} {{ production.domain }}
+      become_user: "{{ ansible_user }}"
+      register: ssl_setup_result_prod
       when: compose_file_check_prod.stat.exists
-      register: prod_deploy_result
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      ignore_errors: yes
+
+    - name: Retry SSL setup if it failed (DNS propagation issues)
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        ../scripts/init-ssl.sh {{ production.ssl_staging | default(0) | int }} {{ production.domain }}
+      become_user: "{{ ansible_user }}"
+      register: ssl_retry_result_prod
+      when:
+        - compose_file_check_prod.stat.exists
+        - ssl_setup_result_prod is failed or ssl_setup_result_prod.rc != 0
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      ignore_errors: yes
+
+    - name: Check SSL certificate status
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        if [ -f "./certbot-etc/live/{{ production.domain }}/fullchain.pem" ]; then
+          echo "Certificate found - checking validity..."
+          openssl x509 -in ./certbot-etc/live/{{ production.domain }}/fullchain.pem -text -noout | grep -E "(Issuer:|Not Before:|Not After:)"
+          echo "Certificate issuer check:"
+          openssl x509 -in ./certbot-etc/live/{{ production.domain }}/fullchain.pem -text -noout | grep "Issuer:" | grep -q "R3" && echo "✅ Production certificate" || echo "🧪 Staging certificate (Let's Encrypt)"
+        else
+          echo "❌ No certificate found"
+        fi
+      register: ssl_status_check_prod
+      when: compose_file_check_prod.stat.exists
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Display SSL certificate information
+      debug:
+        msg: |
+          SSL Certificate Status:
+          {{ ssl_status_check_prod.stdout | default('No certificate information available') }}
+          {% if production.ssl_staging | default(false) %}
+          Note: Currently using staging certificates. To switch to production:
+          1. Ensure DNS propagation is complete globally (check multiple DNS servers)
+          2. Run: ansible-playbook playbook-production.yml --tags ssl-production
+          {% endif %}
+      when: ssl_status_check_prod is defined
+
+    - name: Wait for services to stabilize after SSL setup
+      pause:
+        seconds: 10
+      when: compose_file_check_prod.stat.exists
 
     - name: Wait for database to be ready (production)
       pause:
@@ -147,7 +242,7 @@
 
     - name: Wait for production application to be ready
       uri:
-        url: "https://survivooooor.duckdns.org/health"
+        url: "https://{{ production.domain }}/health"
         method: GET
         status_code: 200
         timeout: 10
@@ -156,7 +251,7 @@
       until: prod_health_check.status == 200
       retries: 30
       delay: 10
-      when: prod_deploy_result.changed
+      when: compose_file_check_prod.stat.exists
       ignore_errors: yes
 
     - name: Check if production containers are running (fallback health check)
@@ -168,10 +263,11 @@
     - name: Display production deployment status
       debug:
         msg: |
-          Production deployment completed!
-          URL: https://survivooooor.duckdns.org
+          🎉 Production deployment completed!
+          URL: https://{{ production.domain }}
           Branch: {{ git_branch }}
           Health check: {{ 'PASSED' if (prod_health_check.status is defined and prod_health_check.status == 200) else 'FAILED/SKIPPED' }}
+          SSL Setup: {{ 'COMPLETED' if (ssl_setup_result_prod is defined and ssl_setup_result_prod.rc is defined and ssl_setup_result_prod.rc == 0) else 'FAILED/SKIPPED' }}
           {% if prod_container_status is defined and prod_container_status.stdout is defined %}
           Container status: {{ prod_container_status.stdout }}
           {% endif %}
@@ -184,7 +280,7 @@
 
     - name: Force external data sync via API (production)
       uri:
-        url: "https://survivooooor.duckdns.org/api/sync/external"
+        url: "https://{{ production.domain }}/api/sync/external"
         method: POST
         body_format: json
         body: "{}"
@@ -195,7 +291,6 @@
         validate_certs: no
       register: prod_sync_api_result
       when:
-        - prod_deploy_result is defined
         - prod_running_check.stdout is defined
         - prod_running_check.stdout != ""
         - "'Up' in prod_running_check.stdout or 'healthy' in prod_running_check.stdout"

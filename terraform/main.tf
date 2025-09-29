@@ -15,11 +15,46 @@ provider "digitalocean" {
   token = var.do_token
 }
 
-resource "digitalocean_project" "survivor" {
-  name        = "Survivor"
-  description = "3rd Year Web pool"
-  purpose     = "Web Application"
-  environment = "Development"
+resource "digitalocean_domain" "survivor" {
+  name = var.domain_name
+}
+
+resource "digitalocean_record" "staging_a" {
+  count  = contains(var.deploy_environments, "staging") ? 1 : 0
+  domain = digitalocean_domain.survivor.name
+  type   = "A"
+  name   = "staging"
+  value  = digitalocean_droplet.survivor_staging[0].ipv4_address
+  ttl    = 60
+}
+
+resource "digitalocean_record" "prod_a" {
+  count  = contains(var.deploy_environments, "prod") ? 1 : 0
+  domain = digitalocean_domain.survivor.name
+  type   = "A"
+  name   = "@"
+  value  = digitalocean_droplet.survivor_prod[0].ipv4_address
+  ttl    = 60
+}
+
+resource "digitalocean_record" "caa_letsencrypt" {
+  domain = digitalocean_domain.survivor.name
+  type   = "CAA"
+  name   = "@"
+  flags  = 0
+  tag    = "issue"
+  value  = "letsencrypt.org."
+  ttl    = 3600
+}
+
+resource "digitalocean_record" "caa_wildcard_letsencrypt" {
+  domain = digitalocean_domain.survivor.name
+  type   = "CAA"
+  name   = "*"
+  flags  = 0
+  tag    = "issue"
+  value  = "letsencrypt.org."
+  ttl    = 3600
 }
 
 resource "digitalocean_droplet" "survivor_staging" {
@@ -104,6 +139,13 @@ resource "digitalocean_firewall" "survivor_fw" {
     source_addresses = ["0.0.0.0/0", "::/0"]
   }
 
+}
+
+resource "digitalocean_project" "survivor" {
+  name        = "survivor"
+  description = "Survivor application infrastructure"
+  purpose     = "Web Application"
+  environment = "Production"
 }
 
 resource "digitalocean_project_resources" "assign_vm" {

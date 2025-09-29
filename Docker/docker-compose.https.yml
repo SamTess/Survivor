@@ -82,29 +82,12 @@ services:
       - survivor-network
     restart: unless-stopped
 
-  # DuckDNS updater service
-  duckdns:
-    image: lscr.io/linuxserver/duckdns:latest
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Paris
-      - SUBDOMAINS=survivooooor
-      - TOKEN=a5432d07-bfbb-4794-818c-7d06fd4d846f
-      - UPDATE_IP=ipv4
-    volumes:
-      - duckdns_config:/config
-    restart: unless-stopped
-    networks:
-      - survivor-network
-
 volumes:
   postgres_data:
   media_uploads:
   certbot-etc:
   certbot-var:
   certbot-web:
-  duckdns_config:
 
 networks:
   survivor-network:

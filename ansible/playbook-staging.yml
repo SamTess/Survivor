@@ -1,4 +1,5 @@
-- name: Deploy Staging Environment
+---
+- name: Deploy Survivor Application to Staging
   hosts: survivor_staging
   vars_files:
     - config.yml
@@ -38,10 +39,61 @@
       register: env_file_staging
       ignore_errors: yes
 
-    - name: Check if docker-compose file exists
+    - name: Ensure scripts directory exists
+      file:
+        path: "{{ repository.app_directory }}/scripts"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy SSL initialization script
+      copy:
+        src: "{{ playbook_dir }}/../scripts/init-ssl.sh"
+        dest: "{{ repository.app_directory }}/scripts/init-ssl.sh"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Check if compose file exists (staging)
       stat:
         path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
       register: compose_file_check_staging
+
+    - name: Wait for DNS propagation before SSL setup
+      shell: |
+        echo "Checking DNS propagation for {{ staging.domain }}..."
+        echo "Expected IP: {{ ansible_host }}"
+        dig +short @8.8.8.8 {{ staging.domain }} | grep -q "{{ ansible_host }}"
+      register: dns_propagation_check
+      until: dns_propagation_check.rc == 0
+      retries: 30
+      delay: 10
+      when: compose_file_check_staging.stat.exists
+
+    - name: Retry DNS propagation check after DNS update
+      shell: |
+        echo "Retrying DNS propagation check after DNS update..."
+        dig +short @8.8.8.8 {{ staging.domain }} | grep -q "{{ ansible_host }}"
+      register: dns_retry_check
+      until: dns_retry_check.rc == 0
+      retries: 12
+      delay: 10
+      when:
+        - compose_file_check_staging.stat.exists
+        - dns_propagation_check is failed
+
+    - name: Display DNS propagation status
+      debug:
+        msg: |
+          ✅ DNS propagation completed!
+          Domain: {{ staging.domain }}
+          Expected IP: {{ ansible_host }}
+          DNS check passed after {{ (dns_propagation_check.attempts | default(0)) + (dns_retry_check.attempts | default(0)) }} attempts
+          {% if dns_propagation_check is failed and dns_retry_check is succeeded %}
+          DNS update was required
+          {% endif %}
+      when: dns_propagation_check is succeeded or dns_retry_check is succeeded
 
     - name: Debug - Show compose file check result
       debug:
@@ -49,18 +101,6 @@
           Compose file path: {{ repository.app_directory }}/Docker/{{ compose_file }}
           File exists: {{ compose_file_check_staging.stat.exists | default('undefined') }}
           Looking for: docker-compose.https.yml
-
-    - name: Debug - List Docker directory contents
-      find:
-        paths: "{{ repository.app_directory }}/Docker"
-        file_type: file
-      register: docker_dir_files
-      ignore_errors: yes
-
-    - name: Debug - Show all files in Docker directory
-      debug:
-        msg: "Files found: {{ docker_dir_files.files | map(attribute='path') | list }}"
-      when: docker_dir_files.files is defined
 
     - name: Stop existing Docker containers (staging)
       community.docker.docker_compose_v2:
@@ -72,21 +112,85 @@
       when: compose_file_check_staging.stat.exists
       ignore_errors: yes
 
-    - name: Build and start Docker containers (staging)
-      community.docker.docker_compose_v2:
-        project_src: "{{ repository.app_directory }}/Docker"
-        files:
-          - "docker-compose.https.yml"
-        build: always
-        state: present
-        recreate: always
-        remove_orphans: yes
+    - name: Run SSL initialization script (handles everything)
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        ../scripts/init-ssl.sh {{ staging.ssl_staging | default(1) | int }} {{ staging.domain }}
+      become_user: "{{ ansible_user }}"
+      register: ssl_setup_result
       when: compose_file_check_staging.stat.exists
-      register: staging_deploy_result
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      ignore_errors: yes
 
-    - name: Wait for database to be ready (staging)
+    - name: Retry SSL setup if it failed (DNS propagation issues)
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        ../scripts/init-ssl.sh {{ staging.ssl_staging | default(1) | int }} {{ staging.domain }}
+      become_user: "{{ ansible_user }}"
+      register: ssl_retry_result
+      when:
+        - compose_file_check_staging.stat.exists
+        - ssl_setup_result is failed or ssl_setup_result.rc != 0
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      ignore_errors: yes
+
+    - name: Check SSL certificate status
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        if [ -f "./certbot-etc/live/{{ staging.domain }}/fullchain.pem" ]; then
+          echo "Certificate found - checking validity..."
+          openssl x509 -in ./certbot-etc/live/{{ staging.domain }}/fullchain.pem -text -noout | grep -E "(Issuer:|Not Before:|Not After:)"
+          echo "Certificate issuer check:"
+          openssl x509 -in ./certbot-etc/live/{{ staging.domain }}/fullchain.pem -text -noout | grep "Issuer:" | grep -q "R3" && echo "✅ Production certificate" || echo "🧪 Staging certificate (Let's Encrypt)"
+        else
+          echo "❌ No certificate found"
+        fi
+      register: ssl_status_check
+      when: compose_file_check_staging.stat.exists
+      ignore_errors: yes
+      changed_when: false
+
+    - name: Display SSL certificate information
+      debug:
+        msg: |
+          SSL Certificate Status:
+          {{ ssl_status_check.stdout | default('No certificate information available') }}
+          {% if staging.ssl_staging | default(true) %}
+          Note: Currently using staging certificates. To switch to production:
+          1. Ensure DNS propagation is complete globally (check multiple DNS servers)
+          2. Run: ansible-playbook playbook-staging.yml --tags ssl-production
+          {% endif %}
+      when: ssl_status_check is defined
+
+    - name: Upgrade to production SSL certificates (when DNS is fully propagated)
+      shell: |
+        cd {{ repository.app_directory }}/Docker
+        ../scripts/init-ssl.sh 0 {{ staging.domain }}
+      become_user: "{{ ansible_user }}"
+      register: ssl_production_result
+      when:
+        - compose_file_check_staging.stat.exists
+        - staging.ssl_staging | default(true) == false
+      environment:
+        PATH: "{{ ansible_env.PATH }}:/usr/local/bin"
+      tags:
+        - ssl-production
+        - never
+      ignore_errors: yes
+
+    - name: Display production SSL upgrade results
+      debug:
+        msg: "{{ ssl_production_result.stdout_lines }}"
+      when: ssl_production_result is defined
+      tags:
+        - ssl-production
+        - never
+
+    - name: Wait for services to stabilize after SSL setup
       pause:
-        seconds: 15
+        seconds: 10
       when: compose_file_check_staging.stat.exists
 
     - name: Check if migration files exist (staging)
@@ -165,7 +269,7 @@
 
     - name: Wait for staging application to be ready
       uri:
-        url: "https://survivooooor.duckdns.org/health"
+        url: "https://{{ staging.domain }}/health"
         method: GET
         status_code: 200
         timeout: 10
@@ -186,10 +290,11 @@
     - name: Display staging deployment status
       debug:
         msg: |
-          Staging deployment completed!
-          URL: https://survivooooor.duckdns.org
+          🎉 Staging deployment completed!
+          URL: https://{{ staging.domain }}
           Branch: {{ git_branch }}
           Health check: {{ 'PASSED' if (staging_health_check.status is defined and staging_health_check.status == 200) else 'FAILED/SKIPPED' }}
+          SSL Setup: {{ 'COMPLETED' if (ssl_setup_result is defined and ssl_setup_result.rc is defined and ssl_setup_result.rc == 0) else 'FAILED/SKIPPED' }}
           {% if staging_container_status is defined and staging_container_status.stdout is defined %}
           Container status: {{ staging_container_status.stdout }}
           {% endif %}
@@ -202,7 +307,7 @@
 
     - name: Force external data sync via API
       uri:
-        url: "https://survivooooor.duckdns.org/api/sync/external"
+        url: "https://{{ staging.domain }}/api/sync/external"
         method: POST
         body_format: json
         body: "{}"
@@ -232,3 +337,19 @@
           Result: SKIPPED (containers not running or deployment unchanged)
           {% endif %}
       when: staging_deploy_result is defined
+
+    - name: Setup basic log rotation for Docker containers
+      copy:
+        dest: /etc/logrotate.d/docker-containers
+        mode: '0644'
+        content: |
+          /var/lib/docker/containers/*/*.log {
+              rotate 7
+              daily
+              compress
+              size=1M
+              missingok
+              delaycompress
+              copytruncate
+          }
+      ignore_errors: yes
