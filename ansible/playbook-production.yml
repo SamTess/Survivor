@@ -59,7 +59,7 @@
       community.docker.docker_compose_v2:
         project_src: "{{ repository.app_directory }}/Docker"
         files:
-          - "docker-compose.prod.yml"
+          - "docker-compose.https.yml"
         build: "{{ 'always' if (git_clone_prod.changed or env_file_prod.changed) else 'policy' }}"
         state: present
         recreate: auto
@@ -72,7 +72,7 @@
       when: prod_deploy_result.changed
 
     - name: Check if migration files exist (production)
-      command: docker compose -f docker-compose.prod.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
+      command: docker compose -f docker-compose.https.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
       args:
         chdir: "{{ repository.app_directory }}/Docker"
       when: prod_deploy_result.changed
@@ -80,7 +80,7 @@
       ignore_errors: yes
 
     - name: Create database schema from Prisma schema (production - first time)
-      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma db push --accept-data-loss
+      command: docker compose -f docker-compose.https.yml exec -T web npx prisma db push --accept-data-loss
       args:
         chdir: "{{ repository.app_directory }}/Docker"
       when:
@@ -91,7 +91,7 @@
       ignore_errors: yes
 
     - name: Run Prisma database migration (production - if migrations exist)
-      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma migrate deploy
+      command: docker compose -f docker-compose.https.yml exec -T web npx prisma migrate deploy
       args:
         chdir: "{{ repository.app_directory }}/Docker"
       when:
@@ -102,7 +102,7 @@
       ignore_errors: yes
 
     - name: Generate Prisma client (production)
-      command: docker compose -f docker-compose.prod.yml exec -T web npx prisma generate
+      command: docker compose -f docker-compose.https.yml exec -T web npx prisma generate
       args:
         chdir: "{{ repository.app_directory }}/Docker"
       when: prod_deploy_result.changed
@@ -147,10 +147,11 @@
 
     - name: Wait for production application to be ready
       uri:
-        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/health"
+        url: "https://survivooooor.duckdns.org/health"
         method: GET
         status_code: 200
         timeout: 10
+        validate_certs: no
       register: prod_health_check
       until: prod_health_check.status == 200
       retries: 30
@@ -168,7 +169,7 @@
       debug:
         msg: |
           Production deployment completed!
-          URL: http://{{ ansible_default_ipv4.address }}:{{ app_port }}
+          URL: https://survivooooor.duckdns.org
           Branch: {{ git_branch }}
           Health check: {{ 'PASSED' if (prod_health_check.status is defined and prod_health_check.status == 200) else 'FAILED/SKIPPED' }}
           {% if prod_container_status is defined and prod_container_status.stdout is defined %}
@@ -183,7 +184,7 @@
 
     - name: Force external data sync via API (production)
       uri:
-        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/api/sync/external"
+        url: "https://survivooooor.duckdns.org/api/sync/external"
         method: POST
         body_format: json
         body: "{}"
@@ -191,6 +192,7 @@
           Content-Type: "application/json"
         status_code: [200, 201, 202]
         timeout: 30
+        validate_certs: no
       register: prod_sync_api_result
       when:
         - prod_deploy_result is defined

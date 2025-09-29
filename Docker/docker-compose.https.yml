@@ -1,0 +1,111 @@
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-web:/var/www/certbot
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - survivor-network
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - certbot-etc:/etc/letsencrypt
+      - certbot-var:/var/lib/letsencrypt
+      - certbot-web:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - survivor-network
+
+  web:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile.web
+      cache_from:
+        - node:20-alpine
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    expose:
+      - "3000"
+    env_file:
+      - .env
+    volumes:
+      - media_uploads:/app/uploads
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - EMAIL_SERVER_IP=${EMAIL_SERVER_IP}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://localhost:3000/api/health || curl -f http://localhost:3000/health || curl -f http://localhost:3000/home || curl -f http://localhost:3000"]
+      interval: 5s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+    networks:
+      - survivor-network
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - survivor-network
+    restart: unless-stopped
+
+  # DuckDNS updater service
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - SUBDOMAINS=survivooooor
+      - TOKEN=a5432d07-bfbb-4794-818c-7d06fd4d846f
+      - UPDATE_IP=ipv4
+    volumes:
+      - duckdns_config:/config
+    restart: unless-stopped
+    networks:
+      - survivor-network
+
+volumes:
+  postgres_data:
+  media_uploads:
+  certbot-etc:
+  certbot-var:
+  certbot-web:
+  duckdns_config:
+
+networks:
+  survivor-network:
+    driver: bridge

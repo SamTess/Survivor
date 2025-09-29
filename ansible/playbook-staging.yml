@@ -43,6 +43,25 @@
         path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
       register: compose_file_check_staging
 
+    - name: Debug - Show compose file check result
+      debug:
+        msg: |
+          Compose file path: {{ repository.app_directory }}/Docker/{{ compose_file }}
+          File exists: {{ compose_file_check_staging.stat.exists | default('undefined') }}
+          Looking for: docker-compose.https.yml
+
+    - name: Debug - List Docker directory contents
+      find:
+        paths: "{{ repository.app_directory }}/Docker"
+        file_type: file
+      register: docker_dir_files
+      ignore_errors: yes
+
+    - name: Debug - Show all files in Docker directory
+      debug:
+        msg: "Files found: {{ docker_dir_files.files | map(attribute='path') | list }}"
+      when: docker_dir_files.files is defined
+
     - name: Stop existing Docker containers (staging)
       community.docker.docker_compose_v2:
         project_src: "{{ repository.app_directory }}/Docker"
@@ -50,62 +69,61 @@
           - "{{ compose_file }}"
         state: absent
         remove_orphans: yes
-      when:
-        - compose_file_check_staging.stat.exists
-        - git_clone_staging.changed or env_file_staging.changed
+      when: compose_file_check_staging.stat.exists
       ignore_errors: yes
 
     - name: Build and start Docker containers (staging)
       community.docker.docker_compose_v2:
         project_src: "{{ repository.app_directory }}/Docker"
         files:
-          - "{{ compose_file }}"
-        build: "{{ 'always' if (git_clone_staging.changed or env_file_staging.changed) else 'policy' }}"
+          - "docker-compose.https.yml"
+        build: always
         state: present
-        recreate: auto
+        recreate: always
+        remove_orphans: yes
       when: compose_file_check_staging.stat.exists
       register: staging_deploy_result
 
     - name: Wait for database to be ready (staging)
       pause:
         seconds: 15
-      when: staging_deploy_result.changed
+      when: compose_file_check_staging.stat.exists
 
     - name: Check if migration files exist (staging)
-      command: docker compose -f docker-compose.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
+      command: docker compose -f docker-compose.https.yml exec -T web sh -c "ls -la prisma/migrations/ 2>/dev/null | wc -l"
       args:
         chdir: "{{ repository.app_directory }}/Docker"
-      when: staging_deploy_result.changed
+      when: compose_file_check_staging.stat.exists
       register: staging_migration_files_check
       ignore_errors: yes
 
     - name: Create database schema from Prisma schema (staging - first time)
-      command: docker compose -f docker-compose.yml exec -T web npx prisma db push --accept-data-loss
+      command: docker compose -f docker-compose.https.yml exec -T web npx prisma db push --accept-data-loss
       args:
         chdir: "{{ repository.app_directory }}/Docker"
       when:
-        - staging_deploy_result.changed
+        - compose_file_check_staging.stat.exists
         - staging_migration_files_check.stdout is defined
         - staging_migration_files_check.stdout | int <= 2
       register: staging_db_push_result
       ignore_errors: yes
 
     - name: Run Prisma database migration (staging - if migrations exist)
-      command: docker compose -f docker-compose.yml exec -T web npx prisma migrate deploy
+      command: docker compose -f docker-compose.https.yml exec -T web npx prisma migrate deploy
       args:
         chdir: "{{ repository.app_directory }}/Docker"
       when:
-        - staging_deploy_result.changed
+        - compose_file_check_staging.stat.exists
         - staging_migration_files_check.stdout is defined
         - staging_migration_files_check.stdout | int > 2
       register: staging_migration_result
       ignore_errors: yes
 
     - name: Generate Prisma client (staging)
-      command: docker compose -f docker-compose.yml exec -T web npx prisma generate
+      command: docker compose -f docker-compose.https.yml exec -T web npx prisma generate
       args:
         chdir: "{{ repository.app_directory }}/Docker"
-      when: staging_deploy_result.changed
+      when: compose_file_check_staging.stat.exists
       register: staging_generate_result
       ignore_errors: yes
 
@@ -143,19 +161,20 @@
           {% else %}
           Generate: NOT RUN
           {% endif %}
-      when: staging_deploy_result.changed
+      when: compose_file_check_staging.stat.exists
 
     - name: Wait for staging application to be ready
       uri:
-        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/health"
+        url: "https://survivooooor.duckdns.org/health"
         method: GET
         status_code: 200
         timeout: 10
+        validate_certs: no
       register: staging_health_check
       until: staging_health_check.status == 200
       retries: 30
       delay: 10
-      when: staging_deploy_result.changed
+      when: compose_file_check_staging.stat.exists
       ignore_errors: yes
 
     - name: Check if staging containers are running (fallback health check)
@@ -168,7 +187,7 @@
       debug:
         msg: |
           Staging deployment completed!
-          URL: http://{{ ansible_default_ipv4.address }}:{{ app_port }}
+          URL: https://survivooooor.duckdns.org
           Branch: {{ git_branch }}
           Health check: {{ 'PASSED' if (staging_health_check.status is defined and staging_health_check.status == 200) else 'FAILED/SKIPPED' }}
           {% if staging_container_status is defined and staging_container_status.stdout is defined %}
@@ -183,7 +202,7 @@
 
     - name: Force external data sync via API
       uri:
-        url: "http://{{ ansible_default_ipv4.address }}:{{ app_port }}/api/sync/external"
+        url: "https://survivooooor.duckdns.org/api/sync/external"
         method: POST
         body_format: json
         body: "{}"
@@ -191,6 +210,7 @@
           Content-Type: "application/json"
         status_code: [200, 201, 202]
         timeout: 30
+        validate_certs: no
       register: sync_api_result
       when:
         - staging_deploy_result is defined
