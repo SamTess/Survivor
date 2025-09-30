@@ -1,0 +1,230 @@
+---
+- name: Install additional packages for SSL
+  apt:
+    name:
+      - curl
+      - dnsutils
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: yes
+
+- name: Stop and disable host nginx service (prevents port 80 conflicts)
+  systemd:
+    name: nginx
+    state: stopped
+    enabled: false
+  ignore_errors: yes
+
+- name: Create application directory
+  file:
+    path: "{{ repository.app_directory }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Clone/Update repository
+  git:
+    repo: "{{ repository.git_url }}"
+    dest: "{{ repository.app_directory }}"
+    version: "{{ git_branch }}"
+    force: yes
+    accept_hostkey: yes
+  register: git_clone_result
+
+- name: Copy environment file
+  template:
+    src: ".env.{{ deploy_env }}.j2"
+    dest: "{{ repository.app_directory }}/Docker/.env"
+    mode: '0644'
+    owner: root
+    group: root
+  vars:
+    DOMAIN: "{{ domain_name }}"
+  ignore_errors: yes
+
+- name: Create nginx configuration from template
+  template:
+    src: "nginx.conf.j2"
+    dest: "{{ repository.app_directory }}/Docker/nginx.conf"
+    mode: '0644'
+    owner: root
+    group: root
+  vars:
+    DOMAIN: "{{ domain_name }}"
+
+- name: Ensure scripts directory exists
+  file:
+    path: "{{ repository.app_directory }}/scripts"
+    state: directory
+    mode: '0755'
+
+- name: Start Docker services without SSL
+  community.docker.docker_compose_v2:
+    project_src: "{{ repository.app_directory }}/Docker"
+    files:
+      - docker-compose.prod.yml
+    state: present
+  register: docker_start_result
+
+- name: Wait for web service to be healthy
+  pause:
+    seconds: 30
+
+- name: Check if SSL certificate already exists
+  stat:
+    path: "/var/lib/docker/volumes/docker_certbot-etc/_data/live/{{ domain_name }}"
+  register: cert_check
+
+- name: Wait for DNS propagation before SSL setup
+  shell: |
+    max_attempts=20
+    attempt=0
+    server_ip=$(echo "{{ ansible_default_ipv4.address }}" | tr -d '[:space:]')
+
+    while [ $attempt -lt $max_attempts ]; do
+      dns_ip=$(dig +short A {{ domain_name }} @8.8.8.8 | head -n1 | tr -d '[:space:]')
+
+      echo "Attempt $((attempt + 1))/$max_attempts - Server IP: '$server_ip', DNS IP: '$dns_ip'"
+
+      if [ "$dns_ip" = "$server_ip" ]; then
+        echo "DNS propagation confirmed"
+        exit 0
+      fi
+
+      sleep 15
+      attempt=$((attempt + 1))
+    done
+
+    echo "DNS propagation timeout - DNS not propagated yet"
+    exit 1
+  register: dns_propagation_check
+  failed_when: dns_propagation_check.rc != 0
+  ignore_errors: yes
+
+- name: Stop all existing Docker containers before SSL setup
+  community.docker.docker_compose_v2:
+    project_src: "{{ repository.app_directory }}/Docker"
+    files:
+      - docker-compose.prod.yml
+      - docker-compose.https.yml
+    state: absent
+  ignore_errors: yes
+
+- name: Stop nginx temporarily for SSL certificate
+  community.docker.docker_compose_v2:
+    project_src: "{{ repository.app_directory }}/Docker"
+    files:
+      - docker-compose.https.yml
+    services:
+      - nginx
+    state: stopped
+  when: not cert_check.stat.exists
+
+- name: Obtain SSL certificate
+  command: >
+    docker run --rm
+    -p 80:80
+    -v docker_certbot-etc:/etc/letsencrypt
+    -v docker_certbot-var:/var/lib/letsencrypt
+    certbot/certbot certonly
+    --standalone
+    --email {{ email_for_ssl }}
+    --agree-tos
+    --no-eff-email
+    --force-renewal
+    -d {{ domain_name }}
+  register: certbot_result
+  when: not cert_check.stat.exists
+  ignore_errors: yes
+
+- name: Stop HTTP services
+  community.docker.docker_compose_v2:
+    project_src: "{{ repository.app_directory }}/Docker"
+    files:
+      - docker-compose.prod.yml
+    state: absent
+
+- name: Start HTTPS services
+  community.docker.docker_compose_v2:
+    project_src: "{{ repository.app_directory }}/Docker"
+    files:
+      - docker-compose.https.yml
+    state: present
+  register: https_start_result
+
+- name: Check if compose file exists
+  stat:
+    path: "{{ repository.app_directory }}/Docker/{{ compose_file }}"
+  register: compose_file_check
+
+- name: Retry SSL setup if failed (DNS issues)
+  block:
+    - name: Wait additional time for DNS
+      pause:
+        seconds: 60
+
+    - name: Retry certificate obtain
+      command: >
+        docker run --rm
+        -p 80:80
+        -v docker_certbot-etc:/etc/letsencrypt
+        -v docker_certbot-var:/var/lib/letsencrypt
+        certbot/certbot certonly
+        --standalone
+        --email {{ email_for_ssl }}
+        --agree-tos
+        --no-eff-email
+        --force-renewal
+        -d {{ domain_name }}
+      register: retry_certbot_result
+      ignore_errors: yes
+
+    - name: Restart HTTPS services after retry
+      community.docker.docker_compose_v2:
+        project_src: "{{ repository.app_directory }}/Docker"
+        files:
+          - docker-compose.https.yml
+        state: present
+  when: certbot_result is defined and (certbot_result.rc is not defined or certbot_result.rc != 0)
+
+- name: Verify HTTPS is working
+  uri:
+    url: "https://{{ domain_name }}/api/health"
+    method: GET
+    validate_certs: yes
+    timeout: 30
+  register: https_health_check
+  retries: 5
+  delay: 10
+  ignore_errors: yes
+
+- name: Display deployment status
+  debug:
+    msg: |
+      🚀 Deployment Summary for {{ deploy_env | upper }}:
+
+      Domain: {{ domain_name }}
+      Environment: {{ deploy_env }}
+      Branch: {{ git_branch }}
+
+      🌐 URLs:
+      - HTTPS: https://{{ domain_name }}
+      - Health Check: https://{{ domain_name }}/api/health
+
+      📊 Status:
+      - DNS Propagation: {{ 'OK' if dns_propagation_check.rc == 0 else 'Failed' }}
+      - SSL Certificate: {{ 'OK' if (certbot_result is not defined or certbot_result.rc == 0) else 'Failed (check logs)' }}
+      - HTTPS Services: {{ 'OK' if https_start_result.changed else 'No change' }}
+      - HTTPS Health: {{ 'OK' if (https_health_check.status is defined and https_health_check.status == 200) else 'Failed' }}
+
+- name: Show next steps if SSL failed
+  debug:
+    msg: |
+      ⚠️  SSL setup had issues. You can:
+      1. Check logs: docker compose -f docker-compose.https.yml logs
+      2. Manual SSL setup: docker run --rm -p 80:80 -v docker_certbot-etc:/etc/letsencrypt -v docker_certbot-var:/var/lib/letsencrypt certbot/certbot certonly --standalone --email {{ email_for_ssl }} --agree-tos --no-eff-email --force-renewal -d {{ domain_name }}
+      3. Check DNS: dig {{ domain_name }}
+      4. Fallback to HTTP: docker compose -f docker-compose.prod.yml up -d
+  when: certbot_result is defined and certbot_result.rc != 0

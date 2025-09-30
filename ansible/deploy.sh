@@ -10,6 +10,14 @@ echo -e "${BLUE}🚀 Survivor Application Deployment${NC}"
 echo "===================================="
 echo
 
+get_domain() {
+    local env=$1
+    grep -A1 "^$env:" config.yml | grep "domain:" | sed 's/.*domain: "\(.*\)"/\1/'
+}
+
+STAGING_DOMAIN=$(get_domain staging)
+PROD_DOMAIN=$(get_domain production)
+
 check_inventory() {
     if [ ! -f "hosts.ini" ]; then
         echo -e "${RED}❌ hosts.ini file not found!${NC}"
@@ -65,24 +73,24 @@ show_menu() {
     local envs=$(check_environments)
     eval $envs
 
-    echo -e "${YELLOW}Available deployment options:${NC}"
+    echo -e "${YELLOW}Available HTTPS deployment options:${NC}"
 
     if [ "$staging_available" = true ]; then
-        echo "1) Deploy to Staging only"
+        echo "1) Deploy to Staging with HTTPS ($STAGING_DOMAIN)"
     else
-        echo -e "1) Deploy to Staging only ${RED}(not available)${NC}"
+        echo -e "1) Deploy to Staging with HTTPS ${RED}(not available)${NC}"
     fi
 
     if [ "$prod_available" = true ]; then
-        echo "2) Deploy to Production only"
+        echo "2) Deploy to Production with HTTPS ($PROD_DOMAIN)"
     else
-        echo -e "2) Deploy to Production only ${RED}(not available)${NC}"
+        echo -e "2) Deploy to Production with HTTPS ${RED}(not available)${NC}"
     fi
 
     if [ "$staging_available" = true ] && [ "$prod_available" = true ]; then
-        echo "3) Deploy to Both environments"
+        echo "3) Deploy to Both environments with HTTPS"
     else
-        echo -e "3) Deploy to Both environments ${RED}(not available)${NC}"
+        echo -e "3) Deploy to Both environments with HTTPS ${RED}(not available)${NC}"
     fi
 
     echo "4) Install dependencies only (all available hosts)"
@@ -100,7 +108,7 @@ run_dependencies() {
     echo
     echo -e "${GREEN}🔧 Installing Dependencies on All Hosts${NC}"
     echo -e "${YELLOW}📋 Running: ansible-playbook playbook.yml${NC}"
-    ansible-playbook playbook.yml -v
+    ansible-playbook playbook.yml
 
     if [ $? -eq 0 ]; then
         echo -e "${GREEN}✅ Dependencies installed successfully!${NC}"
@@ -111,61 +119,81 @@ run_dependencies() {
 }
 
 run_staging_deployment() {
-    echo
-    echo -e "${GREEN}🎯 Deploying to Staging Environment${NC}"
-    echo -e "${YELLOW}📋 Running: ansible-playbook playbook-staging.yml${NC}"
-    ansible-playbook playbook-staging.yml
+    local envs=$(check_environments)
+    eval $envs
 
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Staging deployment completed successfully!${NC}"
-    else
-        echo -e "${RED}❌ Staging deployment failed!${NC}"
-        exit 1
+    if [ "$staging_available" = false ]; then
+        echo -e "${RED}❌ Staging environment not available${NC}"
+        return 1
     fi
+
+    echo -e "${BLUE}🚀 Deploying to Staging with HTTPS...${NC}"
+    echo -e "${YELLOW}Domain: $STAGING_DOMAIN${NC}"
+    ansible-playbook playbook-staging.yml
 }
 
 run_production_deployment() {
-    echo
-    echo -e "${GREEN}🎯 Deploying to Production Environment${NC}"
-    echo -e "${YELLOW}📋 Running: ansible-playbook playbook-production.yml${NC}"
-    ansible-playbook playbook-production.yml
+    local envs=$(check_environments)
+    eval $envs
 
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Production deployment completed successfully!${NC}"
-    else
-        echo -e "${RED}❌ Production deployment failed!${NC}"
-        exit 1
+    if [ "$prod_available" = false ]; then
+        echo -e "${RED}❌ Production environment not available${NC}"
+        return 1
     fi
+
+    echo -e "${BLUE}🚀 Deploying to Production with HTTPS...${NC}"
+    echo -e "${YELLOW}Domain: $PROD_DOMAIN${NC}"
+    ansible-playbook playbook-production.yml
 }
 
 run_full_deployment() {
+    local envs=$(check_environments)
+    eval $envs
+
+    echo -e "${BLUE}🚀 Full HTTPS deployment started...${NC}"
     echo
-    echo -e "${GREEN}🎯 Deploying to Both Environments${NC}"
 
-    echo -e "${YELLOW}📋 Step 1/3: Installing dependencies...${NC}"
-    ansible-playbook playbook.yml
-
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}❌ Dependencies installation failed!${NC}"
-        exit 1
-    fi
-
-    echo -e "${YELLOW}📋 Step 2/3: Deploying to staging...${NC}"
-    ansible-playbook playbook-staging.yml
-
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}❌ Staging deployment failed!${NC}"
-        exit 1
-    fi
-
-    echo -e "${YELLOW}📋 Step 3/3: Deploying to production...${NC}"
-    ansible-playbook playbook-production.yml
-
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ Full deployment completed successfully!${NC}"
+    echo -e "${YELLOW}� Installing dependencies on all hosts...${NC}"
+    if ansible-playbook playbook.yml --tags "install,dependencies" ; then
+        echo -e "${GREEN}✅ Dependencies installed successfully${NC}"
     else
-        echo -e "${RED}❌ Production deployment failed!${NC}"
-        exit 1
+        echo -e "${RED}❌ Dependencies installation failed${NC}"
+        return 1
+    fi
+
+    echo
+
+    if [ "$staging_available" = true ]; then
+        echo -e "${YELLOW}🎯 Deploying to Staging with HTTPS...${NC}"
+        echo -e "${BLUE}Domain: $STAGING_DOMAIN${NC}"
+        if ansible-playbook playbook-staging.yml; then
+            echo -e "${GREEN}✅ Staging HTTPS deployment successful${NC}"
+        else
+            echo -e "${RED}❌ Staging deployment failed${NC}"
+            return 1
+        fi
+        echo
+    fi
+
+    if [ "$prod_available" = true ]; then
+        echo -e "${YELLOW}🎯 Deploying to Production with HTTPS...${NC}"
+        echo -e "${BLUE}Domain: $PROD_DOMAIN${NC}"
+        if ansible-playbook playbook-production.yml; then
+            echo -e "${GREEN}✅ Production HTTPS deployment successful${NC}"
+        else
+            echo -e "${RED}❌ Production deployment failed${NC}"
+            return 1
+        fi
+    fi
+
+    echo -e "${GREEN}🎉 Full HTTPS deployment completed successfully!${NC}"
+    echo
+    echo -e "${YELLOW}🌐 Your applications are now available at:${NC}"
+    if [ "$staging_available" = true ]; then
+        echo -e "  Staging: ${BLUE}https://$STAGING_DOMAIN${NC}"
+    fi
+    if [ "$prod_available" = true ]; then
+        echo -e "  Production: ${BLUE}https://$PROD_DOMAIN${NC}"
     fi
 }
 
